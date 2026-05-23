@@ -5,7 +5,9 @@
 *.slo
 *.lo
 *.o
+*.ko
 *.obj
+*.elf
 
 # Precompiled Headers
 *.gch
@@ -13,6 +15,19 @@
 
 # Linker files
 *.ilk
+*.ilk
+*.map
+*.exp
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
 
 # Debugger Files
 *.pdb
@@ -21,8 +36,8 @@
 *.so
 *.dylib
 *.dll
+*.so
 *.so.*
-
 
 # Fortran module files
 *.mod
@@ -38,6 +53,15 @@
 *.exe
 *.out
 *.app
+*.i*86
+*.x86_64
+*.hex
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
 
 # Build directories
 build/
@@ -51,6 +75,16 @@ cmake_install.cmake
 Makefile
 install_manifest.txt
 compile_commands.json
+
+# Kernel Module Compile Results
+*.mod*
+*.cmd
+.tmp_versions/
+modules.order
+Module.symvers
+Mkfile.old
+dkms.conf
+
 
 # Temporary files
 *.tmp
