@@ -15,7 +15,17 @@
 
 
 
+/*======================================================================================================================*/
+/*
+ * *************************************************************************************************************
+ **          Additional mathematic Functions.
+ * *************************************************************************************************************
+ */
 
+double sqr(double x)
+ {
+  return x * x;
+ }
 
 /*======================================================================================================================*/
 
@@ -25,18 +35,22 @@
  * *************************************************************************************************************
  */
 
-void GPSToDist(Dist_Cords_s *Distance, GPS_Cords_s GPS_Data)
+void GPSToSpace(Space_Cords_s *SpaceCords, GPS_Cords_s GPS_Data)
  {
-  Distance->y = GPS_Data.Latitude  * EARTH_RADIUS * M_PI / 180;
-  Distance->x = GPS_Data.Longitude * EARTH_RADIUS * M_PI / 180 * cos(GPS_Data.Latitude * M_PI / 180);
+  SpaceCords->x = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI /  180) * cos(GPS_Data.Longitude * M_PI / 180);
+  SpaceCords->y = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI /  180) * sin(GPS_Data.Longitude * M_PI / 180);
+  SpaceCords->z = EARTH_RADIUS_P * sin(GPS_Data.Latitude * M_PI /  180);
  }
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
  {
-  Dist_Cords_s d1, d2;
-  GPSToDist(&d1, p1);
-  GPSToDist(&d2, p2);
-  return sqrt((d1.x - d2.x)*(d1.x - d2.x) + (d1.y - d2.y)*(d1.y - d2.y));
+  Space_Cords_s s1, s2;
+  double LinDist, ArcDist;
+  GPSToSpace(&s1, p1);
+  GPSToSpace(&s2, p2);
+  LinDist = sqrt(sqr(s1.x - s2.x) + sqr(s1.y - s2.y) + sqr(s1.z - s2.z));
+  ArcDist = asin( LinDist / EARTH_RADIUS / 2) * EARTH_RADIUS * 2;
+  return ArcDist;
  }
 
 
