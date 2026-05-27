@@ -89,17 +89,9 @@ extern "C" {
 #define DIV_RND_DN(X,Y) ( (X) / (Y)             )     /* Deviation with rounding down. 10/6 will give 1 and 10/3 will give 3 Regular deviation equal to regular "/". Is defined for compilation the previous macros deviations */
 
 
-#define EARTH_DIAMETER 12742.018                      /* km */ /* Mean earth diameter */
-#define EARTH_RADIUS   (EARTH_DIAMETER / 2)           /* km */ /* Mean earth radius   */
-
-#define EARTH_DIAMETER_P 12713.505                    /* km */ /* Polar earth diameter */
-#define EARTH_DIAMETER_E 12756.274                    /* km */ /* Equatorial earth diameter */
-
-#define EARTH_RADIUS_P (EARTH_DIAMETER_P / 2)        /* km */ /* Polar earth radius */
-#define EARTH_RADIUS_E (EARTH_DIAMETER_E / 2)        /* km */ /* Equatorial earth radius */
 
 
-#define PARK_NAME_LEN 20
+#define NAME_LEN 30
 
 
 /*======================================================================================================================*/
@@ -165,16 +157,30 @@ struct Space_Cords_s
  struct Parking_s
   {
    GPS_Cords_s Cords;
+   uint16_t Parking_ID;
    uint16_t MaxNumPlaces;
    uint16_t NumPlaces;
-   uint16_t Price;            /*  0.01₪ / min  */
-   char Name[PARK_NAME_LEN];
+   uint16_t Price;              /*  0.01₪ / hour  */
+   char Name[NAME_LEN];
   }
 #ifndef __cplusplus  
 Parking_s
 #endif
 ;
 
+ #ifndef __cplusplus
+ typedef 
+ #endif
+ struct Customer_s
+  {
+   GPS_Cords_s Cords;
+   uint32_t Vechicle_ID;
+   char Name[NAME_LEN];
+  }
+#ifndef __cplusplus  
+Customer_s
+#endif
+;
 
 
 

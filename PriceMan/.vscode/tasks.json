@@ -2,48 +2,52 @@
     "tasks": [
         {
             "type": "cppbuild",
-
-            //task label (used in launch.json -> configrations -> preLaunchTask):
-            "label": "build all",
-
-            "command": "g++",
+            "label": "gcc build program",
+            "command": "gcc",
             "args": [
                 "-fdiagnostics-color=always",
+                
+                //allow debugging:
                 "-g",
                 
-                //recommended warning flags for compilation:
+                //standard:
+                "-std=c99",
+                
+                //enforce standard (no compiler specific features allowed):
+                "-pedantic",
+
+                //treat warnings as errors:
+                //"-Werror",
+                
+                //warning flags:
                 "-Wall",
                 "-Wextra",
-                "-Weffc++",
-                "-pedantic",
-                "-std=c++17",
-                
-                //defines
+
+                //workaround printf fix for older gcc compilers on Windows:
+                //"-D __USE_MINGW_ANSI_STDIO",
                 "-D_GNU_SOURCE",
-                "-D_POSIX_C_SOURCE = 1",
-                "-DNET_PRINT_ERRORS",
-                "-DNET_PRINT_SUCCESS",
+
 
                 //source file - use all top level .c files:
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
 
-                //source file - use all top level .cpp files:
-                "*.cpp",
-                
-                //outputfile - always "program" at workspace directory:
+
+                "*.c",
                 "-o",
-                "parkman",
+                "${workspaceFolder}/priceman",
 
                 // Include Directories
                 "-I${workspaceFolder}",
                 "-I${workspaceFolder}/../Common_Libs",
 
+                
+                //link math lib:
+                "-lm",
+
                 //implementing database:
                 "-lsqlite3",
-
             ],
             "options": {
-                //working directory for compilation:
                 "cwd": "${workspaceFolder}"
             },
             "problemMatcher": [

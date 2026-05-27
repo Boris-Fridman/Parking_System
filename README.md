@@ -19,7 +19,7 @@ Folders:
     ┃    ┃                   ┃ Contains TCP Server and Database containing information about parkings, prices.        ┃  
     ┃    ┃                   ┃ The Server and DB are communicated via the shared memory.                              ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
-    ┃ 4. ┃                   ┃                                                                                        ┃  
+    ┃ 4. ┃ PriceMan          ┃ Manages prices witten in the database. If DB-File doesn't exist it creates it.         ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃ 5. ┃ CommonLibs        ┃ The folder containing libaries common for two or more subprojects.                     ┃  
     ┗━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  

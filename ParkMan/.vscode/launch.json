@@ -10,7 +10,7 @@
             "request": "launch",
 
             //executable to run/debug
-            "program": "${workspaceFolder}/program",
+            "program": "${workspaceFolder}/parkman",
             
             "args": [],
             "stopAtEntry": false,

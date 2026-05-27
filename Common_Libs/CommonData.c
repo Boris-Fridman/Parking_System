@@ -14,6 +14,17 @@
 #endif
 
 
+/*======================================================================================================================*/
+
+#define EARTH_DIAMETER 12742.018                      /* km */ /* Mean earth diameter */
+#define EARTH_RADIUS   (EARTH_DIAMETER / 2)           /* km */ /* Mean earth radius   */
+
+#define EARTH_DIAMETER_P 12713.505                    /* km */ /* Polar earth diameter */
+#define EARTH_DIAMETER_E 12756.274                    /* km */ /* Equatorial earth diameter */
+
+#define EARTH_RADIUS_P (EARTH_DIAMETER_P / 2)        /* km */ /* Polar earth radius */
+#define EARTH_RADIUS_E (EARTH_DIAMETER_E / 2)        /* km */ /* Equatorial earth radius */
+
 
 /*======================================================================================================================*/
 /*
