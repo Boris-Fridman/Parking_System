@@ -2,9 +2,11 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
+#include <sqlite3.h>
 #include <math.h>
 
 #include "CommonData.h"
+#include "DataBase.h"
 
 /*======================================================================================================================*/
 
@@ -24,6 +26,9 @@
 void PrintHelpMessage(char *ProgName);
 void PrintErrorMessage(int argc, char *argv[]);
 int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price);
+
+void WriteUpdateNewCity(char CityName[], int CityPrice);
+void RemoveCity(char CityName[]);
 
 /*======================================================================================================================*/
 
@@ -57,10 +62,12 @@ int main(int argc, char *argv[])
           PrintHelpMessage(argv[0]);
         break;
       case ARG_ADD_RESULT:
-          printf("Adding the city: %s and withg the price %d.%02d ₪ / hour to the database\n\r", Name, Price/100, Price%100);
+          printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", Name, Price/100, Price%100);
+          WriteUpdateNewCity(Name, Price);
         break;
       case ARG_REMOVE_RESULT:
           printf("Removing the city: %s from the database.\n\r", Name);
+          RemoveCity(Name);
         break;
       default:
           printf("Isn't implemmented yet.\n\r");
@@ -164,3 +171,35 @@ void PrintErrorMessage(int argc, char *argv[])
  }
 
 /*======================================================================================================================*/
+
+static sqlite3 *conn;
+
+void WriteUpdateNewCity(char CityName[], int CityPrice)
+ {
+  int CityID;
+  int CytyPlace = 0;
+  CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
+  CytyPlace = FindCityInDataBase(&conn, CityName);
+  if(CytyPlace == -1)  // City not found.
+   {
+    CityID = GetLastCityIDFromDataBase(&conn);
+    CityID++;
+    WriteToDataBase(&conn, CityID, CityName, CityPrice);
+   }
+  else  // City was found.
+   {
+    UpdateCityInDataBase(&conn, CityName, CityPrice);
+   }
+
+ }
+
+void RemoveCity(char CityName[])
+ {
+  RemoveCityFromDataBase(&conn, CityName);
+ }
+
+/*======================================================================================================================*/
+
+
+
+
