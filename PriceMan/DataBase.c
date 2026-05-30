@@ -60,9 +60,10 @@ int compar(const void *d1, const void *d2)
  {
   return *(int*)d1 > *(int*)d2;
  }
+
 /*----------------------------------------------------------------------------------------------------------------------*/
-/*  Checks all the cities' ids in the database and returns the biggest one. (It's required to decide which test id must be given to the new city.) */
-int GetLastCityIDFromDataBase(sqlite3 **conn)
+/*  Checks all the cities' ids in the database and returns the not esisting one. (Tries to find a smallest not existing.) */
+int GetNotExistingInDataBaseCityID(sqlite3 **conn)
  {
   int result, valtoret = 0, v;
   int total_rows;
@@ -114,7 +115,7 @@ int GetLastCityIDFromDataBase(sqlite3 **conn)
           if((CityIDs[i+1] - CityIDs[i]) > 1)
            break;
          }
-        valtoret = CityIDs[i];
+        valtoret = CityIDs[i] + 1;
         free(CityIDs);
        }
       else
@@ -129,6 +130,7 @@ int GetLastCityIDFromDataBase(sqlite3 **conn)
            }
          }
         while(result == SQLITE_ROW);
+        ++valtoret;
        }
      }
    }
@@ -141,7 +143,7 @@ int GetLastCityIDFromDataBase(sqlite3 **conn)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Finds city by name in the database.                                                                                 */
-int FindCityInDataBase(sqlite3 **conn, const char reqname[])
+int FindCityInDataBase(sqlite3 **conn, const char city_name[])
  {
   int result, valtoret = 0;
   //int id, price;
@@ -165,6 +167,7 @@ int FindCityInDataBase(sqlite3 **conn, const char reqname[])
       if(NoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
       if(NoPiping)fprintf(stderr, TermColorsReset);
+      valtoret = -1;
      }
     else
      {
@@ -174,7 +177,7 @@ int FindCityInDataBase(sqlite3 **conn, const char reqname[])
         if(result == SQLITE_ROW)
          {
           foundname = sqlite3_column_text(stmt,1);
-          if(!strcmp((const char*)foundname, reqname))
+          if(!strcmp((const char*)foundname, city_name))
            {
             // id = sqlite3_column_int(stmt, 0);
             // price = sqlite3_column_int(stmt, 2);
@@ -186,7 +189,7 @@ int FindCityInDataBase(sqlite3 **conn, const char reqname[])
        }
       while(result == SQLITE_ROW);
       if(result != SQLITE_ROW)  // The name wasn't found.
-       valtoret = -1;
+       valtoret = -3;
      }
 
    }
@@ -334,10 +337,16 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
 
   }
 
-
-
 /*======================================================================================================================*/
 
+/* 
+ * *************************************************************************************************************
+ **          Additional auxilar Functions / Procedures
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Returns Number of columns in database or "-1" if error.                                                             */
 int GetNumColumns(sqlite3 **conn)
  {
   int result, total_rows = -1;
@@ -358,14 +367,42 @@ int GetNumColumns(sqlite3 **conn)
 
 /*======================================================================================================================*/
 
+/* 
+ * *************************************************************************************************************
+ **          Error pringing procedure
+ * *************************************************************************************************************
+ */
 
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Prints error message according to the error number.                                                                 */
 void PrintDBError(int ErrorCode)
  {
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  if(NoPiping) fprintf(stderr, "%s", ResultColors[!ErrorCode]);
+  if(NoPiping) 
+   {
+    Error_Results_e ErrRes;
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic" // Disables the non-standard warning for not standard "case low ... high:" cpmdotopm.
+    switch(ErrorCode)
+     {
+      case SQLITE_OK:
+        ErrRes = E_CORRECT;
+       break;
+      case SQLITE_ROW ... SQLITE_DONE:
+        ErrRes = E_SUCCESS;
+       break;
+      case SQLITE_WARNING:
+        ErrRes = E_WARNING;
+       break;
+      default:
+        ErrRes = E_FAIL;
+       break;
+     }
+#pragma GCC diagnostic pop // Restores your original warning settings     
+    //fprintf(stderr, "%s", ResultColors[!ErrorCode]);
+    fprintf(stderr, "%s", ResultColors[ErrRes]);
+   }
   switch(ErrorCode)
    {
     case SQLITE_OK         : fprintf(stderr, "Successful result\n\r"); break;

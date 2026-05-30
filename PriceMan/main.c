@@ -177,28 +177,14 @@ static sqlite3 *conn;
 void WriteUpdateNewCity(char CityName[], int CityPrice)
  {
   int CityID;
-  int CytyPlace = 0;
+  int UpdateResult = 0;
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
-  CytyPlace = UpdateCityInDataBase(&conn, CityName, CityPrice);
-  if(CytyPlace < 0)  // The update wasn't be possible because the city didn't exist
+  UpdateResult = UpdateCityInDataBase(&conn, CityName, CityPrice);
+  if(UpdateResult < 0)  // The update wasn't be possible because the city didn't exist
    {
-    CityID = GetLastCityIDFromDataBase(&conn);
-    CityID++;
+    CityID = GetNotExistingInDataBaseCityID(&conn);
     WriteToDataBase(&conn, CityID, CityName, CityPrice);
    }
-
-  // CytyPlace = FindCityInDataBase(&conn, CityName);
-  // if(CytyPlace == -1)  // City not found.
-  //  {
-  //   CityID = GetLastCityIDFromDataBase(&conn);
-  //   CityID++;
-  //   WriteToDataBase(&conn, CityID, CityName, CityPrice);
-  //  }
-  // else  // City was found.
-  //  {
-  //   UpdateCityInDataBase(&conn, CityName, CityPrice);
-  //  }
-
  }
 
 void RemoveCity(char CityName[])

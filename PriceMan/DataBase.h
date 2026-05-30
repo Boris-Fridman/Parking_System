@@ -27,21 +27,49 @@ int CreateLoadDatabase(sqlite3 **conn);
 
 
 /** 
- * @brief Checks all the cities' ids in the database and returns the biggest one. (It's required to decide which test id must be given to the new city.)
+ * @brief Checks all the cities' ids in the database and returns the not esisting one. (Tries to find a smallest not existing.)
+ *        If the smallest not existing ID was found it is retunrd otherwise is teturnd the one above the biggest existing.
  * 
  * @code
- * int GetLastCityIDFromDataBase(sqlite3 **conn);
+ * int GetNotExistingInDataBaseCityID(sqlite3 **conn);
  * @code
  * 
  * @param conn pointer to the sqlite database handle.
  * 
  * @return The last city id.
  */
-int GetLastCityIDFromDataBase(sqlite3 **conn);
+int GetNotExistingInDataBaseCityID(sqlite3 **conn);
 
+/**
+ * @brief Finds city by name in the database.
+ * 
+ * @code
+ * int FindCityInDataBase(sqlite3 **conn, const char name[]);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param city_name the name of the city to find. 
+ * 
+ * @return the first row number where the city was found, "-1" if error or "-3" if wasn't found.
+ */
+int FindCityInDataBase(sqlite3 **conn, const char city_name[]);
 
-int FindCityInDataBase(sqlite3 **conn, const char name[]);
-
+/**
+ * @brief Updates existing city in the database.
+ * 
+ * @code
+ * int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param city_name the name of the city to be updated. 
+ * 
+ * @param city_price the new price of the parking in ₪ per hour.
+ * 
+ * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
+ */
 int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price);
 
 /** 
@@ -64,8 +92,20 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price);
 int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price);
 
 
+/**
+ * @brief Removes the given city from the database.
+ * 
+ * @code
+ * int RemoveCityFromDataBase(sqlite3 **conn, char city_name[]);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param city_name name of the city to remove.
+ * 
+ * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
+ */
 int RemoveCityFromDataBase(sqlite3 **conn, char city_name[]);
-
 
 /*======================================================================================================================*/
 

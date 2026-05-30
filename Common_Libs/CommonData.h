@@ -104,7 +104,20 @@ extern "C" {
 #endif /* UNUSED */
 
 /*======================================================================================================================*/
-
+#ifndef __cplusplus
+typedef 
+#endif
+enum Error_Results_e
+ {
+  E_CORRECT,
+  E_FAIL,
+  E_WARNING,
+  E_SUCCESS
+ }
+ #ifndef __cplusplus
+ Error_Results_e
+ #endif
+ ;
 
 /* GPS Coordinates. Are given in degrees. */
 #ifndef __cplusplus
