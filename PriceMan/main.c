@@ -210,10 +210,10 @@ void PrintCitiesFromDataBase()
   if(result == 0)
    {
     printf("\n\r");
-    printf("%3s    %-*s  %s\n\r","ID", NAME_LEN, "Name","Price");
+    printf("%4s       %-*s  %s\n\r","ID", NAME_LEN, "Name","Price");
     for(i = 0; i < ListSize; i++)
      {
-      printf("%3d   %-*s   %d.%02d\n\r",ListOfCities[i].City_ID, NAME_LEN, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
+      printf("%06d   %-*s     %d.%02d\n\r",ListOfCities[i].City_ID, NAME_LEN, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
       //printf("%03d   %-" XSTR(NAME_LEN) "s   %d.%02d\n\r",ListOfCities[i].City_ID, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
      }
     printf("\n\r");
