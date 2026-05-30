@@ -12,6 +12,7 @@
 
 /*======================================================================================================================*/
 
+int GetNumColumns(sqlite3 **conn);
 void PrintDBError(int ErrorCode);
 
 /*======================================================================================================================*/
@@ -55,11 +56,18 @@ int CreateLoadDatabase(sqlite3 **conn)
    }
  }
 
+int compar(const void *d1, const void *d2)
+ {
+  return *(int*)d1 > *(int*)d2;
+ }
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Checks all the cities' ids in the database and returns the biggest one. (It's required to decide which test id must be given to the new city.) */
 int GetLastCityIDFromDataBase(sqlite3 **conn)
  {
   int result, valtoret = 0, v;
+  int total_rows;
+  int *CityIDs = NULL;
+  int i;
   sqlite3_stmt* stmt;
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -73,6 +81,12 @@ int GetLastCityIDFromDataBase(sqlite3 **conn)
    }
   else
    {
+    total_rows = GetNumColumns(conn);
+    if(total_rows >= 0)
+     {
+      CityIDs = calloc(total_rows, sizeof(int));
+     }
+
     result = sqlite3_prepare_v2(*conn, "SELECT city_id FROM CITIES_PRICES;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
@@ -82,21 +96,44 @@ int GetLastCityIDFromDataBase(sqlite3 **conn)
      }
     else
      {
-      //result = sqlite3_prepare_v2(*conn, "SELECT COUNT(city_id) FROM CITIES_PRICES;", -1, &stmt, 0);        
-      
-      do
+      if(CityIDs != NULL)
        {
-        result = sqlite3_step(stmt);
-        if(result == SQLITE_ROW)
+        for(i = 0, result = SQLITE_ROW; (i<total_rows)&&(result == SQLITE_ROW); i++)
          {
-          v = sqlite3_column_int(stmt,0);
-          valtoret = MAX(valtoret, v);
+          result = sqlite3_step(stmt);
+          if(result == SQLITE_ROW)
+           {
+            v = sqlite3_column_int(stmt,0);
+            CityIDs[i] = v;
+           }
          }
-         
+        // sorting.
+        qsort(CityIDs, total_rows, sizeof(CityIDs[0]), compar);
+        for(i = 0; i < total_rows - 1; i++)
+         {
+          if((CityIDs[i+1] - CityIDs[i]) > 1)
+           break;
+         }
+        valtoret = CityIDs[i];
+        free(CityIDs);
        }
-      while(result == SQLITE_ROW);
+      else
+       {
+        do
+         {
+          result = sqlite3_step(stmt);
+          if(result == SQLITE_ROW)
+           {
+            v = sqlite3_column_int(stmt,0);
+            valtoret = MAX(valtoret, v);
+           }
+         }
+        while(result == SQLITE_ROW);
+       }
      }
    }
+//   if(CityIDs != NULL)
+//    free(CityIDs);
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -165,6 +202,7 @@ int FindCityInDataBase(sqlite3 **conn, const char reqname[])
 int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
  {
   int result, valtoret = SQLITE_OK;
+  int affected_rows;
   sqlite3_stmt* stmt = NULL;
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -199,7 +237,11 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
       fprintf(stderr, "Cannot update data: %s\n\r", sqlite3_errmsg(*conn));
       if(NoPiping)fprintf(stderr, TermColorsReset);
      }
-
+    affected_rows = sqlite3_changes(*conn);
+    if(affected_rows == 0) // No value was found.
+     {
+      valtoret = -3; 
+     }
    }
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
@@ -247,6 +289,7 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
  int RemoveCityFromDataBase(sqlite3 **conn, char city_name[])
   {
   int result, valtoret = SQLITE_OK;
+  int affected_rows;
   sqlite3_stmt* stmt = NULL;
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -279,7 +322,11 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
       fprintf(stderr, "Cannot delete data: %s\n\r", sqlite3_errmsg(*conn));
       if(NoPiping)fprintf(stderr, TermColorsReset);
      }
-
+    affected_rows = sqlite3_changes(*conn);
+    if(affected_rows == 0) // No value was found.
+     {
+      valtoret = -3; 
+     }
    }
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
@@ -289,9 +336,29 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
 
 
 
+/*======================================================================================================================*/
+
+int GetNumColumns(sqlite3 **conn)
+ {
+  int result, total_rows = -1;
+  sqlite3_stmt* stmt;
+  result = sqlite3_prepare_v2(*conn, "SELECT COUNT(*) FROM CITIES_PRICES;", -1, &stmt, 0);
+  if(result == SQLITE_OK)
+   {
+    result = sqlite3_step(stmt);
+    if(result == SQLITE_ROW)
+     {
+      total_rows = sqlite3_column_int(stmt, 0);
+     }
+   }
+  sqlite3_finalize(stmt);
+  return total_rows;
+ }
 
 
 /*======================================================================================================================*/
+
+
 
 
 void PrintDBError(int ErrorCode)
