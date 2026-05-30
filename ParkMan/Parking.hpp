@@ -12,6 +12,7 @@ class City_c
     GPS_Cords_s CenterPlace;
   public:
     City_c();
+    virtual ~City_c();
     virtual bool Customer_In() = 0;
      
  };

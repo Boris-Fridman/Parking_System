@@ -31,14 +31,14 @@ int CreateLoadDatabase(sqlite3 **conn);
  *        If the smallest not existing ID was found it is retunrd otherwise is teturnd the one above the biggest existing.
  * 
  * @code
- * int GetNotExistingInDataBaseCityID(sqlite3 **conn);
+ * int GetCityIDNotExistingInDataBase(sqlite3 **conn);
  * @code
  * 
  * @param conn pointer to the sqlite database handle.
  * 
  * @return The last city id.
  */
-int GetNotExistingInDataBaseCityID(sqlite3 **conn);
+int GetCityIDNotExistingInDataBase(sqlite3 **conn);
 
 /**
  * @brief Finds city by name in the database.
@@ -106,6 +106,42 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
  * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
  */
 int RemoveCityFromDataBase(sqlite3 **conn, char city_name[]);
+
+/**
+ * @brief Gives a list of the all existing cities in the database.
+ * 
+ * @code 
+ * int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param list the pointer to pointer to list. If the memory allocation failed the pointer will be NULL.
+ *             Attention!!!
+ *             The function reserves internal dinamic menory 
+ *             that must be freed by the function "FreeList()" after usage.
+ * 
+ * @param list_size pointer to the list size that after creation. 
+ *                  if memory wasn't reserved or the database is empty the function will give it zero value.
+ * 
+ * @return "0" if successfully, "-1" if the database couldn't be open, "-2" if the memory couldn't be reserved or "-3" if the list couldn't be filled.
+ * 
+ */
+int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size);
+
+/**
+ * @brief Frees list after usage reserved by the "GetCitiesList()" function.
+ *        No need to check if the list is NULL because the function checks it inside.
+ *        Even more: This function should be run anyway to prevent possible dynamic memory leakage.
+ * 
+ * @code
+ * void FreeList(PriceTab_s **list_to_free);
+ * @code
+ * 
+ * @param list_to_free list to be freed reserved by the function "GetCitiesList()".
+ * 
+ */
+void FreeList(PriceTab_s **list_to_free);
 
 /*======================================================================================================================*/
 

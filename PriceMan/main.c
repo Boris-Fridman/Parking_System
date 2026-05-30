@@ -25,6 +25,7 @@
 
 void PrintHelpMessage(char *ProgName);
 void PrintErrorMessage(int argc, char *argv[]);
+void PrintCitiesFromDataBase();
 int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price);
 
 void WriteUpdateNewCity(char CityName[], int CityPrice);
@@ -56,17 +57,15 @@ int main(int argc, char *argv[])
           PrintErrorMessage(argc, argv);
         break;
       case ARG_PRINT_RESULT:
-          printf("The printing database isn't implemmented yet.\n\r");
+          PrintCitiesFromDataBase();
         break;
       case ARG_HELP_RESULT:
           PrintHelpMessage(argv[0]);
         break;
       case ARG_ADD_RESULT:
-          printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", Name, Price/100, Price%100);
           WriteUpdateNewCity(Name, Price);
         break;
       case ARG_REMOVE_RESULT:
-          printf("Removing the city: %s from the database.\n\r", Name);
           RemoveCity(Name);
         break;
       default:
@@ -170,6 +169,7 @@ void PrintErrorMessage(int argc, char *argv[])
   PrintHelpMessage(argv[0]);
  }
 
+
 /*======================================================================================================================*/
 
 static sqlite3 *conn;
@@ -178,19 +178,50 @@ void WriteUpdateNewCity(char CityName[], int CityPrice)
  {
   int CityID;
   int UpdateResult = 0;
+  printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice/100, CityPrice%100);
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
   UpdateResult = UpdateCityInDataBase(&conn, CityName, CityPrice);
   if(UpdateResult < 0)  // The update wasn't be possible because the city didn't exist
    {
-    CityID = GetNotExistingInDataBaseCityID(&conn);
+    CityID = GetCityIDNotExistingInDataBase(&conn);
     WriteToDataBase(&conn, CityID, CityName, CityPrice);
    }
  }
 
 void RemoveCity(char CityName[])
  {
+  printf("Removing the city: %s from the database.\n\r", CityName);
   RemoveCityFromDataBase(&conn, CityName);
  }
+
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Prints all cities existing in database.                                                                             */
+// #define STR(x) #x
+// #define XSTR(x) STR(x)
+
+void PrintCitiesFromDataBase()
+ {
+  int result;
+  PriceTab_s *ListOfCities;
+  int ListSize, i;
+  result = GetCitiesList(&conn, &ListOfCities, &ListSize);
+
+  if(result == 0)
+   {
+    printf("\n\r");
+    printf("%3s    %-*s  %s\n\r","ID", NAME_LEN, "Name","Price");
+    for(i = 0; i < ListSize; i++)
+     {
+      printf("%3d   %-*s   %d.%02d\n\r",ListOfCities[i].City_ID, NAME_LEN, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
+      //printf("%03d   %-" XSTR(NAME_LEN) "s   %d.%02d\n\r",ListOfCities[i].City_ID, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
+     }
+    printf("\n\r");
+   }
+  
+  FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
+ }
+
 
 /*======================================================================================================================*/
 

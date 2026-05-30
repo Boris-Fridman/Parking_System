@@ -182,6 +182,21 @@ Parking_s
 ;
 
  #ifndef __cplusplus
+typedef 
+ #endif
+struct PriceTab_s
+ {
+  uint16_t City_ID;
+  uint16_t Price;              /*  0.01₪ / hour  */
+  char City_Name[NAME_LEN];
+ }
+#ifndef __cplusplus  
+PriceTab_s
+#endif
+;
+
+
+ #ifndef __cplusplus
  typedef 
  #endif
  struct Customer_s

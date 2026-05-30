@@ -12,7 +12,7 @@
 
 /*======================================================================================================================*/
 
-int GetNumColumns(sqlite3 **conn);
+int GetNumRows(sqlite3 **conn);
 void PrintDBError(int ErrorCode);
 
 /*======================================================================================================================*/
@@ -63,7 +63,7 @@ int compar(const void *d1, const void *d2)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Checks all the cities' ids in the database and returns the not esisting one. (Tries to find a smallest not existing.) */
-int GetNotExistingInDataBaseCityID(sqlite3 **conn)
+int GetCityIDNotExistingInDataBase(sqlite3 **conn)
  {
   int result, valtoret = 0, v;
   int total_rows;
@@ -82,7 +82,7 @@ int GetNotExistingInDataBaseCityID(sqlite3 **conn)
    }
   else
    {
-    total_rows = GetNumColumns(conn);
+    total_rows = GetNumRows(conn);
     if(total_rows >= 0)
      {
       CityIDs = calloc(total_rows, sizeof(int));
@@ -337,6 +337,82 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
 
   }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Gives a list of the all existing cities in the database.                                                            */
+int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
+ {
+  int result = 0, valtoret = 0;
+  int i;
+  sqlite3_stmt* stmt = NULL;
+  const unsigned char *name;
+  bool NoPiping;
+  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  
+  result = sqlite3_open(DB_FILENAME, conn);
+  if(result != SQLITE_OK)
+   {
+    if(NoPiping)fprintf(stderr, TermRed);
+    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
+    if(NoPiping)fprintf(stderr, TermColorsReset);
+    valtoret = -1;
+   }
+  else
+   {
+    *list_size = GetNumRows(conn);
+    if(*list_size >= 0)
+     {
+      *list = calloc(*list_size, sizeof(PriceTab_s));
+      if(*list == NULL)  /*  Memory couldn't be allocated. */
+       {
+        valtoret = -2;
+        *list_size = 0;
+       }
+      else /*  Memory was allocated successfully. */
+       {
+        result = sqlite3_prepare_v2(*conn, "SELECT city_id, city_name, price_per_hour_in_ag FROM CITIES_PRICES;", -1, &stmt, 0);
+        if(result != SQLITE_OK)
+         {
+          if(NoPiping)fprintf(stderr, TermRed);
+          fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
+          if(NoPiping)fprintf(stderr, TermColorsReset);
+          FreeList(list);
+          *list_size = 0;
+          valtoret = -3;
+         }
+        else
+         {
+          for(i = 0, result = SQLITE_ROW; (i < *list_size) && (result == SQLITE_ROW); i++)
+           {
+            result = sqlite3_step(stmt);
+            if(result == SQLITE_ROW)
+             {
+              name = sqlite3_column_text(stmt,1);
+              strcpy((*list)[i].City_Name, (char*)name);
+              (*list)[i].City_ID = sqlite3_column_int(stmt, 0);
+              (*list)[i].Price = sqlite3_column_int(stmt, 2);
+             }
+           }
+          valtoret = 0;
+         }
+       }
+     }
+   }
+  sqlite3_finalize(stmt);
+  sqlite3_close(*conn);
+  return valtoret;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Frees list after usage reserved by the GetCitiesList() function.                                                    */
+void FreeList(PriceTab_s **list_to_free)
+ {
+  if(*list_to_free != NULL)
+   {
+    free(*list_to_free);
+    *list_to_free = NULL;
+   }
+ }
+
 /*======================================================================================================================*/
 
 /* 
@@ -347,7 +423,7 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Returns Number of columns in database or "-1" if error.                                                             */
-int GetNumColumns(sqlite3 **conn)
+int GetNumRows(sqlite3 **conn)
  {
   int result, total_rows = -1;
   sqlite3_stmt* stmt;
