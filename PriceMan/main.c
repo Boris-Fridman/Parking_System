@@ -128,19 +128,20 @@ int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName
   double RealPrice;
   if(argc > 1)
    {
+    Result = ARG_ERROR_RESULT;
     if((!strcmp(argv[1], ADD_PARAM)) && (argc >= 4))
      {
       ExtractName(&argv[2], argc - 3, Name);
       nintres = sscanf(argv[argc - 1], "%lf", &RealPrice);
-      if(nintres != EOF)
+      if(nintres == 1) // if(nintres != EOF)
        {
         *Price = round(RealPrice * 100);
+        Result = ARG_ADD_RESULT;
        }
       else
        {
+        Result = ARG_ERROR_RESULT;
        }
-      
-      Result = ARG_ADD_RESULT;
      }
     if((!strcmp(argv[1], REMOVE_PARAM)) && (argc >= 3))
      {
@@ -158,6 +159,11 @@ int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName
       Result = ARG_HELP_RESULT;
      }
    }
+  else
+   {
+    Result = ARG_PRINT_RESULT;
+   }
+   
   return Result;
  }
 

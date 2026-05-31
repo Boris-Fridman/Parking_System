@@ -56,7 +56,10 @@ int CreateLoadDatabase(sqlite3 **conn)
    }
  }
 
-int compar(const void *d1, const void *d2)
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Additional Auxilar function that is used for sorting in the "GetCityIDNotExistingInDataBase()" function.            */
+int compare(const void *d1, const void *d2)
  {
   return *(int*)d1 > *(int*)d2;
  }
@@ -85,57 +88,56 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
     total_rows = GetNumRows(conn);
     if(total_rows >= 0)
      {
-      CityIDs = calloc(total_rows, sizeof(int));
-     }
-
-    result = sqlite3_prepare_v2(*conn, "SELECT city_id FROM CITIES_PRICES;", -1, &stmt, 0);
-    if(result != SQLITE_OK)
-     {
-      if(NoPiping)fprintf(stderr, TermRed);
-      fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
-     }
-    else
-     {
-      if(CityIDs != NULL)
+      result = sqlite3_prepare_v2(*conn, "SELECT city_id FROM CITIES_PRICES;", -1, &stmt, 0);
+      if(result != SQLITE_OK)
        {
-        for(i = 0, result = SQLITE_ROW; (i<total_rows)&&(result == SQLITE_ROW); i++)
-         {
-          result = sqlite3_step(stmt);
-          if(result == SQLITE_ROW)
-           {
-            v = sqlite3_column_int(stmt,0);
-            CityIDs[i] = v;
-           }
-         }
-        // sorting.
-        qsort(CityIDs, total_rows, sizeof(CityIDs[0]), compar);
-        for(i = 0; i < total_rows - 1; i++)
-         {
-          if((CityIDs[i+1] - CityIDs[i]) > 1)
-           break;
-         }
-        valtoret = CityIDs[i] + 1;
-        free(CityIDs);
+        if(NoPiping)fprintf(stderr, TermRed);
+        fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
+        if(NoPiping)fprintf(stderr, TermColorsReset);
        }
       else
        {
-        do
+        CityIDs = calloc(total_rows, sizeof(int));
+        if(CityIDs != NULL)
          {
-          result = sqlite3_step(stmt);
-          if(result == SQLITE_ROW)
+          for(i = 0, result = SQLITE_ROW; (i < total_rows)&&(result == SQLITE_ROW); i++)
            {
-            v = sqlite3_column_int(stmt,0);
-            valtoret = MAX(valtoret, v);
+            result = sqlite3_step(stmt);
+            if(result == SQLITE_ROW)
+             {
+              v = sqlite3_column_int(stmt,0);
+              CityIDs[i] = v;
+             }
            }
+          // sorting.
+          qsort(CityIDs, total_rows, sizeof(CityIDs[0]), compare);
+          for(i = 0; i < total_rows - 1; i++)
+           {
+            if((CityIDs[i+1] - CityIDs[i]) > 1)
+             break;
+           }
+          valtoret = CityIDs[i] + 1;
+          free(CityIDs);
          }
-        while(result == SQLITE_ROW);
-        ++valtoret;
+        else
+         {
+          do
+           {
+            result = sqlite3_step(stmt);
+            if(result == SQLITE_ROW)
+             {
+              v = sqlite3_column_int(stmt,0);
+              valtoret = MAX(valtoret, v);
+             }
+           }
+          while(result == SQLITE_ROW);
+          ++valtoret;
+         }
        }
      }
    }
-//   if(CityIDs != NULL)
-//    free(CityIDs);
+  // if(CityIDs != NULL)
+  //  free(CityIDs);
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -471,6 +473,7 @@ void FreeList(PriceTab_s **list_to_free)
  **          Additional auxilar Functions / Procedures
  * *************************************************************************************************************
  */
+
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Returns Number of columns in database or "-1" if error.                                                             */
