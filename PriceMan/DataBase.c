@@ -12,6 +12,7 @@
 
 /*======================================================================================================================*/
 
+int OpenDataBase(sqlite3 **conn);
 int GetNumRows(sqlite3 **conn);
 void PrintDBError(int ErrorCode);
 
@@ -33,15 +34,8 @@ int CreateLoadDatabase(sqlite3 **conn)
 
   if(conn == NULL)
    return -2;  /* The pointer to the database wasn't given. */
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open database: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-    return -1;  /* Couldn't create the database. */
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     char *err_msg;
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_PRICES(city_id INT, city_name TEXT, price_per_hour_in_ag INT);", 0, 0, &err_msg);
@@ -53,6 +47,10 @@ int CreateLoadDatabase(sqlite3 **conn)
      }
     sqlite3_close(*conn);
     return 0; /* The database was loaded successfully. */
+   }
+  else
+   {
+    return -1;
    }
  }
 
@@ -76,14 +74,8 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     total_rows = GetNumRows(conn);
     if(total_rows >= 0)
@@ -154,14 +146,8 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     result = sqlite3_prepare_v2(*conn, "SELECT city_id, city_name, price_per_hour_in_ag FROM CITIES_PRICES;", -1, &stmt, 0);
     if(result != SQLITE_OK)
@@ -193,13 +179,14 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
       if(result != SQLITE_ROW)  // The name wasn't found.
        valtoret = -3;
      }
-
    }
+  else
+   valtoret = -1;
+
   sqlite3_reset(stmt);
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
-
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
@@ -212,14 +199,8 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     result = sqlite3_prepare_v2(*conn, "UPDATE CITIES_PRICES SET price_per_hour_in_ag = ? WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
@@ -227,6 +208,7 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
       if(NoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepair for updating data: %s\n\r", sqlite3_errmsg(*conn));
       if(NoPiping)fprintf(stderr, TermColorsReset);
+      valtoret = -1;
      }
 
     result = sqlite3_bind_int(stmt, 1, city_price);
@@ -248,6 +230,8 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
       valtoret = -3; 
      }
    }
+  else
+   valtoret = -1;
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -255,39 +239,33 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Writes new city to the database.                                                                                    */
- int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price)
-  {
-   int valtoret = SQLITE_OK;
-   sqlite3_stmt* stmt = NULL;
-
-   valtoret = sqlite3_open(DB_FILENAME, conn);
-   if(valtoret != SQLITE_OK)
-    {
-     PrintDBError(valtoret);
-     return valtoret;
-    }
-   else
-    {
-     do
-      {
-        valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CITIES_PRICES (city_id, city_name, price_per_hour_in_ag) VALUES (?, ?, ?);", -1, &stmt, 0);
-        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-        valtoret = sqlite3_bind_int (stmt, 1, city_id                     );
-        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-        valtoret = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_STATIC);
-        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-        valtoret = sqlite3_bind_int (stmt, 3, city_price                  );
-        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-       sqlite3_step(stmt);
-       valtoret = sqlite3_finalize(stmt);
+int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price)
+ {
+  int valtoret = SQLITE_OK;
+  sqlite3_stmt* stmt = NULL;
+  valtoret = OpenDataBase(conn);
+  if(valtoret == SQLITE_OK)
+   {
+    do
+     {
+       valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CITIES_PRICES (city_id, city_name, price_per_hour_in_ag) VALUES (?, ?, ?);", -1, &stmt, 0);
+       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+       valtoret = sqlite3_bind_int (stmt, 1, city_id                     );
        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-      } 
-     while (0);
-     //sqlite3_finalize(stmt);
-     sqlite3_close(*conn);
-    }
-   return valtoret;
-  }
+       valtoret = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_STATIC);
+       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
+       valtoret = sqlite3_bind_int (stmt, 3, city_price                  );
+       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
+      sqlite3_step(stmt);
+      valtoret = sqlite3_finalize(stmt);
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
+     } 
+    while (0);
+    //sqlite3_finalize(stmt);
+    sqlite3_close(*conn);
+   }
+  return valtoret;
+ }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Removes the given city from the database.                                                                           */
@@ -299,14 +277,8 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     result = sqlite3_prepare_v2(*conn, "DELETE FROM CITIES_PRICES WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
@@ -333,6 +305,8 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
       valtoret = -3; 
      }
    }
+  else
+   valtoret = -1;
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -349,14 +323,8 @@ int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-   }
-  else
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     result = sqlite3_prepare_v2(*conn, "UPDATE CITIES_PRICES SET city_name = ? WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
@@ -385,6 +353,8 @@ int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
       valtoret = -3; 
      }
    }
+  else
+   valtoret = -1;
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -401,15 +371,9 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   
-  result = sqlite3_open(DB_FILENAME, conn);
-  if(result != SQLITE_OK)
-   {
-    if(NoPiping)fprintf(stderr, TermRed);
-    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
-    valtoret = -1;
-   }
-  else
+  *list = NULL;  // To ensure that the pointer is NULL even the allocating memory function didn't run.
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
    {
     *list_size = GetNumRows(conn);
     if(*list_size >= 0)
@@ -450,6 +414,8 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
        }
      }
    }
+  else
+   valtoret = -1;
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -474,6 +440,22 @@ void FreeList(PriceTab_s **list_to_free)
  * *************************************************************************************************************
  */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Opens database. Prints error message if error.                                                                      */
+int OpenDataBase(sqlite3 **conn)
+ {
+  int result;
+  bool NoPiping;
+  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  result = sqlite3_open(DB_FILENAME, conn);
+  if(result != SQLITE_OK)
+   {
+    if(NoPiping)fprintf(stderr, TermRed);
+    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
+    if(NoPiping)fprintf(stderr, TermColorsReset);
+   }
+  return result;
+ }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Returns Number of columns in database or "-1" if error.                                                             */

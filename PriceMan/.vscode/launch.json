@@ -17,7 +17,7 @@
             //"args": ["remove", "Rishon Le Tsion"],
             //"args": ["rename", "Rish Let", "Rishon Letsion"],
             //"args": ["h"],
-            "args": ["add", "Rishon", "Lezion"],
+            "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
