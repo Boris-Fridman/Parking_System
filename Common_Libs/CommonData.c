@@ -15,7 +15,7 @@
 
 /*======================================================================================================================*/
 
-char const * const ResultColors[] = {TermRed, TermGreen, TermYello, TermCyan};
+char const * const ResultColors[] = {TermRed, TermGreen, TermYello, TermCyan, TermMagenta};
 
 /*======================================================================================================================*/
 

@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <sqlite3.h>
 #include <math.h>
+#include <unistd.h>
 
 #include "CommonData.h"
 #include "DataBase.h"
@@ -15,10 +16,12 @@
 #define ARG_HELP_RESULT   1
 #define ARG_ADD_RESULT    2
 #define ARG_REMOVE_RESULT 3
+#define ARG_RENAME_RESULT 4
 
 
 #define ADD_PARAM     "add"
 #define REMOVE_PARAM "remove"
+#define RENAME_PARAM "rename"
 #define HELP_PARAM   "h"
 
 /*======================================================================================================================*/
@@ -26,10 +29,11 @@
 void PrintHelpMessage(char *ProgName);
 void PrintErrorMessage(int argc, char *argv[]);
 void PrintCitiesFromDataBase();
-int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price);
+int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName[]);
 
-void WriteUpdateNewCity(char CityName[], int CityPrice);
+void AddOrUpdateNewCity(char CityName[], int CityPrice);
 void RemoveCity(char CityName[]);
+void RenameCity(char OldName[], char NewName[]);
 
 /*======================================================================================================================*/
 
@@ -46,11 +50,12 @@ int main(int argc, char *argv[])
     //ansi clear screen
     printf("\033[2J\033[H");
     char Name[NAME_LEN] = "";
+    char NewName[NAME_LEN] = "";
     uint16_t Price;
     int Result;
     
     //code
-    Result = CheckArgs(argc, argv, Name, &Price);
+    Result = CheckArgs(argc, argv, Name, &Price, NewName);
     switch(Result)
      {
       case ARG_ERROR_RESULT:
@@ -63,11 +68,15 @@ int main(int argc, char *argv[])
           PrintHelpMessage(argv[0]);
         break;
       case ARG_ADD_RESULT:
-          WriteUpdateNewCity(Name, Price);
+          AddOrUpdateNewCity(Name, Price);
         break;
       case ARG_REMOVE_RESULT:
           RemoveCity(Name);
         break;
+      case ARG_RENAME_RESULT:
+          RenameCity(Name, NewName);
+        break;
+
       default:
           printf("Isn't implemmented yet.\n\r");
         break;
@@ -112,7 +121,7 @@ void ExtractName(char *Strings[], int NumStrings, char Name[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Function checking arguments given to the program.                                                                   */
-int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price)
+int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName[])
  {
   int nintres;
   int Result = ARG_PRINT_RESULT;
@@ -138,6 +147,12 @@ int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price)
       ExtractName(&argv[2], argc - 2, Name);
       Result = ARG_REMOVE_RESULT;
      }
+    if((!strcmp(argv[1], RENAME_PARAM)) && (argc == 4))
+     {
+      ExtractName(&argv[2], 1, Name);
+      ExtractName(&argv[3], 1, NewName);
+      Result = ARG_RENAME_RESULT;
+     }
     if((!strcmp(argv[1], HELP_PARAM)) && (argc >= 2))
      {
       Result = ARG_HELP_RESULT;
@@ -151,13 +166,25 @@ int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price)
 void PrintHelpMessage(char *ProgName)
  {
   char *fname = basename(ProgName);
-  printf("\n\rTo use the program it's needed to type the next parameters:\n\r");
-  printf("%s [%s <cyty name> <parking price>] [%s <cyty name>] \n\r", fname, ADD_PARAM, REMOVE_PARAM);
+  printf("\n\rUse the program with the next parameters:\n\r");
+  printf("\n\r");
+  printf("%s [%s <cyty name> <parking price>] or [%s <cyty name>] or [%s \"<old city name>\" \"<new city name>\"]\n\r", fname, ADD_PARAM, REMOVE_PARAM, RENAME_PARAM);
   printf("Where <cyty name> is the name of city and the <parking price> is the price of parking.\n\r" );
+  printf("\n\r");
   printf("For example: %s %s Tel Aviv 6.8 - means add Tel Aviv town to the database and set its price 6.80 ₪ / hour\n\r", fname, ADD_PARAM);
-  printf("             %s %s Ramat Gan - means remove the Ramatgan from the database.\n\r", fname, REMOVE_PARAM);
-  printf("If the database file doesn't exist it will be created. If the town doesn't exist in the database it will be added and if exists it will be only updated.\n\r");
-  printf("In any case to type %s %s to see this help message.\n\r\n\r", fname, HELP_PARAM);
+  printf("             %s %s Ramat Gan - means remove the Ramat Gan from the database.\n\r", fname, REMOVE_PARAM);
+  printf("             %s %s \"Ptah Taua\" \"Petach Tiqua\" - means rename the \"Ptah Taua\" to \"Petach Tiqua\" in the database.\n\r", fname, RENAME_PARAM);
+  printf("\n\r");
+  printf("Attention !!!\n\r");
+  printf("In case of renaming command, the names with spaces must be given in single or double quotes.\n\r");
+  printf("Otherwise the program woun't be able to recognize the names correctly.\n\r");
+  printf("\n\r");
+  printf("If the database file doesn't exist it will be created.\n\r");
+  printf("If the town doesn't exist in the database it will be added and if exists it will be only updated.\n\r");
+  printf("\n\r");
+  printf("By default the program will print the cities existing in the database.\n\r");
+  printf("\n\r");
+  printf("In any case type %s %s to see this help message.\n\r\n\r", fname, HELP_PARAM);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
@@ -174,26 +201,111 @@ void PrintErrorMessage(int argc, char *argv[])
 
 static sqlite3 *conn;
 
-void WriteUpdateNewCity(char CityName[], int CityPrice)
+void AddOrUpdateNewCity(char CityName[], int CityPrice)
  {
   int CityID;
-  int UpdateResult = 0;
+  int result = 0;
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice/100, CityPrice%100);
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
-  UpdateResult = UpdateCityInDataBase(&conn, CityName, CityPrice);
-  if(UpdateResult < 0)  // The update wasn't be possible because the city didn't exist
+  result = UpdateCityPriceInDataBase(&conn, CityName, CityPrice);
+  if(result == 0)
+   {
+    if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+    printf("The city \"%s\" was already existing. Was updated only price.\n\r", CityName);
+    printf("The price was updated to:%d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
+    if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+   }
+  else if(result < 0)  // The update wasn't be possible because the city didn't exist
    {
     CityID = GetCityIDNotExistingInDataBase(&conn);
-    WriteToDataBase(&conn, CityID, CityName, CityPrice);
+    result = WriteToDataBase(&conn, CityID, CityName, CityPrice);
+    if(result == 0)
+     {
+      if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+      printf("The city \"%s\" with the price %d.%02d ₪ / hour was added successrully. \n\r", CityName,  CityPrice / 100, CityPrice % 100);
+      if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+     }
+   }
+  if(result == -1)
+   {
+    if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
+    printf("Error\n\r");
+    if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
    }
  }
 
 void RemoveCity(char CityName[])
  {
+  int result;
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   printf("Removing the city: %s from the database.\n\r", CityName);
-  RemoveCityFromDataBase(&conn, CityName);
+  result = RemoveCityFromDataBase(&conn, CityName);
+  switch (result)
+   {
+    case 0:
+      if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+      printf("The city \"%s\" was removed successfully\n\r", CityName);
+      if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);
+     break;
+    case -3: 
+      if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_WARNING]);
+      printf("The city \"%s\" was not found\n\r", CityName);
+      if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+     break;
+    default: 
+      if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
+      printf("Error\n\r");
+      if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+     break;
+   }
  }
 
+void RenameCity(char OldName[], char NewName[])
+ {
+  int result;
+  int OldCityPlc, NewCityPlc;
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  printf("Renaming city: from %s to %s\n\r", OldName, NewName);
+  OldCityPlc = FindCityInDataBase(&conn, OldName);
+  NewCityPlc = FindCityInDataBase(&conn, NewName);
+  if((OldCityPlc >= 0) && (NewCityPlc >= 0))
+   {
+    if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
+    fprintf(stderr, "Error: The city with new name \"%s\" already exists. \n\r", NewName);
+    fprintf(stderr, "       The renaming is cancelled to prevent the city name duplication.\n\r");
+    if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+   }
+  else
+   {
+    result = RenameCityByName(&conn, OldName, NewName);
+    switch (result)
+     {
+      case 0:
+        if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+        printf("The city was renamed successfully\n\r");
+        if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);
+       break;
+      case -3: 
+        if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_WARNING]);
+        printf("The city \"%s\" was not found\n\r", OldName);
+        if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+       break;
+      default: 
+        if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
+        printf("Error\n\r");
+        if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+       break;
+     }
+   }
+  
+ }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Prints all cities existing in database.                                                                             */

@@ -59,7 +59,7 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[]);
  * @brief Updates existing city in the database.
  * 
  * @code
- * int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price);
+ * int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price);
  * @code
  * 
  * @param conn pointer to the sqlite database handle.
@@ -70,7 +70,7 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[]);
  * 
  * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
  */
-int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price);
+int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price);
 
 /** 
  * @brief Writes new city to the database.
@@ -106,6 +106,10 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
  * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
  */
 int RemoveCityFromDataBase(sqlite3 **conn, char city_name[]);
+
+
+
+int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[]);
 
 /**
  * @brief Gives a list of the all existing cities in the database.

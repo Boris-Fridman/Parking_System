@@ -202,7 +202,7 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Updates existing city in the database.                                                                              */
-int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
+int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
  {
   int result, valtoret = SQLITE_OK;
   int affected_rows;
@@ -336,6 +336,57 @@ int UpdateCityInDataBase(sqlite3 **conn, char city_name[], int city_price)
   return valtoret;
 
   }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Renames city according old and new names.                                                                           */
+int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
+ {
+  int result, valtoret = SQLITE_OK;
+  int affected_rows;
+  sqlite3_stmt* stmt = NULL;
+  bool NoPiping;
+  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  result = sqlite3_open(DB_FILENAME, conn);
+  if(result != SQLITE_OK)
+   {
+    if(NoPiping)fprintf(stderr, TermRed);
+    fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
+    if(NoPiping)fprintf(stderr, TermColorsReset);
+   }
+  else
+   {
+    result = sqlite3_prepare_v2(*conn, "UPDATE CITIES_PRICES SET city_name = ? WHERE city_name = ?;", -1, &stmt, 0);
+    if(result != SQLITE_OK)
+     {
+      if(NoPiping)fprintf(stderr, TermRed);
+      fprintf(stderr, "Cannot prepair for updating data: %s\n\r", sqlite3_errmsg(*conn));
+      if(NoPiping)fprintf(stderr, TermColorsReset);
+     }
+
+    result = sqlite3_bind_text(stmt, 1, new_name, -1, SQLITE_STATIC);
+    if(result != SQLITE_OK){PrintDBError(result);}
+    result = sqlite3_bind_text(stmt, 2, old_name, -1, SQLITE_STATIC);
+    if(result != SQLITE_OK){PrintDBError(result);}
+
+    result = sqlite3_step(stmt);
+    if((result != SQLITE_OK) && (result != SQLITE_DONE))
+     {
+      valtoret = -1;
+      if(NoPiping)fprintf(stderr, TermRed);
+      fprintf(stderr, "Cannot update data: %s\n\r", sqlite3_errmsg(*conn));
+      if(NoPiping)fprintf(stderr, TermColorsReset);
+     }
+    affected_rows = sqlite3_changes(*conn);
+    if(affected_rows == 0) // No value was found.
+     {
+      valtoret = -3; 
+     }
+   }
+  sqlite3_finalize(stmt);
+  sqlite3_close(*conn);
+  return valtoret;
+ }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Gives a list of the all existing cities in the database.                                                            */

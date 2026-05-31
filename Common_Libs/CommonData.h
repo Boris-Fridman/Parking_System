@@ -109,10 +109,11 @@ typedef
 #endif
 enum Error_Results_e
  {
-  E_CORRECT,
   E_FAIL,
+  E_CORRECT,
   E_WARNING,
-  E_SUCCESS
+  E_SUCCESS,
+  E_PROBLEM
  }
  #ifndef __cplusplus
  Error_Results_e
