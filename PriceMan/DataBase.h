@@ -108,7 +108,21 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
 int RemoveCityFromDataBase(sqlite3 **conn, char city_name[]);
 
 
-
+/**
+ * @param Renames city according old and new names.
+ * 
+ * @code
+ * int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[]);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param old_name name of the city to rename.
+ * 
+ * @param new_name the new name to be given to the city.
+ * 
+ * @return "0" success, "-1" couldn't be renamed, "-3" the city wasn't found.
+ */
 int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[]);
 
 /**
