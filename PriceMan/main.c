@@ -5,6 +5,7 @@
 #include <sqlite3.h>
 #include <math.h>
 #include <unistd.h>
+#include <signal.h>
 
 #include "CommonData.h"
 #include "DataBase.h"
@@ -26,14 +27,18 @@
 
 /*======================================================================================================================*/
 
-void PrintHelpMessage(char *ProgName);
-void PrintErrorMessage(int argc, char *argv[]);
+void PrintHelpMessage(char const *ProgName);
+void PrintErrorMessage(int const argc, char const *argv[]);
 void PrintCitiesFromDataBase();
-int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName[]);
+int CheckArgs(int const argc, char const *argv[], char Name[], uint16_t *Price, char NewName[]);
+int LoadParkManPID(int const argc, char const *argv[]);
+void SendSignal(pid_t const pid);
+
 
 void AddOrUpdateNewCity(char CityName[], int CityPrice);
 void RemoveCity(char CityName[]);
 void RenameCity(char OldName[], char NewName[]);
+
 
 /*======================================================================================================================*/
 
@@ -45,7 +50,7 @@ void RenameCity(char OldName[], char NewName[]);
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Main function from which the program starts running.                                                                */
 
-int main(int argc, char *argv[])
+int main(int const argc, char const *argv[])
  {
     //ansi clear screen
     printf("\033[2J\033[H");
@@ -53,9 +58,19 @@ int main(int argc, char *argv[])
     char NewName[NAME_LEN] = "";
     uint16_t Price;
     int Result;
+    int pid;
+    // char pathfile[PATH_LEN];
+    // char *c;
+    // c = pathfile;
 
+    //strcpy(pathfile, argv[0]);
+    // strcpy(pathfile, "./priceman");
+    // ApplyDBPath(argc, &c);
+    // pid = LoadParkManPID(argc, &c);
     ApplyDBPath(argc, argv);
-
+    pid = LoadParkManPID(argc, argv);
+    printf("%s\n\r", argv[0]);
+    printf("Was loaded the parkman's pid: %d\n\r", pid);
     //code
     Result = CheckArgs(argc, argv, Name, &Price, NewName);
     switch(Result)
@@ -71,12 +86,15 @@ int main(int argc, char *argv[])
         break;
       case ARG_ADD_RESULT:
           AddOrUpdateNewCity(Name, Price);
+          SendSignal(pid);
         break;
       case ARG_REMOVE_RESULT:
           RemoveCity(Name);
+          SendSignal(pid);
         break;
       case ARG_RENAME_RESULT:
           RenameCity(Name, NewName);
+          SendSignal(pid);
         break;
 
       default:
@@ -98,7 +116,7 @@ int main(int argc, char *argv[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Builds city name from the given arguments                                                                           */
-void ExtractName(char *Strings[], int NumStrings, char Name[])
+void ExtractName(char const *Strings[], int const NumStrings, char Name[])
  {
   int i;
   bool first = true;
@@ -123,7 +141,7 @@ void ExtractName(char *Strings[], int NumStrings, char Name[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Function checking arguments given to the program.                                                                   */
-int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName[])
+int CheckArgs(int const argc, char const *argv[], char Name[], uint16_t *Price, char NewName[])
  {
   int nintres;
   int Result = ARG_PRINT_RESULT;
@@ -170,8 +188,46 @@ int CheckArgs(int argc, char *argv[], char Name[], uint16_t *Price, char NewName
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
+/*  Detecting PID of the Parking Manager program to send there signals if it runs.                                      */
+int LoadParkManPID(int const argc, char const *argv[])
+ {
+  char NamePath[PATH_LEN];
+  char PIDStrName[10];
+  FILE *f;
+  int pid = -1;
+  int r;
+  GetPIDFile(argc, argv, NamePath);
+  printf("%s\n\r", NamePath);
+  f = fopen(NamePath, "r");
+  if(f)
+   {
+    if(fgets(PIDStrName, sizeof(PIDStrName), f))
+     {
+      r = sscanf(PIDStrName, "%d", &pid);
+      if(r != 1)
+       pid = -1;
+     }
+    fclose(f);
+   }
+  else
+   printf("Couldn't open file with pid info.\n\r");
+  return pid;
+ }
+
+void SendSignal(pid_t const pid)
+ {
+  printf("Trying to sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
+  if(pid > 0)
+   {
+    kill(pid, DB_UPADATE_SIGNAL);
+    printf("Sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
+   }
+   
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 /*  Prints on the screen a help message.                                                                                */
-void PrintHelpMessage(char *ProgName)
+void PrintHelpMessage(char const *ProgName)
  {
   char *fname = basename(ProgName);
   printf("\n\rUse the program with the next parameters:\n\r");
@@ -197,7 +253,7 @@ void PrintHelpMessage(char *ProgName)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Prints on the screen an error message.                                                                              */
-void PrintErrorMessage(int argc, char *argv[])
+void PrintErrorMessage(int const argc, char const *argv[])
  {
   UNUSED(argc);
   fprintf(stderr, "Error in options.\n\r");
@@ -341,7 +397,6 @@ void PrintCitiesFromDataBase()
   
   FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
-
 
 /*======================================================================================================================*/
 

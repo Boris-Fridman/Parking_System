@@ -8,7 +8,7 @@
 
 /*======================================================================================================================*/
 
-char PathFileName[300];
+char PathFileName[PATH_LEN];
 
 /*======================================================================================================================*/
 
@@ -442,9 +442,10 @@ void FreeList(PriceTab_s **list_to_free)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Applys the path to the database file.                                                                               */
-void ApplyDBPath(int argc, char *argv[])
+void ApplyDBPath(int const argc, char const *argv[])
  {
   GetDataBaseFile(argc, argv, PathFileName);
+  printf("%s\n\r", PathFileName);
  }
 
 

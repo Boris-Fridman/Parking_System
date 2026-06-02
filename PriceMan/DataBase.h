@@ -164,7 +164,7 @@ void FreeList(PriceTab_s **list_to_free);
 
 
 
-void ApplyDBPath(int argc, char *argv[]);
+void ApplyDBPath(int const argc, char const *argv[]);
 
 /*======================================================================================================================*/
 

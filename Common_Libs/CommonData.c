@@ -80,42 +80,78 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
  * *************************************************************************************************************
  */
 
-void GetDataBaseFile(int argc, char *argv[], char NamePath[])
+bool GetConfigPath(int const argc, char const *argv[], char NamePath[])
  {
   struct stat buffer;
   char *p;
   int l, i;
+  struct stat stats;
+  bool direxists = false;
+  bool result = false;
 
   UNUSED(argc);
 
-  //p = basename(argv[0]);
-  p = dirname(argv[0]);
-  l = strlen(p);
-  l -= (p[l] == '/');
-
-  for(i = l; i >= 0; --i)
+  char PathDir[PATH_LEN] = {0};
+  strncpy(PathDir, argv[0], PATH_LEN);
+  //p = basename(PathDir);
+  p = dirname(PathDir);
+  if(!strcmp(p,"."))
    {
-    if(p[i] == '/')
-     break;
+    strcpy(NamePath, "./../");
    }
+  else
+   {
+    l = strlen(p);
+    l -= (p[l] == '/');
   
-  strncpy(NamePath, p, i+1);
+    for(i = l; i >= 0; --i)
+     {
+      if(p[i] == '/')
+       break;
+     }
+    
+    strncpy(NamePath, p, i+1);
+    NamePath[i+1] = '\0';
+   }
+
 
   if(stat(NamePath, &buffer)) // The previous path doesn't exist.
    {
     strcpy(NamePath, p);
+    strcat(NamePath, "/");
    }
 
+  strcat(NamePath, CONF_DIR_NAME"/");
+  
+  // stat returns 0 on success
+  if(stat(NamePath, &stats) == 0) 
+   {
+    direxists = S_ISDIR(stats.st_mode);
+   }
 
-  // strcpy(NamePath, dirname(argv[0]));
-  // strcpy(NamePath, "../");
+  if(!direxists)
+   {
+    result = mkdir(NamePath, ACCESSPERMS);
+   }
+  
+  return result;
+ }
 
-  // if(stat(NamePath, &buffer)) // The previous path doesn't exist.
-  //  {
-  //   strcpy(NamePath, dirname(argv[0]));
-  //  }
 
+bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[])
+ {
+  bool result;
+  result = GetConfigPath(argc, argv, NamePath);
   strcat(NamePath, DB_FILENAME);
+  return result;
+ }
+
+bool GetPIDFile(int const argc, char const *argv[], char NamePath[])
+ {
+  bool result;
+  result = GetConfigPath(argc, argv, NamePath);
+  strcat(NamePath, DB_MAN_PID_FILENAME);
+  return result;
  }
 
 /*======================================================================================================================*/

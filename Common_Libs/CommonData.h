@@ -92,10 +92,13 @@ extern "C" {
 
 
 #define NAME_LEN 30
+#define PATH_LEN 300
 
 
-#define DB_FILENAME "ParkingInfo.sqlite3"
-
+#define DB_FILENAME               "ParkingInfo.sqlite3"
+#define CONF_DIR_NAME             "ConfDir"
+#define DB_MAN_PID_FILENAME       "DB_MAN_PID"
+#define DB_UPADATE_SIGNAL         SIGUSR1
 
 /*======================================================================================================================*/
 
@@ -218,14 +221,6 @@ Customer_s
 
 
 
-
-
-
-
-
-
-
-
 #ifndef __cplusplus
 typedef 
 #endif
@@ -252,7 +247,10 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
 /*======================================================================================================================*/
 
-void GetDataBaseFile(int argc, char *argv[], char NamePath[]);
+bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
+
+bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
+
 
 /*======================================================================================================================*/
 
