@@ -13,6 +13,10 @@
 #include <math.h>
 #endif
 
+#include <sys/stat.h>
+
+#include <libgen.h>
+
 /*======================================================================================================================*/
 
 char const * const ResultColors[] = {TermRed, TermGreen, TermYello, TermCyan, TermMagenta};
@@ -67,6 +71,52 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
   return ArcDist;
  }
 
+
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          DataBase specific Functions.
+ * *************************************************************************************************************
+ */
+
+void GetDataBaseFile(int argc, char *argv[], char NamePath[])
+ {
+  struct stat buffer;
+  char *p;
+  int l, i;
+
+  UNUSED(argc);
+
+  //p = basename(argv[0]);
+  p = dirname(argv[0]);
+  l = strlen(p);
+  l -= (p[l] == '/');
+
+  for(i = l; i >= 0; --i)
+   {
+    if(p[i] == '/')
+     break;
+   }
+  
+  strncpy(NamePath, p, i+1);
+
+  if(stat(NamePath, &buffer)) // The previous path doesn't exist.
+   {
+    strcpy(NamePath, p);
+   }
+
+
+  // strcpy(NamePath, dirname(argv[0]));
+  // strcpy(NamePath, "../");
+
+  // if(stat(NamePath, &buffer)) // The previous path doesn't exist.
+  //  {
+  //   strcpy(NamePath, dirname(argv[0]));
+  //  }
+
+  strcat(NamePath, DB_FILENAME);
+ }
 
 /*======================================================================================================================*/
 

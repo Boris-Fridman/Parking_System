@@ -161,6 +161,11 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size);
  */
 void FreeList(PriceTab_s **list_to_free);
 
+
+
+
+void ApplyDBPath(int argc, char *argv[]);
+
 /*======================================================================================================================*/
 
 

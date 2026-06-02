@@ -53,7 +53,9 @@ int main(int argc, char *argv[])
     char NewName[NAME_LEN] = "";
     uint16_t Price;
     int Result;
-    
+
+    ApplyDBPath(argc, argv);
+
     //code
     Result = CheckArgs(argc, argv, Name, &Price, NewName);
     switch(Result)
@@ -214,7 +216,7 @@ void AddOrUpdateNewCity(char CityName[], int CityPrice)
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice/100, CityPrice%100);
+  printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice / 100, CityPrice % 100);
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
   result = UpdateCityPriceInDataBase(&conn, CityName, CityPrice);
   if(result == 0)

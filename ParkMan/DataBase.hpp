@@ -12,4 +12,7 @@ struct CustomerTab_s
  };
 
 
+ void DataBaseProc();
+
+
  

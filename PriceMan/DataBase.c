@@ -8,7 +8,7 @@
 
 /*======================================================================================================================*/
 
-#define DB_FILENAME "ParkingInfo.sqlite3"
+char PathFileName[300];
 
 /*======================================================================================================================*/
 
@@ -441,13 +441,21 @@ void FreeList(PriceTab_s **list_to_free)
  */
 
 /*----------------------------------------------------------------------------------------------------------------------*/
+/*  Applys the path to the database file.                                                                               */
+void ApplyDBPath(int argc, char *argv[])
+ {
+  GetDataBaseFile(argc, argv, PathFileName);
+ }
+
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 /*  Opens database. Prints error message if error.                                                                      */
 int OpenDataBase(sqlite3 **conn)
  {
   int result;
   bool NoPiping;
   NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  result = sqlite3_open(DB_FILENAME, conn);
+  result = sqlite3_open(PathFileName, conn);  //result = sqlite3_open(DB_FILENAME, conn);
   if(result != SQLITE_OK)
    {
     if(NoPiping)fprintf(stderr, TermRed);
