@@ -33,6 +33,7 @@
                 //outputfile - always "program" at workspace directory:
                 "-o",
                 "parkman",
+                "-lrt",
 
                 // Include Directories
                 "-I${workspaceFolder}",

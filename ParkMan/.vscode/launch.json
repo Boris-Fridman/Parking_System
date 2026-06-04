@@ -31,7 +31,13 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Ignore SIGUSR1",
+                    "text": "handle SIGUSR1 nostop noprint pass",
+                    "ignoreFailures": true
                 }
+
             ],
             "preLaunchTask": "build all",
             "miDebuggerPath": "gdb"
