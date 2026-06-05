@@ -3,6 +3,7 @@
 #include "cstdint"
 #include "CommonData.h"
 
+#include <sys/types.h>
 
 struct CustomerTab_s
  {
@@ -12,7 +13,7 @@ struct CustomerTab_s
  };
 
 
- void DataBaseProc();
+ void DataBaseProc(key_t sh_mem_key, const char sem_name[]);
 
 
  

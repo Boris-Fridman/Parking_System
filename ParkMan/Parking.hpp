@@ -1,6 +1,8 @@
 #pragma once
 #include "CommonData.h"
 
+#include <sys/types.h>
+
 class Customer_c
  {
   public:
@@ -18,7 +20,7 @@ class City_c
  };
 
 
-void ParkingProc();
+void ParkingProc(key_t sh_mem_key, const char sem_name[]);
 
 
 

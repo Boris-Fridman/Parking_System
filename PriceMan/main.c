@@ -216,10 +216,14 @@ int LoadParkManPID(int const argc, char const *argv[])
 
 void SendSignal(pid_t const pid)
  {
+  union sigval value;
+  value.sival_int = 78;  // For test only.
+  //value.sival_ptr = NULL;  // Is used for sending data via reserved memory, but is actoal for sending information between the threads in the same process only because the data between processes is isolated.
   printf("Trying to sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
   if(pid > 0)
    {
-    kill(pid, DB_UPADATE_SIGNAL);
+    sigqueue(pid, DB_UPADATE_SIGNAL, value);
+    //kill(pid, DB_UPADATE_SIGNAL);
     printf("Sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
    }
    

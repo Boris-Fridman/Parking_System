@@ -1,6 +1,8 @@
 #pragma once
 
+#include "CommonData.h"
+#include <sys/types.h>
 
 
-void NetworkProc();
+void NetworkProc(key_t sh_mem_key, const char sem_name[]);
 
