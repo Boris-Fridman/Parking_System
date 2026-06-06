@@ -223,7 +223,6 @@ void SendSignal(pid_t const pid)
   if(pid > 0)
    {
     sigqueue(pid, DB_UPADATE_SIGNAL, value);
-    //kill(pid, DB_UPADATE_SIGNAL);
     printf("Sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
    }
    

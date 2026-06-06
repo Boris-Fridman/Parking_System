@@ -171,7 +171,6 @@ int main(int const argc, char const *argv[])
      break;
    }
 
-
   network_pid = fork();
   switch(network_pid)
    {
@@ -190,11 +189,7 @@ int main(int const argc, char const *argv[])
      break;
    }
 
-
 // sleep(10);
-
-
-
 
  std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
   do
@@ -281,28 +276,6 @@ void RemovePIDFile(char FileName[])
  }
 
 
- 
-// // Custom callback executed when signal arrives
-// void SignalHandler(int sig) 
-//  {
-//   if (sig == DB_UPADATE_SIGNAL)  // Database update signal
-//    {
-//     std::cout << "\nDB_UPADATE_SIGNAL signal was received successfully. \n";
-//    }
-//   if (sig == SIGINT)  // Ctrl-C Signal
-//    {
-//     std::cout << "\nSIGINT signal was received successfully. \n";
-
-//    }
-  
-//   if (sig == SIGQUIT)  // Ctrl-\ Signal
-//    {
-//     std::cout << "\nSIGQUIT signal was received successfully. \n";
-//    }
-//  }
-
-
-
 // Custom callback executed when signal arrives
 void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
  {
@@ -311,10 +284,10 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
    {
     std::cout << "\nDB_UPADATE_SIGNAL signal was received successfully. \n";
     int passed_val = info->si_value.sival_int;  // Reading value sent with signal from the sending program.
-    int process_pid = info->si_pid;  // Reading value sent with signal from the sending program.
+    int process_pid = info->si_pid;             // Reading value sent with signal from the sending program.
     std::cout << "The passed value is: " << passed_val << "  From process id: " << process_pid << "\n\r";
-    
    }
+
   if (sig == SIGINT)  // Ctrl-C Signal
    {
     std::cout << "\nSIGINT signal was received successfully. \n";
