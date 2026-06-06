@@ -11,27 +11,26 @@
 
 #define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
 
-
-void DataBaseProc(key_t sh_mem_key, const char sem_name[])
+class DataBase_c: public Process_c
  {
-  Process_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name);
+  public:
+    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+     :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+     {};
+    virtual ~DataBase_c(){};
+    virtual void DoMainProg();
+ };
+
+void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ {
+  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, ProcType);
   DB_Process.OnRunProcess();
-
-//   ProcParam_s MainParams = PROC_INIT_VAL;
-
-//   OnStartProcess(&MainParams , DB_PROC_NAME, sh_mem_key, sem_name);
-
-
-//   do
-//    {
-//     sleep(1);
-//     MainParams.exit_required |= MainParams.p_shm->exit_database;     
-//     MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
-//    }
-//   while (!MainParams.exit_required);
-
-
-//   OnEndProcess(&MainParams , DB_PROC_NAME);
-
  }
+
+
+
+ void DataBase_c::DoMainProg()
+  {
+   Process_c::DoMainProg();
+  };
 

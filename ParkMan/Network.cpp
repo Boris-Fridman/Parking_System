@@ -11,26 +11,27 @@
 
 #define NETW_PROC_NAME     (char *)"Network"     /* Network process name*/
 
-void NetworkProc(key_t sh_mem_key, const char sem_name[])
+
+class Network_c: public Process_c
  {
-
-  Process_c DB_Process(NETW_PROC_NAME, sh_mem_key, sem_name);
-  DB_Process.OnRunProcess();
-
-
-//   ProcParam_s MainParams = PROC_INIT_VAL;
-//   OnStartProcess(&MainParams , NETW_PROC_NAME, sh_mem_key, sem_name);
-
-
-//   do
-//    {
-//     sleep(1);
-//     MainParams.exit_required |= MainParams.p_shm->exit_network;
-//     MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
-//    } 
-//   while (!MainParams.exit_required);
+  public:
+    Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+     :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+     {};
+    virtual ~Network_c(){};
+    virtual void DoMainProg();
+ };
 
 
-//   OnEndProcess(&MainParams , NETW_PROC_NAME);  
-
+void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ {
+  Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  Netw_Process.OnRunProcess();
  }
+
+
+void Network_c::DoMainProg()
+ {
+  Process_c::DoMainProg();
+ };
+

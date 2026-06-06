@@ -30,29 +30,27 @@ City_c::~City_c()
 
  }
 
-
-
-void ParkingProc(key_t sh_mem_key, const char sem_name[])
+class Parking_c: public Process_c
  {
-
-  Process_c DB_Process(PARK_PROC_NAME, sh_mem_key, sem_name);
-  DB_Process.OnRunProcess();
-
-
-  // ProcParam_s MainParams = PROC_INIT_VAL;
-  // OnStartProcess(&MainParams , PARK_PROC_NAME, sh_mem_key, sem_name);
-
-
-  // do
-  //  {
-  //   sleep(1);
-  //   MainParams.exit_required |= MainParams.p_shm->exit_parking;     
-  //   MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
-  //  } 
-  // while (!MainParams.exit_required);
+  public:
+    Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+     :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+     {};
+    virtual ~Parking_c(){};
+    virtual void DoMainProg();
+ };
 
 
-  // OnEndProcess(&MainParams , PARK_PROC_NAME);  
-
+void ParkingProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ {
+  Parking_c Park_Process(PARK_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  Park_Process.OnRunProcess();
  }
+
+
+void Parking_c::DoMainProg()
+ {
+  Process_c::DoMainProg();
+ };
+
 

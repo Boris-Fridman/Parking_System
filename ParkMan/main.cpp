@@ -40,7 +40,7 @@
 
 
 
-
+void CatchChildZombie();
 void WaitUntilFinised();
 
 void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
@@ -127,10 +127,7 @@ int main(int const argc, char const *argv[])
 
 
   p_shm = (ShmData_s *)shmat(sh_mem_id, NULL, 0);  // Attach 
-  p_shm->exit_database = false;
-  p_shm->exit_network = false;
-  p_shm->exit_parking = false;
-  p_shm->exit_existerrors = false;
+  //p_shm->exit_proc_flags = 0;
   sem_post(p_shs);
 
 
@@ -144,7 +141,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting DataBase process\n\r";
-      DataBaseProc(sh_mem_key, sem_name.c_str());
+      DataBaseProc(sh_mem_key, sem_name.c_str() , PROC_DATABASE_E);
       std::cout << "Finishing DataBase process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -162,7 +159,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Parking process\n\r";
-      DataBaseProc(sh_mem_key, sem_name.c_str());
+      ParkingProc(sh_mem_key, sem_name.c_str(), PROC_PARKING_E);
       std::cout << "Finishing Parking process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -180,7 +177,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Network process\n\r";
-      NetworkProc(sh_mem_key, sem_name.c_str());
+      NetworkProc(sh_mem_key, sem_name.c_str(), PROC_NETWORK_E);
       std::cout << "Finishing Network process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -189,34 +186,34 @@ int main(int const argc, char const *argv[])
      break;
    }
 
-// sleep(10);
+//  sleep(10);
+//  p_shm->set_flag(PROC_DATABASE_E, true);
+//  sleep(10);
+//  p_shm->set_flag(PROC_NETWORK_E, true);
+//  sleep(10);
+//  p_shm->set_flag(PROC_PARKING_E, true);
+//  sleep(10);
+ //p_shm->exit_proc_flags = 0xFF;  // For test only.
 
- std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
+  std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
   do
-  {
-     /* code */
- 
-  } while (!FullExist);
+   {
+    /* code */
+    CatchChildZombie();
+   } while (!FullExist);
 
 
 
   sem_wait(p_shs);
-  p_shm->exit_database = true;
-  p_shm->exit_network = true;
-  p_shm->exit_parking = true;
+  //p_shm -> exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
+  for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
+   p_shm->set_flag((ProcTypeID_e)i, true);
   sem_post(p_shs);
   
 
   WaitUntilFinised();
 
-  // std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
-  // do
-  // {
-  //    /* code */
- 
-  // } while (1);
-
-  RemovePIDFile(PIDFileName);
+  RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
 
   shmdt(p_shm);  // Detach
   shmctl(sh_mem_id, IPC_RMID, NULL); // Shared memory control
@@ -226,6 +223,19 @@ int main(int const argc, char const *argv[])
   return 0;
  }
 
+/*Catching Zombie-Child-Processes and removing them. */ 
+void CatchChildZombie()
+ {
+  int wstatus, w = 0;
+  do
+  {
+   w = waitpid(-1, &wstatus, WNOHANG);  // WUNTRACED | WCONTINUED // WNOHANG
+   if(w > 0)
+    {
+     std::cout << "The process with PID: " << w << " finished running.\n\r";
+    }
+  } while (w > 0);
+ }
 
 void WaitUntilFinised()
  {
@@ -266,7 +276,7 @@ void CreatePIDFile(int const argc, char const *argv[], char FileName[])
     outFile<<pid;
     outFile.close();
    }
-  std::cout<<FileName;
+  std::cout<<FileName<<"\n\r";
 
  }
 

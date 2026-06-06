@@ -1,5 +1,7 @@
 #pragma once
 #include "CommonData.h"
+#include "main.hpp"
+
 
 #include <sys/types.h>
 
@@ -16,11 +18,10 @@ class City_c
     City_c();
     virtual ~City_c();
     virtual bool Customer_In() = 0;
-    
  };
 
 
-void ParkingProc(key_t sh_mem_key, const char sem_name[]);
+void ParkingProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
 
 
 

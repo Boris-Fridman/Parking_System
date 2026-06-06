@@ -8,31 +8,18 @@
 #include <semaphore.h>
 #include <string>
 
-#define PROC_INIT_VAL {NULL, NULL, 0, false}
-
-
-
-
-
-struct ProcParam_s
- {
-  sem_t *p_shs;
-  ShmData_s *p_shm;
-  int sh_mem_id;
-  bool exit_required;
- };
-
-
 
 class Process_c
  {
+     ProcTypeID_e proc_type;
      sem_t *p_shs;
      ShmData_s *p_shm;
      std::string proc_name;
      int sh_mem_id;
      bool exit_required;
+     bool error_in_creation;  // Is set to true in case of constructor couldn't initialize required variables.
   public:
-     Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[]);
+     Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
      virtual ~Process_c();
      virtual void OnRunProcess();  /* This procedure contains main loop with exit condition where is running the "DoMainProg()" procedure, but can be overwritten according to requirements. */
      virtual void DoMainProg();    /* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
@@ -44,13 +31,4 @@ class Process_c
 
 
 
-
-
-
-
-
-
-// void OnStartProcess(ProcParam_s *MainParams, char ProcName[], key_t sh_mem_key, const char sem_name[]);
-
-// void OnEndProcess(ProcParam_s *MainParams, char ProcName[]);
 

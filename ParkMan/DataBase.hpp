@@ -1,7 +1,10 @@
 #pragma once
 
 #include "cstdint"
+#include "main.hpp"
+
 #include "CommonData.h"
+
 
 #include <sys/types.h>
 
@@ -13,7 +16,7 @@ struct CustomerTab_s
  };
 
 
- void DataBaseProc(key_t sh_mem_key, const char sem_name[]);
+ void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
 
 
  
