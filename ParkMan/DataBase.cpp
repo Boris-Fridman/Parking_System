@@ -14,21 +14,24 @@
 
 void DataBaseProc(key_t sh_mem_key, const char sem_name[])
  {
-  ProcParam_s MainParams = PROC_INIT_VAL;
+  Process_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name);
+  DB_Process.OnRunProcess();
 
-  OnStartProcess(&MainParams , DB_PROC_NAME, sh_mem_key, sem_name);
+//   ProcParam_s MainParams = PROC_INIT_VAL;
 
-
-  do
-   {
-    sleep(1);
-    MainParams.exit_required |= MainParams.p_shm->exit_database;     
-    MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
-   }
-  while (!MainParams.exit_required);
+//   OnStartProcess(&MainParams , DB_PROC_NAME, sh_mem_key, sem_name);
 
 
-  OnEndProcess(&MainParams , DB_PROC_NAME);
+//   do
+//    {
+//     sleep(1);
+//     MainParams.exit_required |= MainParams.p_shm->exit_database;     
+//     MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
+//    }
+//   while (!MainParams.exit_required);
+
+
+//   OnEndProcess(&MainParams , DB_PROC_NAME);
 
  }
 

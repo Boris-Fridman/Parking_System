@@ -50,7 +50,7 @@ class Process_c
 
 
 
-void OnStartProcess(ProcParam_s *MainParams, char ProcName[], key_t sh_mem_key, const char sem_name[]);
+// void OnStartProcess(ProcParam_s *MainParams, char ProcName[], key_t sh_mem_key, const char sem_name[]);
 
-void OnEndProcess(ProcParam_s *MainParams, char ProcName[]);
+// void OnEndProcess(ProcParam_s *MainParams, char ProcName[]);
 

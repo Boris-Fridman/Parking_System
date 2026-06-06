@@ -45,7 +45,7 @@ void WaitUntilFinised();
 
 void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
 void RemovePIDFile(char FileName[]);
-void Enablesignals();
+void EnableSignals();
 
 
 
@@ -97,7 +97,7 @@ int main(int const argc, char const *argv[])
   std::cout << "The pid is: " << own_pid << "\n\r";
 
   CreatePIDFile(argc, argv, PIDFileName);
-  Enablesignals();
+  EnableSignals();
 
 
   do
@@ -301,7 +301,7 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
    }
  }
 
-void Enablesignals()
+void EnableSignals()
  {
   struct sigaction sa;
 

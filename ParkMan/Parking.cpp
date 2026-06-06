@@ -34,20 +34,25 @@ City_c::~City_c()
 
 void ParkingProc(key_t sh_mem_key, const char sem_name[])
  {
-  ProcParam_s MainParams = PROC_INIT_VAL;
-  OnStartProcess(&MainParams , PARK_PROC_NAME, sh_mem_key, sem_name);
+
+  Process_c DB_Process(PARK_PROC_NAME, sh_mem_key, sem_name);
+  DB_Process.OnRunProcess();
 
 
-  do
-   {
-    sleep(1);
-    MainParams.exit_required |= MainParams.p_shm->exit_parking;     
-    MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
-   } 
-  while (!MainParams.exit_required);
+  // ProcParam_s MainParams = PROC_INIT_VAL;
+  // OnStartProcess(&MainParams , PARK_PROC_NAME, sh_mem_key, sem_name);
 
 
-  OnEndProcess(&MainParams , PARK_PROC_NAME);  
+  // do
+  //  {
+  //   sleep(1);
+  //   MainParams.exit_required |= MainParams.p_shm->exit_parking;     
+  //   MainParams.exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
+  //  } 
+  // while (!MainParams.exit_required);
+
+
+  // OnEndProcess(&MainParams , PARK_PROC_NAME);  
 
  }
 
