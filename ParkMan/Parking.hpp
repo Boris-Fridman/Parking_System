@@ -16,7 +16,7 @@ class City_c
     City_c();
     virtual ~City_c();
     virtual bool Customer_In() = 0;
-     
+    
  };
 
 

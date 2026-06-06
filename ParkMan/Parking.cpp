@@ -34,30 +34,9 @@ City_c::~City_c()
 
 void ParkingProc(key_t sh_mem_key, const char sem_name[])
  {
-  // sem_t *p_shs;
-  // ShmData_s *p_shm;
-  // int sh_mem_id;
-  // bool exit_required = false;
-
   ProcParam_s MainParams = PROC_INIT_VAL;
   OnStartProcess(&MainParams , PARK_PROC_NAME, sh_mem_key, sem_name);
 
-  // std::cout << "Starting Parking process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";
-  // sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, 0666);
-  // if(sh_mem_id == -1)
-  //  {
-  //   perr() << "Parking process: Error in shared memory.\n\r";
-  //   return;
-  //  }
-  // p_shs = sem_open(sem_name, 0, 0600);
-  // if(p_shs == SEM_FAILED)
-  //  {
-  //   perr() << "Parking process: Error in shared memory semaphore.\n\r";
-  //   return;
-  //  }
-  // p_shm = (ShmData_s *)shmat(sh_mem_id, NULL, 0);
-
-  //sleep(10);  // Was added for test only. In the future will be removed.
 
   do
    {
@@ -68,11 +47,7 @@ void ParkingProc(key_t sh_mem_key, const char sem_name[])
   while (!MainParams.exit_required);
 
 
-  // shmdt(p_shm);
-  // std::cout << "Exitting from Parking process... \n\r";
-
   OnEndProcess(&MainParams , PARK_PROC_NAME);  
-
 
  }
 
