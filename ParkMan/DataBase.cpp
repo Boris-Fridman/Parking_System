@@ -14,10 +14,8 @@
 class DataBase_c: public Process_c
  {
   public:
-    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
-     :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
-     {};
-    virtual ~DataBase_c(){};
+    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    virtual ~DataBase_c();
     virtual void DoMainProg();
  };
 
@@ -33,4 +31,16 @@ void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType
   {
    Process_c::DoMainProg();
   };
+
+DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+ {
+
+ }
+
+DataBase_c::~DataBase_c()
+ {
+
+ }
+
 

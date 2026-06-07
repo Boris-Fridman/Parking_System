@@ -38,24 +38,38 @@ Process_c::~Process_c()
   std::cout << "Exitting from " << proc_name << " process... \n\r";
  }
 
+
+/* Breaks the default loop existing in the OnRunProcess. */
+void Process_c::MakeExit()
+ { 
+  exit_required = true;
+ }
+
+
+
 /* This procedure contains main loop with exit condition where is running the "DoMainProg()" procedure, but can be overwritten according to requirements. */
 void Process_c::OnRunProcess()
  {
   while (!(exit_required || error_in_creation))
    {
     DoMainProg();
+    CheckExitStatus();
    }
   
  }
 
-/* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */ 
+/* This procedure contains the 1 second sleep and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
 void Process_c::DoMainProg()
  {
   sleep(1);
-  exit_required |= p_shm->get_flag(proc_type);  //( p_shm->exit_proc_flags & (0x1 << proc_type) );     
-  exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
  }
 
+/* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */ 
+void Process_c::CheckExitStatus()
+ {
+  exit_required |= p_shm->get_flag(proc_type);  //( p_shm->exit_proc_flags & (0x1 << proc_type) );     
+  exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
+ }   
 
 
 

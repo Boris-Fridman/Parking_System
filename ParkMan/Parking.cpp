@@ -33,10 +33,8 @@ City_c::~City_c()
 class Parking_c: public Process_c
  {
   public:
-    Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
-     :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
-     {};
-    virtual ~Parking_c(){};
+    Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    virtual ~Parking_c();
     virtual void DoMainProg();
  };
 
@@ -53,4 +51,16 @@ void Parking_c::DoMainProg()
   Process_c::DoMainProg();
  };
 
+
+
+Parking_c::Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+ {
+
+ }
+
+Parking_c::~Parking_c()
+ {
+
+ }
 
