@@ -13,7 +13,9 @@ Folders:
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃ 1. ┃                   ┃                                                                                        ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
-    ┃ 2. ┃                   ┃                                                                                        ┃  
+    ┃ 2. ┃ CarMan            ┃ The car managaer program.                                                              ┃  
+    ┃    ┃                   ┃ Is built for the Beagle Bone Green Borard and works as the car sending its place       ┃  
+    ┃    ┃                   ┃ of parking to the parking manager program calculating parking price.                   ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃ 3. ┃ ParkMan           ┃ The parking manager program.                                                           ┃  
     ┃    ┃                   ┃ Contains TCP Server and Database containing information about parkings, prices.        ┃  

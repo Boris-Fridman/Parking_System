@@ -16,8 +16,6 @@
 #include <arpa/inet.h>
 
 
-#define PORT 8080  // Will be moved in the future to the "CommonLib.h" file.
-#define BUFFER_SIZE 1024
 
 
 
@@ -112,7 +110,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
 
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
-  address.sin_port = htons(PORT);
+  address.sin_port = htons(DESTIN_PORT);
 
   // 3. Bind the socket
   if (bind(serverSocket, (struct sockaddr *)&address, sizeof(address)) < 0) 
@@ -133,7 +131,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
     //exit(EXIT_FAILURE);
     return;
    }
-  std::cout << "Server listening on port " << PORT << "...\n\r";
+  std::cout << "Server listening on port " << DESTIN_PORT << "...\n\r";
  }
 
 void Network_c::DoMainProg()

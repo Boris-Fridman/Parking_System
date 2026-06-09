@@ -90,6 +90,13 @@ extern "C" {
 
 
 
+//#define DESTIN_IP            "127.0.0.1"    // For test only. In the future will be removed.
+#define DESTIN_IP              "192.168.1.164"            /* Server IP address to which are sent the call messages. */
+#define DESTIN_PORT             8080                      /* Server port to which are sent the GPS messages. */
+#define BUFFER_SIZE             1024                      /* The length in bytes, of the buffer pointed by the buf parameter that is used by the recv() function. */
+
+
+
 
 #define NAME_LEN 30
 #define PATH_LEN 300
