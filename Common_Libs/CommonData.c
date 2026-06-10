@@ -32,6 +32,8 @@ char const * const ResultColors[] = {TermRed, TermGreen, TermYello, TermCyan, Te
 #define EARTH_RADIUS_P (EARTH_DIAMETER_P / 2)        /* km */ /* Polar earth radius */
 #define EARTH_RADIUS_E (EARTH_DIAMETER_E / 2)        /* km */ /* Equatorial earth radius */
 
+char const *LATSGN[] = {"N", "S"};   // Latitude  sign "N" (North) in case of positive, "S" (South) in case of negative.
+char const *LONGSGN[] = {"E", "W"};  // Longitude sign "E" (East)  in case of positive, "W" (West)  in case of negative.
 
 /*======================================================================================================================*/
 /*
@@ -71,6 +73,18 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
   return ArcDist;
  }
 
+
+void CordsToString(char Buf, int MaxSize, GPS_Cords_s GPSCords)
+ {
+  snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
+ }
+
+void PrintGPSCords(GPS_Cords_s CordsToPrint)
+ {
+  char buf[50];
+  CordsToString(buf, sizeof(buf), CordsToPrint);
+  printf(buf);
+ }
 
 /*======================================================================================================================*/
 

@@ -101,3 +101,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+#additional unwanted files
+.~*#
+
+

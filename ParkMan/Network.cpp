@@ -59,7 +59,7 @@ void handleClient(int clientSocket)
       std::cout << "Client disconnected or error.\n\r";
       break;
      }
-    std::cout << "Received: " << buffer;
+    std::cout << "Received: " << buffer << "\n\r";
     // Echo response back to client
     write(clientSocket, buffer, strlen(buffer));
    }
@@ -75,7 +75,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
  {
   int opt = 1;
   timeval timeout;
-  timeout.tv_sec = 5;
+  timeout.tv_sec = 20;
   timeout.tv_usec = 0;
 
   addrlen = sizeof(address);

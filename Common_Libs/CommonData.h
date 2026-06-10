@@ -247,10 +247,18 @@ enum LnPrt_e
 
 extern char const * const ResultColors[];   /* Colors for showing results : [0] - for incorrect result and [1] - for correct result. */
 
+extern char const *LATSGN[];   // Latitude  sign "N" (North) in case of positive, "S" (South) in case of negative.
+extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive, "W" (West)  in case of negative.
+
+
 /*======================================================================================================================*/
 
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
+
+void CordsToString(char Buf, int MaxSize, GPS_Cords_s GPSCords);
+
+void PrintGPSCords(GPS_Cords_s CordsToPrint);
 
 /*======================================================================================================================*/
 
