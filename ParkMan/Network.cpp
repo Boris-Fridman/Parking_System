@@ -47,6 +47,11 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
 void handleClient(int clientSocket) 
  {
   char buffer[BUFFER_SIZE];
+  Customer_s CustomerInfo;
+  CustAcknowledge_s CustAckInfo;
+  uint8_t *DataForSending;
+  ssize_t AckDataSize;
+  bool DecodeResult;
   
   std::cout << "Handling client in thread ID: " << std::this_thread::get_id() << "\n\r";
   // Communication loop
@@ -61,11 +66,36 @@ void handleClient(int clientSocket)
       break;
      }
     //std::cout << "Received: " << buffer << "\n\r";
-    std::cout << "Received coordinates: " ;
-     PrintGPSCords(*(GPS_Cords_s*)buffer);
-    std::cout << "\n\r";
-    // Echo response back to client
-    write(clientSocket, buffer, strlen(buffer));
+
+    std::cout << "Received " << bytesRead << " Bytes\n\r";
+    
+
+    DecodeResult = DecodeNetData((uint8_t*)buffer, bytesRead, (uint8_t *)&CustomerInfo);
+    //std::cout << ((Customer_s*)buffer)->Name << "\n\r";
+    if(DecodeResult)
+     {
+      std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << CustomerInfo.Vechicle_ID << " In coordinates: ";
+      PrintGPSCords(CustomerInfo.Cords);
+      std::cout << "\n\r";
+      
+      // Loading info for response.
+      CustAckInfo.City_ID = 1;
+      strcpy(CustAckInfo.City_Name, "Tel Aviv (For test only)");
+      CustAckInfo.ParkingTime = 60;
+      CustAckInfo.Vechicle_ID = CustomerInfo.Vechicle_ID;
+     }
+    else
+     {
+      std::cout << "Error in decoding\n\r";
+      CustAckInfo.City_ID = 1;
+      strcpy(CustAckInfo.City_Name, "  -----  ");
+      CustAckInfo.ParkingTime = 0;
+      CustAckInfo.Vechicle_ID = 0;
+     }
+    // Sending Response.
+    AckDataSize = EncodeNetData((uint8_t*)&CustAckInfo, sizeof(CustAckInfo), &DataForSending);
+    write(clientSocket, DataForSending, AckDataSize);
+    FreeData(&DataForSending);
    }
   close(clientSocket);
  }

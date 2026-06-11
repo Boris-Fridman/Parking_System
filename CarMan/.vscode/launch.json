@@ -26,7 +26,13 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Follow the child process on fork",
+                    "text": "-gdb-set follow-fork-mode child",
+                    "ignoreFailures": false
                 }
+                
             ],
             "preLaunchTask": "gcc build program"
         }

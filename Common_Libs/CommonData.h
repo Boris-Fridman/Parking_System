@@ -88,6 +88,9 @@ extern "C" {
 #define DIV_RND_UP(X,Y) ( ((X) + (Y) - 1) / (Y) )     /* Deviation with rounding up.   10/6 will give 2 and 10/3 will give 4  */
 #define DIV_RND_DN(X,Y) ( (X) / (Y)             )     /* Deviation with rounding down. 10/6 will give 1 and 10/3 will give 3 Regular deviation equal to regular "/". Is defined for compilation the previous macros deviations */
 
+#define SQR(X)          ((X)*(X))                     /* Rases number to the square power.                                    */
+
+
 
 
 //#define DESTIN_IP            "127.0.0.1"    // For test only. In the future will be removed.
@@ -95,6 +98,7 @@ extern "C" {
 #define DESTIN_PORT             8080                      /* Server port to which are sent the GPS messages. */
 #define BUFFER_SIZE             1024                      /* The length in bytes, of the buffer pointed by the buf parameter that is used by the recv() function. */
 
+#define CRC_SIZE               ( sizeof(uint32_t) )
 
 
 
@@ -224,6 +228,21 @@ Customer_s
 #endif
 ;
 
+#ifndef __cplusplus
+typedef 
+#endif
+struct CustAcknowledge_s
+ {
+  uint32_t Vechicle_ID;
+  uint16_t City_ID;
+  uint32_t ParkingTime;  // Later type will be redefined.
+  uint16_t AccumulatedPrice;              /*  0.01₪ / hour  */
+  char City_Name[NAME_LEN];
+ }
+#ifndef __cplusplus  
+CustAcknowledge_s
+#endif
+;
 
 
 
@@ -254,11 +273,20 @@ extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive
 /*======================================================================================================================*/
 
 
+double sqr(double x);
+
+uint64_t RandGenLongLong();
+
+/*======================================================================================================================*/
+
+
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
+
+
 
 /*======================================================================================================================*/
 
@@ -266,6 +294,113 @@ bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
 
 bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
 
+
+/*======================================================================================================================*/
+
+/**
+ * @brief Calculates CRC from given block of data.
+ *
+ * @code
+ * uint32_t FindCRC(uint8_t * Data, uint8_t Length, uint32_t InitVal);
+ * @code
+ *
+ * @param Data     The pointer to the first address of memory in which the data exists.
+ *
+ * @param Length   The length of the data.
+ *
+ * @param InitVal The initialization value.
+ *
+ * @return Calculated CRC.
+ *
+ */
+uint32_t FindCRC(uint8_t * Data, uint8_t Length, uint32_t InitVal);
+
+/**
+ * @brief Appends to the end of the data array the calculated CRC from it. The length must include the place of the CRC.
+ *        For example if the data has length 8 the length given as parameter must be 12 = 8 + 4. The CRC has 4 bytes of length.
+ *
+ * @code
+ * void Add_CRC(uint8_t buf[], size_t len);
+ * @code
+ *
+ * @param buf  The start of data.
+ *
+ * @param len  The length of data including CRC size. For example if buffer has length of 8 bytes the len must be 12: 8 +4 = 12.
+ */
+void Add_CRC(uint8_t buf[], size_t len);
+
+/**
+ * @brief Checks if the CRC is correct.
+ *
+ * @code
+ * bool CRC_Correct(uint8_t buf[], size_t len);
+ * @code
+ *
+ * @param buf   The start of data
+ *
+ * @param len   The length of data. Including CRC.
+ *              For example if the given length is 12 the CRC checking will be made from the first 8 bytes
+ *              and the result will be compared to the last 4 bytes.
+ *
+ */
+bool CRC_Correct(uint8_t buf[], size_t len);
+
+/**
+ * @brief
+ * This function encodes the packet send to network.                                               
+ * Attention !!!                                                                                   
+ * The last parameter "NetSendData" is given as pointer to pointer to dynamically allocated memory.
+ * That means that at the end of the program it must be freed by the procedure "FreeData()"        
+ * to avoid the memory leakage.                                                                    
+ * 
+ * @code
+ * ssize_t EncodeNetData(uint8_t const * const CustomData, uint8_t Len, uint8_t **NetSendData);
+ * @code
+ * 
+ * @param CustomData   The pointer to the data to be encoded.
+ * 
+ * @param Len          Length of the data to be encoded (Length of the CustomData).
+ * 
+ * @param NetSendData  Encoded data.
+ * 
+ * @return             The length of data if encoded successfully or "0" if failed.
+ * 
+ */
+ssize_t EncodeNetData(uint8_t const * const CustomData, uint8_t Len, uint8_t **NetSendData);
+
+
+/**
+ * @brief This function decodes the packet received from network.
+ * 
+ * @code
+ * bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData);
+ * @code
+ * 
+ * @param NetRecData  Data for decoding.
+ * 
+ * @param CustomData  CustomData Data for decoding.
+ * 
+ * @param Len         Length of the data that must be after decoding (Length of the CustomData).
+ * 
+ * @return            "true" if the data was decoded successfully. "false" otherwise.
+ */
+bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData);
+
+
+/**
+ * @brief
+ * This Procedure is used for freeing the "**Data" reserved by one of procedure  "EncodeNetData()".
+ * No need to check anything before running it because it checks automatically inside if the memory
+ * is reserved and sets the pointer to NULL after freeing it.                                      
+ * 
+ * @code
+ * void FreeData(uint8_t **Data);
+ * @code
+ * 
+ * @param Data     The pointer to pointer to the dynamically allocated memory for freeing.
+ * 
+ */
+void FreeData(uint8_t **Data);
 
 /*======================================================================================================================*/
 

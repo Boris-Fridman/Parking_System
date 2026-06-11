@@ -31,9 +31,11 @@ void CloseI2C();
 
 void I2CProc()
  {
-  GPS_Cords_s Cords;
+  Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
   
+  strcpy(CustomerData.Name, "Boris Fridman");
+  CustomerData.Vechicle_ID = 13248551;
 
   printf("Staritng I2C Task.\n\r");
   InitNetQueue(&NetQueue, QUEUE_SEND_E);
@@ -41,15 +43,17 @@ void I2CProc()
   while(getppid() != 1)
   {
    /* Generating random GPS coordingates. Later will be moved to the STM32 Program with zone-dependent. */
-   Cords.Latitude  = (rand()%(MAX_LATITUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE;
-   Cords.Longitude = (rand()%(MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
-   //printf("The generated cordinates are: %3.8lf˚ lat %3.8lf˚ long\n\r", Cords.Latitude, Cords.Longitude);
-   printf("The generated cordinates are: ");
-   PrintGPSCords(Cords);
-   printf("\n\r");
-   /* Senging coordingates to the network process. */
-   SendMessageToNetwork(&NetQueue, &Cords, sizeof(Cords));
+   CustomerData.Cords.Latitude  = (RandGenLongLong() % (MAX_LATITUDE  * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE ;
+   CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
 
+
+   printf("Customer name: %s Vehicle: %d", CustomerData.Name, CustomerData.Vechicle_ID);
+   printf("The generated cordinates are: ");
+   PrintGPSCords(CustomerData.Cords);
+   printf("\n\r");
+
+   /* Senging coordingates to the network process. */
+   SendMessageToNetwork(&NetQueue, &CustomerData, sizeof(CustomerData));
    /* Making delay between sendings. */
    sleep(10);
   }

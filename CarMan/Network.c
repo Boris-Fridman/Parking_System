@@ -19,8 +19,8 @@
 #include "CommonData.h"
 
 
-#define QUEUE_NAME "/network_queue"
-#define MAX_SIZE 1024
+#define QUEUE_NAME     "/network_queue"
+#define MAX_SIZE       1024
 
 
 
@@ -81,31 +81,42 @@ void StartNetwork(NetworkParams_s *NetPars)
     close(NetPars->sock_fd);
     exit(EXIT_FAILURE);
    }
-  printf("Connected successfully to the server.\n");
+  printf("Connected successfully to the server.\n\r");
 
 
  }
 
-void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)
+void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    //  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive
  {
-  char buffer[BUFFER_SIZE] = {0};
-
-  //char *message = "Hello from the C Client!";
-
-  // 4. Send data to the server
+  char buffer[BUFFER_SIZE] = {0}, buffortest[BUFFER_SIZE];
+  CustAcknowledge_s CustAckInfo;
+  bool DecodeResult;
+  ssize_t nsndbt;
+  bool SendResult;
+  uint8_t *DataForSending;
+  ssize_t SentDataSize;
+  SentDataSize = EncodeNetData(Data, Len, &DataForSending);
   
-  if (send(NetPars->sock_fd, Data, Len, 0) < 0)   //  if (send(NetPars->sock_fd, message, strlen(message), 0) < 0) 
+  // 4. Send data to the server
+  nsndbt = send(NetPars->sock_fd, DataForSending, SentDataSize, 0);
+  SendResult = (nsndbt >= 0);
+  if (SendResult)
    {
     perror("Send failed");
-    close(NetPars->sock_fd);
-    exit(EXIT_FAILURE);
+    //close(NetPars->sock_fd);
+    //exit(EXIT_FAILURE);
    }
-  printf("Sent fowrard coordinates: ");
-  PrintGPSCords(*(GPS_Cords_s*)Data);
-  printf("\n\r");
-  //printf("Message sent: %s\n\r", message);
-  //printf("Message sent: %s\n\r", Data);
-  //printf("Message sent: %s\n\r", "GPS Coordinates");
+  
+  // printf("%s\n\r", ((Customer_s*)Data)->Name);
+  // printf("%s\n\r", ((Customer_s*)DataForSending)->Name);
+
+  DecodeResult = DecodeNetData(DataForSending, SentDataSize, (uint8_t*)buffortest);
+  printf("%d\n\r", (int)DecodeResult);
+
+
+  printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
+  printf("The send() function gave result %ld.\n\r", nsndbt);
+  FreeData(&DataForSending);
 
   // 5. Receive data back from the server
   ssize_t bytes_read = recv(NetPars->sock_fd, buffer, BUFFER_SIZE - 1, 0);
@@ -116,20 +127,28 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)
   else 
    if (bytes_read == 0) 
     {
-     printf("Server closed the connection.\n");
+     printf("Server closed the connection.\n\r");
     } 
    else 
     {
      buffer[bytes_read] = '\0'; // Null-terminate the received string
-     //printf("Server response: %s\n", buffer);
-     printf("Received backward coordinates: ");
-     PrintGPSCords(*(GPS_Cords_s*)Data);
-     printf("\n\r");
+     //printf("Server response: %s\n\r", buffer);
+     printf("Server responded data contains %ld bytes.\n\r", bytes_read);
+     DecodeResult = DecodeNetData((uint8_t*)buffer, bytes_read, (uint8_t *)&CustAckInfo);
+     if(DecodeResult)
+      {
+       printf("The vehicle is parked in: %s   (ID: %d)\n\r", CustAckInfo.City_Name, CustAckInfo.City_ID);
+       printf("Vehicle ID: %d  Parking duration: %d\n\r", CustAckInfo.Vechicle_ID, CustAckInfo.ParkingTime);
+      }
+     else
+      {
+       printf("Error in response.\n\r");
+      }
 
     }
  }
 
-void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)
+void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   //  Queue  ▬▬▬▶ Network
  {
   unsigned int prio;
   char buffer[BUFFER_SIZE] = {0};
@@ -143,13 +162,10 @@ void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)
      }
     // Block until a message is received
     ssize_t bytes_read = mq_timedreceive(NetQ->mq, buffer, MAX_SIZE, &prio, &ts);
-    //ssize_t bytes_read = mq_receive(NetQ->mq, buffer, MAX_SIZE, &prio);
     if (bytes_read >= 0) 
      {
-      //printf("Received message: %s\n", buffer);
-      printf("Received backward coordinates: ");
-      PrintGPSCords(*(GPS_Cords_s*)buffer);
-      printf("\n\r");
+      //printf("Received message: %s\n\r", buffer);
+      printf("Were forwarded from the queue to the network %ld bytes.\n\r", bytes_read);
  
       SendToNetwork(NetPars, buffer, bytes_read);
      } 
@@ -198,21 +214,15 @@ void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive)
 
  }
 
-void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)
+void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process ▬▬▬▶ Queue
  {
-  char buffer[BUFFER_SIZE] = {0};
-  printf("The received coordinates are: ");
-  PrintGPSCords(*(GPS_Cords_s*)Data);
-  printf("\n\r");
-  //snprintf(buffer, sizeof(buffer), "Hello from the Sender Process!\n\r");
-  // Send message with priority 0
-  if (mq_send(NetQ->mq, Data, Len, 0) == -1) //  if (mq_send(NetQ->mq, buffer, strlen(buffer) + 1, 0) == -1) 
+  if (mq_send(NetQ->mq, Data, Len, 0) == -1)
    {
     perror("mq_send failed");
    } 
   else 
    {
-    printf("Message sent successfully.\n");
+    printf("Message sent successfully. %ld bytes sent.\n\r", Len);
    }
  }
 

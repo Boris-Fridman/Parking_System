@@ -42,9 +42,18 @@ char const *LONGSGN[] = {"E", "W"};  // Longitude sign "E" (East)  in case of po
  * *************************************************************************************************************
  */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Rases numbers to the square power.                                                                                   */
 double sqr(double x)
  {
   return x * x;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates random numbers in 64 bit size.                                                                            */
+uint64_t RandGenLongLong()
+ {
+  return ((uint64_t)rand() << 32) | ((uint64_t)rand());
  }
 
 /*======================================================================================================================*/
@@ -55,11 +64,38 @@ double sqr(double x)
  * *************************************************************************************************************
  */
 
+#ifndef __cplusplus
+typedef 
+#endif
+struct AngDegMinSec_s
+ {
+  int16_t Deg;
+  uint8_t Min;
+  uint8_t Sec;
+  double Dec;
+ }
+ #ifndef __cplusplus
+ AngDegMinSec_s
+ #endif
+ ;
+
+
+void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
+ {
+  bool sgn = Angle<0;
+  Angle = fabs(Angle);
+  ConvAng->Deg = floor(  Angle);
+  ConvAng->Min = floor( (Angle - ConvAng->Deg) * 60);
+  ConvAng->Sec = floor(((Angle - ConvAng->Deg) * 60 - ConvAng->Min) * 60);
+  ConvAng->Dec =       ((Angle - ConvAng->Deg) * 60 - ConvAng->Min) * 60 - ConvAng->Sec;
+  ConvAng->Deg *= (sgn?-1:1);
+ }
+
 void GPSToSpace(Space_Cords_s *SpaceCords, GPS_Cords_s GPS_Data)
  {
-  SpaceCords->x = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI /  180) * cos(GPS_Data.Longitude * M_PI / 180);
-  SpaceCords->y = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI /  180) * sin(GPS_Data.Longitude * M_PI / 180);
-  SpaceCords->z = EARTH_RADIUS_P * sin(GPS_Data.Latitude * M_PI /  180);
+  SpaceCords->x = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI / 180) * cos(GPS_Data.Longitude * M_PI / 180);
+  SpaceCords->y = EARTH_RADIUS_E * cos(GPS_Data.Latitude * M_PI / 180) * sin(GPS_Data.Longitude * M_PI / 180);
+  SpaceCords->z = EARTH_RADIUS_P * sin(GPS_Data.Latitude * M_PI / 180);
  }
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
@@ -76,15 +112,132 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
 
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
  {
-  snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
+  AngDegMinSec_s LatConvAng, LongConvAng;
+  AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
+  AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d lat %d˚%d'%d\".%08d long", LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec*100000000), LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec*100000000));
+
+  //snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
  }
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint)
  {
-  char buf[50];
+  char buf[200];
   CordsToString(buf, sizeof(buf), CordsToPrint);
   printf("%s", buf);
  }
+
+
+/*======================================================================================================================*/
+
+#define DEF_INIT_VAL 0xEF45AB12
+
+#define POLYNOM   0x04C11DB7
+#define CRC_SHIFT 0
+#define MSB_MASK  0xAB25CD87
+
+/*
+ * *************************************************************************************************************
+ **          CRC Checking Functions / Procedures
+ * *************************************************************************************************************
+ */
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*   Calculates CRC from given block of data.                                                                           */
+uint32_t FindCRC(uint8_t * Data, uint8_t Length, uint32_t InitVal)
+ {
+  uint32_t Result;
+  uint32_t vl;
+  int i;
+  memcpy(&vl, Data, MIN(4, Length));
+  Result = InitVal ^ vl;
+
+  for(i = 4; i < Length; i += 4)
+   {
+    vl = 0;
+    memcpy(&vl, &Data[i], MIN(4, (Length - i)));
+    if(Result ^ MSB_MASK)
+     Result = (Result << CRC_SHIFT) ^ POLYNOM;
+    else
+     Result = (Result ^ CRC_SHIFT);
+   }
+  return Result;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*   Appends to the end of the data array the calculated CRC from it. The length must include the place of the CRC.     */
+/* For example if the data has length 8 the length given as parameter must be 12 = 8 + 4. The CRC has 4 bytes of length.*/
+void Add_CRC(uint8_t buf[], size_t len)
+ {
+  uint32_t CalcCRC;
+  CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
+  memcpy(buf + len - CRC_SIZE, &CalcCRC, CRC_SIZE);
+ }
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Checks if the CRC is correct.                                                                                       */
+/*  For example if the given length is 12 the CRC checking will be made from the first 8 bytes                          */
+/*  and the result will be compared to the last 4 bytes.                                                                */
+bool CRC_Correct(uint8_t buf[], size_t len)
+ {
+  uint32_t CalcCRC, RecvCRC;
+  CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
+  memcpy(&RecvCRC, buf + len - CRC_SIZE, CRC_SIZE);
+  return CalcCRC == RecvCRC;
+ }
+
+/*
+ * *************************************************************************************************************
+ **          Encoding Decoding Data Functions / Procedures
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* This function encodes the packet send to network.                                                                    */
+/* Attention !!!                                                                                                        */
+/* The last parameter "NetSendData" is given as pointer to pointer to dynamically allocated memory.                     */
+/* That means that at the end of the program it must be freed by the procedure "FreeData()"                             */
+/* to avoid the memory leakage.                                                                                         */
+ssize_t EncodeNetData(uint8_t const * const CustomData, uint8_t Len, uint8_t **NetSendData)
+ {
+  
+  size_t DataLenFull;
+  DataLenFull = Len + CRC_SIZE;
+  *NetSendData = (uint8_t*)calloc(DataLenFull, sizeof(uint8_t));
+  if(*NetSendData)
+   {
+    memcpy(*NetSendData, CustomData, Len);
+    Add_CRC(*NetSendData, DataLenFull);
+    return DataLenFull;
+   }
+
+  return 0;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* This function decodes the packet received from network.                                                              */
+bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData)
+ {
+  if(CRC_Correct(NetRecData, Len))
+   {
+    memcpy(CustomData, NetRecData, Len - CRC_SIZE);
+    return true;
+   }
+  else
+   return false;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* This Procedure is used for freeing the "**Data" reserved by one of procedure  "EncodeNetData()".                     */
+/* No need to check anything before running it because it checks automatically inside if the memory                     */
+/* is reserved and sets the pointer to NULL after freeing it.                                                           */
+void FreeData(uint8_t **Data)
+ {
+  if(*Data != NULL)
+   {
+    free(*Data);
+    *Data = NULL;
+   }
+ }
+
 
 /*======================================================================================================================*/
 

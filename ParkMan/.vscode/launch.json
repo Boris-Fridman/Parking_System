@@ -36,6 +36,11 @@
                     "description": "Ignore SIGUSR1",
                     "text": "handle SIGUSR1 nostop noprint pass",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Follow the child process on fork",
+                    "text": "-gdb-set follow-fork-mode child",
+                    "ignoreFailures": false
                 }
 
             ],
