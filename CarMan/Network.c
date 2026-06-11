@@ -90,17 +90,21 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)
  {
   char buffer[BUFFER_SIZE] = {0};
 
-  char *message = "Hello from the C Client!";
+  //char *message = "Hello from the C Client!";
 
   // 4. Send data to the server
-  if (send(NetPars->sock_fd, message, strlen(message), 0) < 0)   
-  //if (send(NetPars->sock_fd, Data, Len, 0) < 0)   //  if (send(NetPars->sock_fd, message, strlen(message), 0) < 0) 
+  
+  if (send(NetPars->sock_fd, Data, Len, 0) < 0)   //  if (send(NetPars->sock_fd, message, strlen(message), 0) < 0) 
    {
     perror("Send failed");
     close(NetPars->sock_fd);
     exit(EXIT_FAILURE);
    }
-  printf("Message sent: %s\n\r", message);
+  printf("Sent fowrard coordinates: ");
+  PrintGPSCords(*(GPS_Cords_s*)Data);
+  printf("\n\r");
+  //printf("Message sent: %s\n\r", message);
+  //printf("Message sent: %s\n\r", Data);
   //printf("Message sent: %s\n\r", "GPS Coordinates");
 
   // 5. Receive data back from the server
@@ -117,7 +121,11 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)
    else 
     {
      buffer[bytes_read] = '\0'; // Null-terminate the received string
-     printf("Server response: %s\n", buffer);
+     //printf("Server response: %s\n", buffer);
+     printf("Received backward coordinates: ");
+     PrintGPSCords(*(GPS_Cords_s*)Data);
+     printf("\n\r");
+
     }
  }
 
@@ -138,7 +146,11 @@ void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)
     //ssize_t bytes_read = mq_receive(NetQ->mq, buffer, MAX_SIZE, &prio);
     if (bytes_read >= 0) 
      {
-      printf("Received message: %s\n", buffer);
+      //printf("Received message: %s\n", buffer);
+      printf("Received backward coordinates: ");
+      PrintGPSCords(*(GPS_Cords_s*)buffer);
+      printf("\n\r");
+ 
       SendToNetwork(NetPars, buffer, bytes_read);
      } 
     
@@ -189,9 +201,12 @@ void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive)
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)
  {
   char buffer[BUFFER_SIZE] = {0};
-  snprintf(buffer, sizeof(buffer), "Hello from the Sender Process!\n\r");
+  printf("The received coordinates are: ");
+  PrintGPSCords(*(GPS_Cords_s*)Data);
+  printf("\n\r");
+  //snprintf(buffer, sizeof(buffer), "Hello from the Sender Process!\n\r");
   // Send message with priority 0
-  if (mq_send(NetQ->mq, buffer, strlen(buffer) + 1, 0) == -1) 
+  if (mq_send(NetQ->mq, Data, Len, 0) == -1) //  if (mq_send(NetQ->mq, buffer, strlen(buffer) + 1, 0) == -1) 
    {
     perror("mq_send failed");
    } 

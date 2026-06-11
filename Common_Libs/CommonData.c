@@ -74,7 +74,7 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
  }
 
 
-void CordsToString(char Buf, int MaxSize, GPS_Cords_s GPSCords)
+void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
  {
   snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
  }
@@ -83,7 +83,7 @@ void PrintGPSCords(GPS_Cords_s CordsToPrint)
  {
   char buf[50];
   CordsToString(buf, sizeof(buf), CordsToPrint);
-  printf(buf);
+  printf("%s", buf);
  }
 
 /*======================================================================================================================*/

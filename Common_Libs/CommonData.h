@@ -256,7 +256,7 @@ extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
-void CordsToString(char Buf, int MaxSize, GPS_Cords_s GPSCords);
+void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
 

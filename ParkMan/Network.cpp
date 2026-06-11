@@ -47,6 +47,7 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
 void handleClient(int clientSocket) 
  {
   char buffer[BUFFER_SIZE];
+  
   std::cout << "Handling client in thread ID: " << std::this_thread::get_id() << "\n\r";
   // Communication loop
   while (true) 
@@ -59,7 +60,10 @@ void handleClient(int clientSocket)
       std::cout << "Client disconnected or error.\n\r";
       break;
      }
-    std::cout << "Received: " << buffer << "\n\r";
+    //std::cout << "Received: " << buffer << "\n\r";
+    std::cout << "Received coordinates: " ;
+     PrintGPSCords(*(GPS_Cords_s*)buffer);
+    std::cout << "\n\r";
     // Echo response back to client
     write(clientSocket, buffer, strlen(buffer));
    }
