@@ -78,32 +78,32 @@ extern "C" {
 /**
  * Min / Max macros
  */
-#define MAX(X, Y) ( (X) > (Y) ? (X) : (Y) )           /* The macro returning the biggest from the two values.  */
-#define MIN(X, Y) ( (X) < (Y) ? (X) : (Y) )           /* The macro returning the smallest from the two values. */
+#define MAX(X, Y)                 ( (X) > (Y) ? (X) : (Y) )           /* The macro returning the biggest from the two values.  */
+#define MIN(X, Y)                 ( (X) < (Y) ? (X) : (Y) )           /* The macro returning the smallest from the two values. */
 
 /**
  * Div macros
  */
-#define DIV_RND(X,Y)    ( ((X) + (Y) / 2) / (Y) )     /* Deviation with rounding.      10/6 will give 2 and 10/3 will give 3  */
-#define DIV_RND_UP(X,Y) ( ((X) + (Y) - 1) / (Y) )     /* Deviation with rounding up.   10/6 will give 2 and 10/3 will give 4  */
-#define DIV_RND_DN(X,Y) ( (X) / (Y)             )     /* Deviation with rounding down. 10/6 will give 1 and 10/3 will give 3 Regular deviation equal to regular "/". Is defined for compilation the previous macros deviations */
+#define DIV_RND(X,Y)              ( ((X) + (Y) / 2) / (Y) )     /* Deviation with rounding.      10/6 will give 2 and 10/3 will give 3  */
+#define DIV_RND_UP(X,Y)           ( ((X) + (Y) - 1) / (Y) )     /* Deviation with rounding up.   10/6 will give 2 and 10/3 will give 4  */
+#define DIV_RND_DN(X,Y)           ( (X) / (Y)             )     /* Deviation with rounding down. 10/6 will give 1 and 10/3 will give 3 Regular deviation equal to regular "/". Is defined for compilation the previous macros deviations */
 
-#define SQR(X)          ((X)*(X))                     /* Rases number to the square power.                                    */
-
-
-
-
-//#define DESTIN_IP            "127.0.0.1"    // For test only. In the future will be removed.
-#define DESTIN_IP              "192.168.1.164"            /* Server IP address to which are sent the call messages. */
-#define DESTIN_PORT             8080                      /* Server port to which are sent the GPS messages. */
-#define BUFFER_SIZE             1024                      /* The length in bytes, of the buffer pointed by the buf parameter that is used by the recv() function. */
-
-#define CRC_SIZE               ( sizeof(uint32_t) )
+#define SQR(X)                    ((X)*(X))                     /* Rases number to the square power.                                    */
 
 
 
-#define NAME_LEN 30
-#define PATH_LEN 300
+
+//#define DESTIN_IP               "127.0.0.1"    // For test only. In the future will be removed.
+#define DESTIN_IP                 "192.168.1.164"            /* Server IP address to which are sent the call messages. */
+#define DESTIN_PORT                8080                      /* Server port to which are sent the GPS messages. */
+#define BUFFER_SIZE                1024                      /* The length in bytes, of the buffer pointed by the buf parameter that is used by the recv() function. */
+
+#define CRC_SIZE                  ( sizeof(uint32_t) )
+
+
+
+#define NAME_LEN                  30
+#define PATH_LEN                  300
 
 
 #define DB_FILENAME               "ParkingInfo.sqlite3"
@@ -117,7 +117,7 @@ extern "C" {
  * Macro for preventing warnings in case of unused variables.
  */
 #if !defined(UNUSED)
-#define UNUSED(X) (void)X      /* To avoid gcc/g++ warnings */
+#define UNUSED(X)                 (void)X      /* To avoid gcc/g++ warnings */
 #endif /* UNUSED */
 
 /*======================================================================================================================*/
@@ -188,10 +188,10 @@ struct Space_Cords_s
  struct Parking_s
   {
    GPS_Cords_s Cords;
-   uint16_t Parking_ID;
-   uint16_t MaxNumPlaces;
-   uint16_t NumPlaces;
-   uint16_t Price;              /*  0.01₪ / hour  */
+   uint16_t    Parking_ID;
+   uint16_t    MaxNumPlaces;
+   uint16_t    NumPlaces;
+   uint16_t    Price;              /*  0.01₪ / hour  */
    char Name[NAME_LEN];
   }
 #ifndef __cplusplus  
@@ -206,7 +206,7 @@ struct PriceTab_s
  {
   uint16_t City_ID;
   uint16_t Price;              /*  0.01₪ / hour  */
-  char City_Name[NAME_LEN];
+  char     City_Name[NAME_LEN];
  }
 #ifndef __cplusplus  
 PriceTab_s
@@ -220,8 +220,8 @@ PriceTab_s
  struct Customer_s
   {
    GPS_Cords_s Cords;
-   uint32_t Vechicle_ID;
-   char Name[NAME_LEN];
+   uint32_t    Vechicle_ID;
+   char        Name[NAME_LEN];
   }
 #ifndef __cplusplus  
 Customer_s
@@ -235,9 +235,10 @@ struct CustAcknowledge_s
  {
   uint32_t Vechicle_ID;
   uint16_t City_ID;
-  uint32_t ParkingTime;  // Later type will be redefined.
+  time_t   ParkingStartTime;
+  time_t   ParkingDurationTime;
   uint16_t AccumulatedPrice;              /*  0.01₪ / hour  */
-  char City_Name[NAME_LEN];
+  char     City_Name[NAME_LEN];
  }
 #ifndef __cplusplus  
 CustAcknowledge_s
@@ -256,10 +257,25 @@ enum LnPrt_e
   E_CURS_TO_BEG,
   E_FULL_LINE
  }
- #ifndef __cplusplus
- LnPrt_e
- #endif
- ;
+#ifndef __cplusplus
+LnPrt_e
+#endif
+;
+
+#ifndef __cplusplus
+typedef 
+#endif
+enum TimeForm_e
+ {
+  E_CAL_FORMAT,   /* Regular Calendar format d/m/y  h:m:s   */
+  E_DBS_FORMAT,   /* Database fromat  yyyy/mm/dd - hh:mm:ss */
+  E_DUR_FORMAT    /* Duration format  d-h:m:s               */
+ }
+#ifndef __cplusplus
+TimeForm_e
+#endif
+;
+
 
 
 /*======================================================================================================================*/
@@ -286,13 +302,10 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
 
-
-
 /*======================================================================================================================*/
 
-bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
+void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat);
 
-bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
 
 
 /*======================================================================================================================*/
@@ -401,6 +414,12 @@ bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData);
  * 
  */
 void FreeData(uint8_t **Data);
+
+/*======================================================================================================================*/
+
+bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
+
+bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
 
 /*======================================================================================================================*/
 

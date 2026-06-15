@@ -34,17 +34,17 @@ class Network_c: public Process_c
  };
 
 
+
+
+
+
 void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
  {
   Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, ProcType);
   Netw_Process.OnRunProcess();
  }
 
-
-
-
-
-void handleClient(int clientSocket) 
+void HandleClient(int clientSocket) 
  {
   char buffer[BUFFER_SIZE];
   Customer_s CustomerInfo;
@@ -52,9 +52,15 @@ void handleClient(int clientSocket)
   uint8_t *DataForSending;
   ssize_t AckDataSize;
   bool DecodeResult;
+  time_t CurrentTime;
+  //char timebuf[100];
   
   std::cout << "Handling client in thread ID: " << std::this_thread::get_id() << "\n\r";
-  // Communication loop
+  CustAckInfo.ParkingDurationTime = 0;
+  time(&CustAckInfo.ParkingStartTime);
+  //ConvertTime(&CustAckInfo.ParkingStartTime, timebuf,sizeof(timebuf));
+
+  /* Communication loop. */
   while (true) 
    {
     memset(buffer, 0, BUFFER_SIZE);
@@ -65,38 +71,38 @@ void handleClient(int clientSocket)
       std::cout << "Client disconnected or error.\n\r";
       break;
      }
-    //std::cout << "Received: " << buffer << "\n\r";
 
     std::cout << "Received " << bytesRead << " Bytes\n\r";
-    
 
     DecodeResult = DecodeNetData((uint8_t*)buffer, bytesRead, (uint8_t *)&CustomerInfo);
-    //std::cout << ((Customer_s*)buffer)->Name << "\n\r";
+
     if(DecodeResult)
      {
       std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << CustomerInfo.Vechicle_ID << " In coordinates: ";
       PrintGPSCords(CustomerInfo.Cords);
       std::cout << "\n\r";
-      
-      // Loading info for response.
+      /* Loading info for response. */
+
+      time(&CurrentTime);
       CustAckInfo.City_ID = 1;
       strcpy(CustAckInfo.City_Name, "Tel Aviv (For test only)");
-      CustAckInfo.ParkingTime = 60;
+      CustAckInfo.ParkingDurationTime = CurrentTime - CustAckInfo.ParkingStartTime;
       CustAckInfo.Vechicle_ID = CustomerInfo.Vechicle_ID;
      }
     else
      {
-      std::cout << "Error in decoding\n\r";
+      std::cerr << "Error in decoding\n\r";
       CustAckInfo.City_ID = 1;
       strcpy(CustAckInfo.City_Name, "  -----  ");
-      CustAckInfo.ParkingTime = 0;
+      CustAckInfo.ParkingDurationTime = 0;
       CustAckInfo.Vechicle_ID = 0;
      }
-    // Sending Response.
+    /* Sending Response. */
     AckDataSize = EncodeNetData((uint8_t*)&CustAckInfo, sizeof(CustAckInfo), &DataForSending);
     write(clientSocket, DataForSending, AckDataSize);
     FreeData(&DataForSending);
    }
+  
   close(clientSocket);
  }
 
@@ -114,22 +120,20 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
 
   addrlen = sizeof(address);
 
-  // 1. Create the server socket
+  /* Create the server socket */
   if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
    {
     //std::cerr << "Socket creation failed\n\r";
     perr() << "Socket creation failed";
-    //exit(EXIT_FAILURE);
     return;
    }
 
-  // 2. Attach socket to the port (prevents 'Address already in use' errors)
+  /* Attach socket to the port (prevents 'Address already in use' errors) */
   if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) 
    {
     //std::cerr << "setsockopt failed\n\r";
     perr() << "setsockopt failed";
     MakeExit();
-    //exit(EXIT_FAILURE);
     return;
    }
 
@@ -146,23 +150,21 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   address.sin_addr.s_addr = INADDR_ANY;
   address.sin_port = htons(DESTIN_PORT);
 
-  // 3. Bind the socket
+  /* Bind the socket */
   if (bind(serverSocket, (struct sockaddr *)&address, sizeof(address)) < 0) 
    {
     //std::cerr << "Bind failed\n\r";
     perr() << "Bind failed";
     MakeExit();
-    //exit(EXIT_FAILURE);
     return;
    }
 
-  // 4. Start listening for incoming connections
+  /* Start listening for incoming connections */
   if (listen(serverSocket, 3) < 0) 
    {
     //std::cerr << "Listen failed\n\r";
     perr() << "Listen failed";
     MakeExit();
-    //exit(EXIT_FAILURE);
     return;
    }
   std::cout << "Server listening on port " << DESTIN_PORT << "...\n\r";
@@ -171,24 +173,16 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
 void Network_c::DoMainProg()
  {
   //Process_c::DoMainProg();
-  //std::cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n\r";
-  // 5. Accept connections in a loop
-  if ((newSocket = accept(serverSocket, (struct sockaddr *)&address, (socklen_t*)&addrlen)) < 0) 
-   {
-    // //std::cerr << "Accept failed\n\r";
-    // perr() << "Accept failed";
-    // MakeExit();
-    // //exit(EXIT_FAILURE);
-    // return;
-   }
-  else
+  
+  /* Accept connections in a loop */
+  if ((newSocket = accept(serverSocket, (struct sockaddr *)&address, (socklen_t*)&addrlen)) >= 0) 
    {
     std::cout << "New connection accepted.\n\r";
-    // 6. Spawn a new thread to handle the client
-    std::thread t(handleClient, newSocket);
-    t.detach(); // Detach the thread so it runs independently
+    /* Spawn a new thread to handle the client */
+    std::thread t(HandleClient, newSocket);
+    t.detach(); /* Detach the thread so it runs independently */
    }
-  //std::cout << "------------------------------------------------------------\n\r";
+  
  }
  
 Network_c::~Network_c()
@@ -199,7 +193,6 @@ Network_c::~Network_c()
     serverSocket = 0;
     std::cout << "The socket was closed. \n\r";
    }
-  //return 0;
  }
 
 

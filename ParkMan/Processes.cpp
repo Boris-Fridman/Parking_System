@@ -6,6 +6,28 @@
 #include "Errors.hpp"
 
 
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcName[])
+ {
+  pid_t proc_pid;
+  proc_pid = fork();
+  switch(proc_pid)
+   {
+    case -1:
+      perror("fork error.");
+      exit(EXIT_FAILURE);
+     break;
+    case 0:
+      printf("Starting new process\n\r");
+      ProcToOpen(Procparams);
+      exit(EXIT_SUCCESS);
+     break;
+    default:
+      printf("The new %s process with PID: %d started.\n\r", ProcName, proc_pid);
+      return proc_pid;
+     break;
+   }
+ }
+
 
 
 
@@ -68,7 +90,7 @@ void Process_c::DoMainProg()
 void Process_c::CheckExitStatus()
  {
   exit_required |= p_shm->get_flag(proc_type);  //( p_shm->exit_proc_flags & (0x1 << proc_type) );     
-  exit_required |= (getppid() == 1); // Checking if the parent process is running. If not enables exit.
+  exit_required |= (getppid() == 1);            // Checking if the parent process is running. If not enables exit.
  }   
 
 

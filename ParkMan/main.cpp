@@ -40,6 +40,8 @@
 
 
 
+
+
 void CatchChildZombie();
 void WaitUntilFinised();
 
@@ -47,8 +49,8 @@ void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
 void RemovePIDFile(char FileName[]);
 void EnableSignals();
 
-
-
+void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id);
+void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs);
 
 
 /*======================================================================================================================*/
@@ -99,31 +101,33 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
+  GetShMemKeyID(sh_mem_key, sh_mem_id);
+  GenShSemKeyID(sh_sem_key, sem_name, p_shs);
 
-  do
-   {
-    /* code */
-    sh_mem_key = rand();
-    sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
-    // The memory can be checked by the ipcs command in linux command prompt.
-   } 
-  while (sh_mem_id < 0);
-  do
-   {
-    /* code */
-    sh_sem_key = rand();
-    //sh_sem_id = semget(sh_sem_key, 1, IPC_CREAT | IPC_EXCL | 0666);`
-    //snprintf(sem_name, sizeof(sem_name), "sem_%d", sh_sem_key);
+  // do
+  //  {
+  //   /* code */
+  //   sh_mem_key = rand();
+  //   sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
+  //   // The memory can be checked by the ipcs command in linux command prompt.
+  //  } 
+  // while (sh_mem_id < 0);
+  // do
+  //  {
+  //   /* code */
+  //   sh_sem_key = rand();
+  //   //sh_sem_id = semget(sh_sem_key, 1, IPC_CREAT | IPC_EXCL | 0666);`
+  //   //snprintf(sem_name, sizeof(sem_name), "sem_%d", sh_sem_key);
    
-    std::ostringstream stream;
-    stream << "sem_" << sh_sem_key;
-    sem_name = stream.str();
+  //   std::ostringstream stream;
+  //   stream << "sem_" << sh_sem_key;
+  //   sem_name = stream.str();
     
-    // if(sem_name.length() > 19) sem_name = sem_name.substr(0, 19);
-    p_shs = sem_open(sem_name.c_str(), O_CREAT | O_EXCL, 0600, 0);
-    //p_shs = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 0);
-   } 
-  while (p_shs == SEM_FAILED);
+  //   // if(sem_name.length() > 19) sem_name = sem_name.substr(0, 19);
+  //   p_shs = sem_open(sem_name.c_str(), O_CREAT | O_EXCL, 0600, 0);
+  //   //p_shs = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 0);
+  //  } 
+  // while (p_shs == SEM_FAILED);
 
 
   p_shm = (ShmData_s *)shmat(sh_mem_id, NULL, 0);  // Attach 
@@ -222,6 +226,12 @@ int main(int const argc, char const *argv[])
   std::cout << "The program finished running.\n\r";
   return 0;
  }
+
+
+
+
+
+
 
 /*Catching Zombie-Child-Processes and removing them. */ 
 void CatchChildZombie()
@@ -334,5 +344,31 @@ void EnableSignals()
   std::cout << "The signals were created successfully.\n\r";
  }
 
+
+void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id)
+ {
+  do
+   {
+    sh_mem_key = rand();
+    sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
+    /* The memory can be checked by the ipcs command in linux command prompt. */
+   } 
+  while (sh_mem_id < 0);
+ }
+
+void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)
+ {
+  do
+   {
+    sh_sem_key = rand();
+   
+    std::ostringstream stream;
+    stream << "sem_" << sh_sem_key;
+    sem_name = stream.str();
+    
+    p_shs = sem_open(sem_name.c_str(), O_CREAT | O_EXCL, 0600, 0);
+   } 
+  while (p_shs == SEM_FAILED);
+ }
 
 

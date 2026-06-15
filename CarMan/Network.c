@@ -53,7 +53,7 @@ void NetworkProc()
 void StartNetwork(NetworkParams_s *NetPars)
  {
 
-  // 1. Create the socket
+  /* Create the socket */
   NetPars->sock_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (NetPars->sock_fd < 0) 
    {
@@ -61,11 +61,11 @@ void StartNetwork(NetworkParams_s *NetPars)
     exit(EXIT_FAILURE);
    }
 
-  // 2. Configure the server address structure
+  /* Configure the server address structure */
   memset(&NetPars->server_addr, 0, sizeof(NetPars->server_addr));
   NetPars->server_addr.sin_family = AF_INET;
   NetPars->server_addr.sin_port = htons(DESTIN_PORT);
-  // Convert IPv4 address from text to binary format
+  /* Convert IPv4 address from text to binary format */
   if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
    {
     perror("Invalid address or Address not supported");
@@ -74,7 +74,7 @@ void StartNetwork(NetworkParams_s *NetPars)
    }
 
 
-  // 3. Connect to the server
+  /* Connect to the server */
   if (connect(NetPars->sock_fd, (struct sockaddr *)&NetPars->server_addr, sizeof(NetPars->server_addr)) < 0) 
    {
     perror("Connection Failed");
@@ -86,39 +86,35 @@ void StartNetwork(NetworkParams_s *NetPars)
 
  }
 
-void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    //  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive
+void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
  {
-  char buffer[BUFFER_SIZE] = {0}, buffortest[BUFFER_SIZE];
+  char buffer[BUFFER_SIZE] = {0}, timedurbuf[100];
   CustAcknowledge_s CustAckInfo;
   bool DecodeResult;
   ssize_t nsndbt;
   bool SendResult;
   uint8_t *DataForSending;
   ssize_t SentDataSize;
+  
   SentDataSize = EncodeNetData(Data, Len, &DataForSending);
   
-  // 4. Send data to the server
+  /* Send data to the server */
   nsndbt = send(NetPars->sock_fd, DataForSending, SentDataSize, 0);
   SendResult = (nsndbt >= 0);
   if (SendResult)
    {
     perror("Send failed");
     //close(NetPars->sock_fd);
-    //exit(EXIT_FAILURE);
+    //return;
    }
   
-  // printf("%s\n\r", ((Customer_s*)Data)->Name);
-  // printf("%s\n\r", ((Customer_s*)DataForSending)->Name);
 
-  DecodeResult = DecodeNetData(DataForSending, SentDataSize, (uint8_t*)buffortest);
-  printf("%d\n\r", (int)DecodeResult);
 
 
   printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
-  printf("The send() function gave result %ld.\n\r", nsndbt);
   FreeData(&DataForSending);
 
-  // 5. Receive data back from the server
+  /* Receive data back from the server */
   ssize_t bytes_read = recv(NetPars->sock_fd, buffer, BUFFER_SIZE - 1, 0);
   if (bytes_read < 0) 
    {
@@ -132,13 +128,18 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    //  Send
    else 
     {
      buffer[bytes_read] = '\0'; // Null-terminate the received string
-     //printf("Server response: %s\n\r", buffer);
      printf("Server responded data contains %ld bytes.\n\r", bytes_read);
      DecodeResult = DecodeNetData((uint8_t*)buffer, bytes_read, (uint8_t *)&CustAckInfo);
      if(DecodeResult)
       {
        printf("The vehicle is parked in: %s   (ID: %d)\n\r", CustAckInfo.City_Name, CustAckInfo.City_ID);
-       printf("Vehicle ID: %d  Parking duration: %d\n\r", CustAckInfo.Vechicle_ID, CustAckInfo.ParkingTime);
+       printf("Vehicle ID: %d\n\r", CustAckInfo.Vechicle_ID);
+
+       ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
+       printf("Parking started at: %s\n\r", timedurbuf);
+       ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
+       printf("Parking duration: %s\n\r", timedurbuf);
+       
       }
      else
       {
@@ -148,7 +149,7 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    //  Send
     }
  }
 
-void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   //  Queue  ▬▬▬▶ Network
+void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
   unsigned int prio;
   char buffer[BUFFER_SIZE] = {0};
@@ -160,7 +161,7 @@ void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   //  Queue  ▬▬�
      {
       ++ts.tv_sec;
      }
-    // Block until a message is received
+    /* Block until a message is received */
     ssize_t bytes_read = mq_timedreceive(NetQ->mq, buffer, MAX_SIZE, &prio, &ts);
     if (bytes_read >= 0) 
      {
@@ -177,7 +178,7 @@ void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   //  Queue  ▬▬�
 
 void CloseNetwork(NetworkParams_s *NetPars)
  {
-  // 6. Close the socket connection
+  /* Close the socket connection */
   close(NetPars->sock_fd);
  }
 
@@ -195,7 +196,7 @@ void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive)
   attr.mq_maxmsg = 10;        // Maximum messages in queue
   attr.mq_msgsize = MAX_SIZE; // Maximum size of any message
   attr.mq_curmsgs = 0;
-  // Create and open the queue for writing
+  /* Create and open the queue for writing */
   switch(SendReceive)
    {
     case QUEUE_SEND_E:
@@ -229,5 +230,5 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
 void CloseNetQueue(NetQueue_s *NetQ)
  {
   mq_close(NetQ->mq);
-  mq_unlink(QUEUE_NAME); // Removes queue from system completely
+  mq_unlink(QUEUE_NAME); /* Removes queue from system completely */
  }

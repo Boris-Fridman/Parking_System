@@ -9,6 +9,18 @@
 #include <string>
 
 
+struct ProcParams_t
+ {
+  key_t sh_mem_key; 
+  char *sem_name; 
+  ProcTypeID_e ProcType;
+ };
+
+typedef void(*subprocess_t)(ProcParams_t Procparams);
+
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcName[]);
+
+
 class Process_c
  {
      ProcTypeID_e proc_type;

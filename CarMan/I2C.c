@@ -11,20 +11,16 @@
 #include "Network.h"
 
 
-#define MAX_LATITUDE  90  // ±90˚
-#define MAX_LONGIGUDE 180 // ±180˚
+#define MAX_LATITUDE               90             /*  ±90˚   */
+#define MAX_LONGIGUDE              180            /*  ±180˚  */
 
-#define RESOLUTIONS 10000000000  
+#define RESOLUTIONS                10000000000  
 
 
 
 
 void InitI2C();
 void CloseI2C();
-
-
-
-
 
 
 

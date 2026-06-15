@@ -14,8 +14,10 @@
 #endif
 
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <libgen.h>
+#include <time.h>
 
 /*======================================================================================================================*/
 
@@ -125,6 +127,34 @@ void PrintGPSCords(GPS_Cords_s CordsToPrint)
   char buf[200];
   CordsToString(buf, sizeof(buf), CordsToPrint);
   printf("%s", buf);
+ }
+
+
+/*======================================================================================================================*/
+/*
+ * *************************************************************************************************************
+ **          TimeConvert Functions/Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Converts time to string format.                                                                                     */
+void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat)
+ {
+  struct tm tmp;
+  localtime_r(TimeToConvert, &tmp);
+  switch(TimeFormat)
+   {
+    case E_CAL_FORMAT:   /* Regular Calendar format d/m/y  h:m:s   */
+      strftime(TimeAsStr, TimeStrSize, "%d/%b/%Y - %H:%M:%S", &tmp);  
+     break;
+    case E_DBS_FORMAT:   /* Database fromat  yyyy/mm/dd - hh:mm:ss */
+      strftime(TimeAsStr, TimeStrSize, "%G/%m/%d %a   %H:%M:%S", &tmp);  
+     break;
+    case E_DUR_FORMAT:   /* Duration format  d-h:m:s               */
+      snprintf(TimeAsStr, TimeStrSize, "%ld %02ld:%02ld:%02ld", *TimeToConvert/(24*60*60), (*TimeToConvert/(60*60))%24, (*TimeToConvert/60)%60, *TimeToConvert%60);
+     break;
+   }
  }
 
 
@@ -320,6 +350,7 @@ bool GetPIDFile(int const argc, char const *argv[], char NamePath[])
   strcat(NamePath, DB_MAN_PID_FILENAME);
   return result;
  }
+
 
 /*======================================================================================================================*/
 
