@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#define SH_MEM_SIZE     (sizeof(ShmData_s))
+#define TSK_CONT_SH_MEM_SIZE     (sizeof(TskContShmData_s))
 
 
 enum ProcTypeID_e
@@ -16,10 +16,10 @@ enum ProcTypeID_e
 
 
 
-struct ShmData_s
+struct TskContShmData_s
  {
   uint8_t exit_proc_flags;
   void set_flag(ProcTypeID_e flagno, bool state){exit_proc_flags = ((exit_proc_flags & (~(0x01<<flagno))) | (state<<flagno));};
   bool get_flag(ProcTypeID_e flagno){return ((exit_proc_flags >> flagno) & 0x01);};
-  ShmData_s():exit_proc_flags(0){};
+  TskContShmData_s():exit_proc_flags(0){};
  };

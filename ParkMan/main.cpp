@@ -31,6 +31,7 @@
 #include "Network.hpp"
 #include "Parking.hpp"
 #include "Errors.hpp"
+#include "Processes.hpp"
 
 
 
@@ -49,8 +50,6 @@ void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
 void RemovePIDFile(char FileName[]);
 void EnableSignals();
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size);
-void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs);
 
 
 /*======================================================================================================================*/
@@ -65,6 +64,21 @@ pid_t parking_pid;
 pid_t network_pid;
 pid_t own_pid;
 
+// struct ShmemPar_s
+//  {
+//   key_t sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
+//   int sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
+//   void *p_shm;               /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
+//  };
+
+// struct ShsemPar_s
+//  {
+//   key_t sh_sem_key;          /* Task Control shared semaphore key        */
+//   sem_t *p_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
+//   std::string sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+//  };
+
+
 bool FullExist = false;
 
 /*----------------------------------------------------------------------------------------------------------------------*/
@@ -72,13 +86,23 @@ bool FullExist = false;
 int main(int const argc, char const *argv[])
  {
   char PIDFileName[PATH_LEN];
+  
+  
 
-  key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key */                                        // Is used as reference for other side process.
-  key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key */
-  int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID */             // Is used for removing.
+  key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
+  key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key        */
+  int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
   sem_t *p_tsk_cont_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
-  ShmData_s *p_tsk_cont_shm;          /* Pointer to Task Control shared memory */     // Is used for detatching.                                                   // Is used as reference for accessing.
-  std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name */        // Is used for unlinking.   // Is used for sharing by other side process.
+  TskContShmData_s *p_tsk_cont_shm;          /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
+  std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+
+  // key_t db_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
+  // key_t db_sh_sem_key;          /* Task Control shared semaphore key        */
+  // int db_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
+  // sem_t *p_db_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
+  // PriceTab_s *p_db_shm;         /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
+  // std::string db_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+
 
   GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
   double d;
@@ -96,10 +120,10 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), SH_MEM_SIZE);
+  GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), TSK_CONT_SH_MEM_SIZE);
   GenShSemKeyID(tsk_cont_sh_sem_key, tsk_cont_sem_name, p_tsk_cont_shs);
 
-  //p_tsk_cont_shm = (ShmData_s *)shmat(tsk_cont_sh_mem_id, NULL, 0);  // Attach 
+  //p_tsk_cont_shm = (TskContShmData_s *)shmat(tsk_cont_sh_mem_id, NULL, 0);  // Attach 
   //p_tsk_cont_shm->exit_proc_flags = 0;
   sem_post(p_tsk_cont_shs);
 
@@ -321,31 +345,5 @@ void EnableSignals()
 // https://emvlab.org/keyshares/
 
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
- {
-  do
-   {
-    sh_mem_key = rand();
-    sh_mem_id = shmget(sh_mem_key, size, IPC_CREAT | IPC_EXCL | 0666);
-    /* The memory can be checked by the ipcs command in linux command prompt. */
-   } 
-  while (sh_mem_id < 0);
-  p_shm = shmat(sh_mem_id, NULL, 0);
- }
-
-void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)
- {
-  do
-   {
-    sh_sem_key = rand();
-   
-    std::ostringstream stream;
-    stream << "sem_" << sh_sem_key;
-    sem_name = stream.str();
-    
-    p_shs = sem_open(sem_name.c_str(), O_CREAT | O_EXCL, 0600, 0);
-   } 
-  while (p_shs == SEM_FAILED);
- }
 
 
