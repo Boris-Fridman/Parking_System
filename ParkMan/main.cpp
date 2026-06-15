@@ -49,7 +49,7 @@ void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
 void RemovePIDFile(char FileName[]);
 void EnableSignals();
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id);
+void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size);
 void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs);
 
 
@@ -73,17 +73,12 @@ int main(int const argc, char const *argv[])
  {
   char PIDFileName[PATH_LEN];
 
-  // Can be generated in the sites:
-  // https://acte.ltd/utils/randomkeygen  
-  // https://www.strongdm.com/tools/api-key-generator  
-  // https://emvlab.org/keyshares/
-  key_t sh_mem_key;
-  key_t sh_sem_key;
-  int sh_mem_id;
-  sem_t *p_shs;
-  ShmData_s *p_shm;
-  //char sem_name[20] = {0};
-  std::string sem_name = "";
+  key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key */                                        // Is used as reference for other side process.
+  key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key */
+  int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID */             // Is used for removing.
+  sem_t *p_tsk_cont_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
+  ShmData_s *p_tsk_cont_shm;          /* Pointer to Task Control shared memory */     // Is used for detatching.                                                   // Is used as reference for accessing.
+  std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name */        // Is used for unlinking.   // Is used for sharing by other side process.
 
   GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
   double d;
@@ -101,38 +96,12 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  GetShMemKeyID(sh_mem_key, sh_mem_id);
-  GenShSemKeyID(sh_sem_key, sem_name, p_shs);
+  GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), SH_MEM_SIZE);
+  GenShSemKeyID(tsk_cont_sh_sem_key, tsk_cont_sem_name, p_tsk_cont_shs);
 
-  // do
-  //  {
-  //   /* code */
-  //   sh_mem_key = rand();
-  //   sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
-  //   // The memory can be checked by the ipcs command in linux command prompt.
-  //  } 
-  // while (sh_mem_id < 0);
-  // do
-  //  {
-  //   /* code */
-  //   sh_sem_key = rand();
-  //   //sh_sem_id = semget(sh_sem_key, 1, IPC_CREAT | IPC_EXCL | 0666);`
-  //   //snprintf(sem_name, sizeof(sem_name), "sem_%d", sh_sem_key);
-   
-  //   std::ostringstream stream;
-  //   stream << "sem_" << sh_sem_key;
-  //   sem_name = stream.str();
-    
-  //   // if(sem_name.length() > 19) sem_name = sem_name.substr(0, 19);
-  //   p_shs = sem_open(sem_name.c_str(), O_CREAT | O_EXCL, 0600, 0);
-  //   //p_shs = sem_open(sem_name, O_CREAT | O_EXCL, 0600, 0);
-  //  } 
-  // while (p_shs == SEM_FAILED);
-
-
-  p_shm = (ShmData_s *)shmat(sh_mem_id, NULL, 0);  // Attach 
-  //p_shm->exit_proc_flags = 0;
-  sem_post(p_shs);
+  //p_tsk_cont_shm = (ShmData_s *)shmat(tsk_cont_sh_mem_id, NULL, 0);  // Attach 
+  //p_tsk_cont_shm->exit_proc_flags = 0;
+  sem_post(p_tsk_cont_shs);
 
 
 
@@ -145,7 +114,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting DataBase process\n\r";
-      DataBaseProc(sh_mem_key, sem_name.c_str() , PROC_DATABASE_E);
+      DataBaseProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str() , PROC_DATABASE_E);
       std::cout << "Finishing DataBase process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -163,7 +132,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Parking process\n\r";
-      ParkingProc(sh_mem_key, sem_name.c_str(), PROC_PARKING_E);
+      ParkingProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_PARKING_E);
       std::cout << "Finishing Parking process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -181,7 +150,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Network process\n\r";
-      NetworkProc(sh_mem_key, sem_name.c_str(), PROC_NETWORK_E);
+      NetworkProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_NETWORK_E);
       std::cout << "Finishing Network process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -191,13 +160,13 @@ int main(int const argc, char const *argv[])
    }
 
 //  sleep(10);
-//  p_shm->set_flag(PROC_DATABASE_E, true);
+//  p_tsk_cont_shm->set_flag(PROC_DATABASE_E, true);
 //  sleep(10);
-//  p_shm->set_flag(PROC_NETWORK_E, true);
+//  p_tsk_cont_shm->set_flag(PROC_NETWORK_E, true);
 //  sleep(10);
-//  p_shm->set_flag(PROC_PARKING_E, true);
+//  p_tsk_cont_shm->set_flag(PROC_PARKING_E, true);
 //  sleep(10);
- //p_shm->exit_proc_flags = 0xFF;  // For test only.
+ //p_tsk_cont_shm->exit_proc_flags = 0xFF;  // For test only.
 
   std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
   do
@@ -208,20 +177,20 @@ int main(int const argc, char const *argv[])
 
 
 
-  sem_wait(p_shs);
-  //p_shm -> exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
+  sem_wait(p_tsk_cont_shs);
+  //p_tsk_cont_shm -> exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
   for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
-   p_shm->set_flag((ProcTypeID_e)i, true);
-  sem_post(p_shs);
+   p_tsk_cont_shm->set_flag((ProcTypeID_e)i, true);
+  sem_post(p_tsk_cont_shs);
   
 
   WaitUntilFinised();
 
   RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
 
-  shmdt(p_shm);  // Detach
-  shmctl(sh_mem_id, IPC_RMID, NULL); // Shared memory control
-  sem_unlink(sem_name.c_str());
+  shmdt(p_tsk_cont_shm);  // Detach
+  shmctl(tsk_cont_sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  sem_unlink(tsk_cont_sem_name.c_str());
 
   std::cout << "The program finished running.\n\r";
   return 0;
@@ -233,7 +202,7 @@ int main(int const argc, char const *argv[])
 
 
 
-/*Catching Zombie-Child-Processes and removing them. */ 
+/* Catching Zombie-Child-Processes and removing them. */ 
 void CatchChildZombie()
  {
   int wstatus, w = 0;
@@ -300,21 +269,21 @@ void RemovePIDFile(char FileName[])
 void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
  {
   UNUSED(context);
-  if (sig == DB_UPADATE_SIGNAL)  // Database update signal
+  if (sig == DB_UPADATE_SIGNAL)  /* Database update signal */
    {
     std::cout << "\nDB_UPADATE_SIGNAL signal was received successfully. \n";
-    int passed_val = info->si_value.sival_int;  // Reading value sent with signal from the sending program.
-    int process_pid = info->si_pid;             // Reading value sent with signal from the sending program.
+    int passed_val = info->si_value.sival_int;  /* Reading value sent with signal from the sending program. */
+    int process_pid = info->si_pid;             /* Reading value sent with signal from the sending program. */
     std::cout << "The passed value is: " << passed_val << "  From process id: " << process_pid << "\n\r";
    }
 
-  if (sig == SIGINT)  // Ctrl-C Signal
+  if (sig == SIGINT)   /* Ctrl-C Signal */
    {
     std::cout << "\nSIGINT signal was received successfully. \n";
     FullExist = true;
    }
   
-  if (sig == SIGQUIT)  // Ctrl-\ Signal
+  if (sig == SIGQUIT)  /* Ctrl-\ Signal */
    {
     std::cout << "\nSIGQUIT signal was received successfully. \n";
     FullExist = true;
@@ -325,18 +294,18 @@ void EnableSignals()
  {
   struct sigaction sa;
 
-  // Configure the sigaction structure
+  /* Configure the sigaction structure */
   //sa.sa_handler = &SignalHandler;
-  sa.sa_sigaction = AdvancedSignalHandler;   // Assign three-parameter handler
-  sigemptyset(&sa.sa_mask);                  // Block no other signals during execution
-  sa.sa_flags = SA_SIGINFO;                  // CRITICAL: Enables extra parameters
+  sa.sa_sigaction = AdvancedSignalHandler;   /* Assign three-parameter handler */
+  sigemptyset(&sa.sa_mask);                  /* Block no other signals during execution */
+  sa.sa_flags = SA_SIGINFO;                  /* CRITICAL: Enables extra parameters */
   sigemptyset(&sa.sa_mask);
 
-  // Bind DB_UPADATE_SIGNAL to our handler function
+  /* Bind DB_UPADATE_SIGNAL to our handler function */
   sigaction(DB_UPADATE_SIGNAL, &sa, NULL);
-  // Bind Ctrl-C signal to our handler function
+  /* Bind Ctrl-C signal to our handler function */
   sigaction(SIGINT, &sa, NULL);
-  // Bind Ctrl-\ signal to our handler function
+  /* Bind Ctrl-\ signal to our handler function */
   sigaction(SIGQUIT, &sa, NULL);
   
   
@@ -345,15 +314,23 @@ void EnableSignals()
  }
 
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id)
+
+// Can be generated in the sites:
+// https://acte.ltd/utils/randomkeygen  
+// https://www.strongdm.com/tools/api-key-generator  
+// https://emvlab.org/keyshares/
+
+
+void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
  {
   do
    {
     sh_mem_key = rand();
-    sh_mem_id = shmget(sh_mem_key, SH_MEM_SIZE, IPC_CREAT | IPC_EXCL | 0666);
+    sh_mem_id = shmget(sh_mem_key, size, IPC_CREAT | IPC_EXCL | 0666);
     /* The memory can be checked by the ipcs command in linux command prompt. */
    } 
   while (sh_mem_id < 0);
+  p_shm = shmat(sh_mem_id, NULL, 0);
  }
 
 void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)

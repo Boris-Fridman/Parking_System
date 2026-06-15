@@ -37,8 +37,8 @@ class Process_c
      virtual void OnRunProcess();      /* This procedure contains main loop with exit condition where is running the "DoMainProg()" procedure, but can be overwritten according to requirements. */
      virtual void DoMainProg();        /* This procedure contains the 1 second sleep and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
      virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
-     Process_c& operator = (const Process_c& other) = delete;
-     Process_c(const Process_c& oter) = delete;
+     Process_c& operator = (const Process_c &other) = delete;
+     Process_c(const Process_c &oter) = delete;
  };
 
 
