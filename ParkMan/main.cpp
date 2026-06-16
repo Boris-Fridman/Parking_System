@@ -86,16 +86,6 @@ int main(int const argc, char const *argv[])
  {
   char PIDFileName[PATH_LEN];
   TaskControl_ShSM_c TaskContSh;
-  
-
-  // key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
-  // key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key        */
-  // int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
-  // sem_t *p_tsk_cont_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
-  // TskContShmData_s *p_tsk_cont_shm;   /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
-  // std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
-
-
 
   GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
   double d;
@@ -112,7 +102,6 @@ int main(int const argc, char const *argv[])
 
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
-
 
   database_pid = fork();
   switch(database_pid)
@@ -169,33 +158,26 @@ int main(int const argc, char const *argv[])
    }
 
 //  sleep(10);
-//  TaskContSh.ExitProcess(PROC_DATABASE_E);  //p_tsk_cont_shm->set_flag(PROC_DATABASE_E, true);
+//  TaskContSh.ExitProcess(PROC_DATABASE_E);
 //  sleep(10);
-//  TaskContSh.ExitProcess(PROC_NETWORK_E);  //p_tsk_cont_shm->set_flag(PROC_NETWORK_E, true);
+//  TaskContSh.ExitProcess(PROC_NETWORK_E);
 //  sleep(10);
-//  TaskContSh.ExitProcess(PROC_PARKING_E);  //p_tsk_cont_shm->set_flag(PROC_PARKING_E, true);
+//  TaskContSh.ExitProcess(PROC_PARKING_E);
 //  sleep(10);
-           //p_tsk_cont_shm->exit_proc_flags = 0xFF;  // For test only.
 
   std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
   do
    {
     /* code */
     CatchChildZombie();
+    sleep(1);
    } while (!FullExist);
 
-
-
   TaskContSh.ExitAllProcesses();
-  
 
   WaitUntilFinised();
 
   RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
-
-  //shmdt(p_tsk_cont_shm);  // Detach
-  //shmctl(tsk_cont_sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-  //sem_unlink(tsk_cont_sem_name.c_str());
 
   std::cout << "The program finished running.\n\r";
   return 0;

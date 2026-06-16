@@ -18,13 +18,7 @@
 #include "I2C.h"
 
 
-
-
-
-
-
 bool FullExit = false;
-
 
 
 void CatchChildZombie();
@@ -38,9 +32,6 @@ int main(void)
   pid_t i2c_pid;
   pid_t own_pid;
 
-  // UNUSED(network_pid);
-  // UNUSED(i2c_pid);
-
   //ansi clear screen
   printf("\033[2J\033[H");
 
@@ -49,10 +40,6 @@ int main(void)
 
   own_pid = getpid();
   printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
-
-  // GetShMemKeyID(&TskContShms.sh_mem_key, &TskContShms.sh_mem_id, &TskContShms.p_shm, sizeof(TskContShmData_s));
-  // GenShSemKeyID(&TskContShms.sh_sem_key, TskContShms.sem_name, &TskContShms.p_shs);
-  // sem_post(TskContShms.p_shs);
 
   ActivateMasterShMem(&TskContShms, sizeof(TskContShmData_s));
 
@@ -64,20 +51,18 @@ int main(void)
   do
    {
     CatchChildZombie();
+    sleep(1);
    }
   while(!FullExit);
 
   sem_wait(TskContShms.p_shs);
-  //((TskContShmData_s*)TskContShms.p_shm)->exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
+
   for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
    set_flag((TskContShmData_s*)TskContShms.p_shm, (ProcTypeID_e)i, true);
   sem_post(TskContShms.p_shs);
 
   WaitUntilFinised(network_pid, i2c_pid);
 
-  // shmdt(TskContShms.p_shm);  // Detach
-  // shmctl(TskContShms.sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-  // sem_unlink(TskContShms.sem_name);
 
   DeactivateMasterShMem(&TskContShms);
 
