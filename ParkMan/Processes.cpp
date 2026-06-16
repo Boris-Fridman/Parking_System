@@ -64,14 +64,14 @@ std::string ShSemMem_c::SemName()
  }
 
 
-TaskControl_ShSM_c::TaskControl_ShSM_c(int size)
- :ShSemMem_c(size)
+TaskControl_ShSM_c::TaskControl_ShSM_c()
+ :ShSemMem_c(sizeof(TskContShmData_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
 
-TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[], int size)
- :ShSemMem_c(sh_mem_key, sem_name, size)
+TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[])
+ :ShSemMem_c(sh_mem_key, sem_name, sizeof(TskContShmData_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
@@ -83,6 +83,15 @@ void TaskControl_ShSM_c::ExitProcess(ProcTypeID_e ProcToExit)
   ((TskContShmData_s*)p_shm)->set_flag(ProcToExit, true);
   sem_post(p_shs);
  }
+
+void TaskControl_ShSM_c::ExitAllProcesses()
+ {
+  int i;
+  sem_wait(p_shs);
+  for(i=0;i<PROC_NUM_PROC_TYPES_E;i++)
+   ((TskContShmData_s*)p_shm)->set_flag((ProcTypeID_e)i, true);
+  sem_post(p_shs);
+ } 
 
 bool TaskControl_ShSM_c::ProcessMustExit(ProcTypeID_e ProcToExit)
  {
@@ -182,6 +191,7 @@ void Process_c::CheckExitStatus()
   exit_required |= (getppid() == 1);            // Checking if the parent process is running. If not enables exit.
  }   
 
+/*======================================================================================================================*/
 
 
 void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)

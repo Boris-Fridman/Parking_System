@@ -34,7 +34,7 @@ class ShSemMem_c
     key_t ShMemKey();
     std::string SemName();
     ShSemMem_c& operator = (const ShSemMem_c &other) = delete;
-    ShSemMem_c(const ShSemMem_c &oter) = delete;
+    ShSemMem_c(const ShSemMem_c &other) = delete;
  };
 
 
@@ -42,9 +42,10 @@ class ShSemMem_c
 class TaskControl_ShSM_c:public ShSemMem_c
  {
   public:
-    TaskControl_ShSM_c(int size);
-    TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[], int size);
+    TaskControl_ShSM_c();
+    TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[]);
     void ExitProcess(ProcTypeID_e ProcToExit);        /* Is used from the master process side. */
+    void ExitAllProcesses();
     bool ProcessMustExit(ProcTypeID_e ProcToExit);    /* Is used from slaves processes sides.  */
  };
 
@@ -74,7 +75,7 @@ class Process_c
      std::string proc_name;
      int sh_mem_id;
      bool exit_required;
-     bool error_in_creation;  // Is set to true in case of constructor couldn't initialize required variables.
+     bool error_in_creation;           /* Is set to true in case of constructor couldn't initialize required variables. */
   public:
      Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
      virtual ~Process_c();
@@ -83,7 +84,7 @@ class Process_c
      virtual void DoMainProg();        /* This procedure contains the 1 second sleep and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
      virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
      Process_c& operator = (const Process_c &other) = delete;
-     Process_c(const Process_c &oter) = delete;
+     Process_c(const Process_c &other) = delete;
  };
 
 

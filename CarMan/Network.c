@@ -17,6 +17,7 @@
 #include <mqueue.h>
 
 #include "CommonData.h"
+#include "Processes.h"
 
 
 #define QUEUE_NAME     "/network_queue"
@@ -26,25 +27,30 @@
 
 
 void StartNetwork(NetworkParams_s *NetPars);
-void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ);
+void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ);
 void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len);
 void CloseNetwork(NetworkParams_s *NetPars);
 
 
 
-void NetworkProc()
+void NetworkProc(key_t sh_mem_key, char sem_name[])
  {
   NetworkParams_s NetworkParams = {0};
   NetQueue_s NetQueue = {0};
+  SlaveShMem_s SlaveShMem;
+
+  ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
+
   InitNetQueue(&NetQueue, true);
 
   StartNetwork(&NetworkParams);
-
   
-  DoNetwork(&NetworkParams, &NetQueue);
+  DoNetwork(&SlaveShMem, &NetworkParams, &NetQueue);
+
   CloseNetwork(&NetworkParams);
 
   CloseNetQueue(&NetQueue);
+  DeactivateSlaveShMem(&SlaveShMem);
  }
 
 
@@ -149,13 +155,15 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
     }
  }
 
-void DoNetwork(NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
+void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
   unsigned int prio;
   char buffer[BUFFER_SIZE] = {0};
   struct timespec ts;
+  get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E);
 
-  while(getppid() != 1)
+
+  while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E) != true))
    {
     if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
      {

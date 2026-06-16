@@ -25,7 +25,7 @@ NetworkParams_s;
 
 
 
-void NetworkProc();
+void NetworkProc(key_t sh_mem_key, char sem_name[]);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 

@@ -9,7 +9,6 @@
 #include "CommonData.h"
 #include <cmath>
 #include <cstring>
-#include <iostream>
 #include <iomanip>
 #include <queue>
 #include <mqueue.h>
@@ -86,22 +85,16 @@ bool FullExist = false;
 int main(int const argc, char const *argv[])
  {
   char PIDFileName[PATH_LEN];
-  
+  TaskControl_ShSM_c TaskContSh;
   
 
-  key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
-  key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key        */
-  int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
-  sem_t *p_tsk_cont_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
-  TskContShmData_s *p_tsk_cont_shm;          /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
-  std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+  // key_t tsk_cont_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
+  // key_t tsk_cont_sh_sem_key;          /* Task Control shared semaphore key        */
+  // int tsk_cont_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
+  // sem_t *p_tsk_cont_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
+  // TskContShmData_s *p_tsk_cont_shm;   /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
+  // std::string tsk_cont_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
 
-  // key_t db_sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
-  // key_t db_sh_sem_key;          /* Task Control shared semaphore key        */
-  // int db_sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
-  // sem_t *p_db_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
-  // PriceTab_s *p_db_shm;         /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
-  // std::string db_sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
 
 
   GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
@@ -114,18 +107,18 @@ int main(int const argc, char const *argv[])
  
   own_pid = getpid();
 
-  std::cout << "The current protram is: "<< argv[0] <<"\n\r";
+  std::cout << "The current program is: "<< argv[0] <<"\n\r";
   std::cout << "The pid is: " << own_pid << "\n\r";
 
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), TSK_CONT_SH_MEM_SIZE);
-  GenShSemKeyID(tsk_cont_sh_sem_key, tsk_cont_sem_name, p_tsk_cont_shs);
+  // GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), TSK_CONT_SH_MEM_SIZE);
+  // GenShSemKeyID(tsk_cont_sh_sem_key, tsk_cont_sem_name, p_tsk_cont_shs);
 
   //p_tsk_cont_shm = (TskContShmData_s *)shmat(tsk_cont_sh_mem_id, NULL, 0);  // Attach 
   //p_tsk_cont_shm->exit_proc_flags = 0;
-  sem_post(p_tsk_cont_shs);
+  //sem_post(p_tsk_cont_shs);
 
 
 
@@ -138,7 +131,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting DataBase process\n\r";
-      DataBaseProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str() , PROC_DATABASE_E);
+      DataBaseProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_DATABASE_E);  //DataBaseProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str() , PROC_DATABASE_E);
       std::cout << "Finishing DataBase process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -156,7 +149,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Parking process\n\r";
-      ParkingProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_PARKING_E);
+      ParkingProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_PARKING_E);  //ParkingProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_PARKING_E);
       std::cout << "Finishing Parking process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -174,7 +167,7 @@ int main(int const argc, char const *argv[])
      break;
     case 0:
       std::cout << "Starting Network process\n\r";
-      NetworkProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_NETWORK_E);
+      NetworkProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_NETWORK_E);  //NetworkProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_NETWORK_E);
       std::cout << "Finishing Network process\n\r";
       exit(EXIT_SUCCESS);
      break;
@@ -184,13 +177,13 @@ int main(int const argc, char const *argv[])
    }
 
 //  sleep(10);
-//  p_tsk_cont_shm->set_flag(PROC_DATABASE_E, true);
+//  TaskContSh.ExitProcess(PROC_DATABASE_E);  //p_tsk_cont_shm->set_flag(PROC_DATABASE_E, true);
 //  sleep(10);
-//  p_tsk_cont_shm->set_flag(PROC_NETWORK_E, true);
+//  TaskContSh.ExitProcess(PROC_NETWORK_E);  //p_tsk_cont_shm->set_flag(PROC_NETWORK_E, true);
 //  sleep(10);
-//  p_tsk_cont_shm->set_flag(PROC_PARKING_E, true);
+//  TaskContSh.ExitProcess(PROC_PARKING_E);  //p_tsk_cont_shm->set_flag(PROC_PARKING_E, true);
 //  sleep(10);
- //p_tsk_cont_shm->exit_proc_flags = 0xFF;  // For test only.
+           //p_tsk_cont_shm->exit_proc_flags = 0xFF;  // For test only.
 
   std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
   do
@@ -201,20 +194,21 @@ int main(int const argc, char const *argv[])
 
 
 
-  sem_wait(p_tsk_cont_shs);
+  //sem_wait(p_tsk_cont_shs);
   //p_tsk_cont_shm -> exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
-  for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
-   p_tsk_cont_shm->set_flag((ProcTypeID_e)i, true);
-  sem_post(p_tsk_cont_shs);
+  TaskContSh.ExitAllProcesses();
+  // for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
+  //  TaskContSh.ExitProcess((ProcTypeID_e)i);  //p_tsk_cont_shm->set_flag((ProcTypeID_e)i, true);
+  //sem_post(p_tsk_cont_shs);
   
 
   WaitUntilFinised();
 
   RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
 
-  shmdt(p_tsk_cont_shm);  // Detach
-  shmctl(tsk_cont_sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-  sem_unlink(tsk_cont_sem_name.c_str());
+  //shmdt(p_tsk_cont_shm);  // Detach
+  //shmctl(tsk_cont_sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  //sem_unlink(tsk_cont_sem_name.c_str());
 
   std::cout << "The program finished running.\n\r";
   return 0;
@@ -289,7 +283,7 @@ void RemovePIDFile(char FileName[])
  }
 
 
-// Custom callback executed when signal arrives
+/* Custom callback executed when signal arrives */
 void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
  {
   UNUSED(context);

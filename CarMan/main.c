@@ -1,56 +1,172 @@
+#include "main.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "CommonData.h"
+#include "Processes.h"
+
+//#include <errno.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/wait.h>
+#include <signal.h>
+#include <semaphore.h>
 
 #include "Network.h"
 #include "I2C.h"
 
 
-typedef void(*process)(void);
 
-pid_t OpenProcess(void(*process)(void), char ProcName[])
- {
-  pid_t proc_pid;
-  proc_pid = fork();
-  switch(proc_pid)
-   {
-    case -1:
-      perror("fork error.");
-      exit(EXIT_FAILURE);
-     break;
-    case 0:
-      printf("Starting new process\n\r");
-      process();
-      exit(EXIT_SUCCESS);
-     break;
-    default:
-      printf("The new %s process with PID: %d started.\n\r", ProcName, proc_pid);
-      return proc_pid;
-     break;
-   }
- }
+
+
+
+
+bool FullExit = false;
+
+
+
+void CatchChildZombie();
+void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
+void EnableSignals();
 
 
 int main(void)
  {
   pid_t network_pid;
   pid_t i2c_pid;
-  UNUSED(network_pid);
-  UNUSED(i2c_pid);
+  pid_t own_pid;
+
+  // UNUSED(network_pid);
+  // UNUSED(i2c_pid);
+
   //ansi clear screen
   printf("\033[2J\033[H");
-  
-  network_pid = OpenProcess(NetworkProc, "Network");
-
-  i2c_pid = OpenProcess(I2CProc, "I2C");
 
   //code
-  //NetworkProc();  // Temporary for test is run from main. Later will be redefined as a process.
-  while(1)
+  MasterShMem_s TskContShms;
+
+  own_pid = getpid();
+  printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
+
+  GetShMemKeyID(&TskContShms.sh_mem_key, &TskContShms.sh_mem_id, &TskContShms.p_shm, sizeof(TskContShmData_s));
+  GenShSemKeyID(&TskContShms.sh_sem_key, TskContShms.sem_name, &TskContShms.p_shs);
+
+  EnableSignals();
+  sem_post(TskContShms.p_shs);
+
+  network_pid = OpenProcess(NetworkProc, "Network", TskContShms.sh_mem_key, TskContShms.sem_name);
+  i2c_pid = OpenProcess(I2CProc, "I2C", TskContShms.sh_mem_key, TskContShms.sem_name);
+
+  do
    {
+    CatchChildZombie();
    }
+  while(!FullExit);
+
+  sem_wait(TskContShms.p_shs);
+  //((TskContShmData_s*)TskContShms.p_shm)->exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
+  for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
+   set_flag((TskContShmData_s*)TskContShms.p_shm, (ProcTypeID_e)i, true);
+  sem_post(TskContShms.p_shs);
+
+  WaitUntilFinised(network_pid, i2c_pid);
+
+  shmdt(TskContShms.p_shm);  // Detach
+  shmctl(TskContShms.sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  sem_unlink(TskContShms.sem_name);
+  printf("Exitting...\n\r");
   return 0;
  }
+
+
+
+
+/* Catching Zombie-Child-Processes and removing them. */ 
+void CatchChildZombie()
+ {
+  int wstatus, w = 0;
+  do
+  {
+   w = waitpid(-1, &wstatus, WNOHANG);  // WUNTRACED | WCONTINUED // WNOHANG
+   if(w > 0)
+    {
+     printf("The process with PID: %d finished running.\n\r", w);
+    }
+  } while (w > 0);
+ }
+
+void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid)
+ {
+  int w;
+  int wstatus;
+
+  printf("Waiting for processes to be stopped...\n\r");
+
+  w = waitpid(i2c_pid, &wstatus, WUNTRACED );  // WUNTRACED | WCONTINUED
+  if(w < 0)
+   {
+    perror("Was problem in wainting for the I2C process.");
+   }
+   
+  w = waitpid(net_pid, &wstatus, WUNTRACED );  // WUNTRACED | WCONTINUED
+  if(w < 0)
+   {
+    perror("Was problem in wainting for the Network process.");
+   }
+
+ }
+
+
+
+/* Custom callback executed when signal arrives */
+void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
+ {
+  UNUSED(context);
+  UNUSED(info);
+  // if (sig == DB_UPADATE_SIGNAL)  /* Database update signal */
+  //  {
+  //   printf("\nDB_UPADATE_SIGNAL signal was received successfully. \n");
+  //   int passed_val = info->si_value.sival_int;  /* Reading value sent with signal from the sending program. */
+  //   int process_pid = info->si_pid;             /* Reading value sent with signal from the sending program. */
+  //   printf("The passed value is: %d  From process id: %d\n\r", passed_val, process_pid);
+  //  }
+
+  if (sig == SIGINT)   /* Ctrl-C Signal */
+   {
+    printf("\nSIGINT signal was received successfully. \n");
+    FullExit = true;
+   }
+  
+  if (sig == SIGQUIT)  /* Ctrl-\ Signal */
+   {
+    printf("\nSIGQUIT signal was received successfully. \n");
+    FullExit = true;
+   }
+ }
+
+
+void EnableSignals()
+ {
+  struct sigaction sa;
+
+  /* Configure the sigaction structure */
+  //sa.sa_handler = &SignalHandler;
+  sa.sa_sigaction = AdvancedSignalHandler;   /* Assign three-parameter handler */
+  sigemptyset(&sa.sa_mask);                  /* Block no other signals during execution */
+  sa.sa_flags = SA_SIGINFO;                  /* CRITICAL: Enables extra parameters */
+  sigemptyset(&sa.sa_mask);
+
+  // /* Bind DB_UPADATE_SIGNAL to our handler function */
+  // sigaction(DB_UPADATE_SIGNAL, &sa, NULL);
+  /* Bind Ctrl-C signal to our handler function */
+  sigaction(SIGINT, &sa, NULL);
+  /* Bind Ctrl-\ signal to our handler function */
+  sigaction(SIGQUIT, &sa, NULL);
+  
+  printf("The signals were created successfully.\n\r");
+ }
+
+
+
