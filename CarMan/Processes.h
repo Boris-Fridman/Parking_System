@@ -47,8 +47,13 @@ pid_t OpenProcess(subprocess_t, char ProcName[], key_t sh_mem_key, char sem_name
 void GetShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size);
 void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs);
 
+void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size);
+void DeactivateMasterShMem(MasterShMem_s *MasterShMem);
+
 void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char sem_name[], int size);
 void DeactivateSlaveShMem(SlaveShMem_s *SlaveShMem);
+
+
 
 
 #endif  // ____Processes_h__

@@ -72,6 +72,23 @@ void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
   while (*p_shs == SEM_FAILED);
  }
 
+
+void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size)
+ {
+  GetShMemKeyID(&MasterShMem->sh_mem_key, &MasterShMem->sh_mem_id, &MasterShMem->p_shm, size);
+  GenShSemKeyID(&MasterShMem->sh_sem_key,  MasterShMem->sem_name,  &MasterShMem->p_shs);
+  sem_post(MasterShMem->p_shs);
+ }
+
+void DeactivateMasterShMem(MasterShMem_s *MasterShMem)
+ {
+  shmdt(MasterShMem->p_shm);  // Detach
+  shmctl(MasterShMem->sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  sem_unlink(MasterShMem->sem_name);
+ }
+
+
+
 void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char sem_name[], int size)
  {
   

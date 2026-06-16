@@ -50,11 +50,13 @@ int main(void)
   own_pid = getpid();
   printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
 
-  GetShMemKeyID(&TskContShms.sh_mem_key, &TskContShms.sh_mem_id, &TskContShms.p_shm, sizeof(TskContShmData_s));
-  GenShSemKeyID(&TskContShms.sh_sem_key, TskContShms.sem_name, &TskContShms.p_shs);
+  // GetShMemKeyID(&TskContShms.sh_mem_key, &TskContShms.sh_mem_id, &TskContShms.p_shm, sizeof(TskContShmData_s));
+  // GenShSemKeyID(&TskContShms.sh_sem_key, TskContShms.sem_name, &TskContShms.p_shs);
+  // sem_post(TskContShms.p_shs);
+
+  ActivateMasterShMem(&TskContShms, sizeof(TskContShmData_s));
 
   EnableSignals();
-  sem_post(TskContShms.p_shs);
 
   network_pid = OpenProcess(NetworkProc, "Network", TskContShms.sh_mem_key, TskContShms.sem_name);
   i2c_pid = OpenProcess(I2CProc, "I2C", TskContShms.sh_mem_key, TskContShms.sem_name);
@@ -73,9 +75,12 @@ int main(void)
 
   WaitUntilFinised(network_pid, i2c_pid);
 
-  shmdt(TskContShms.p_shm);  // Detach
-  shmctl(TskContShms.sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-  sem_unlink(TskContShms.sem_name);
+  // shmdt(TskContShms.p_shm);  // Detach
+  // shmctl(TskContShms.sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  // sem_unlink(TskContShms.sem_name);
+
+  DeactivateMasterShMem(&TskContShms);
+
   printf("Exitting...\n\r");
   return 0;
  }

@@ -113,14 +113,6 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  // GetShMemKeyID(tsk_cont_sh_mem_key, tsk_cont_sh_mem_id, *((void**)&p_tsk_cont_shm), TSK_CONT_SH_MEM_SIZE);
-  // GenShSemKeyID(tsk_cont_sh_sem_key, tsk_cont_sem_name, p_tsk_cont_shs);
-
-  //p_tsk_cont_shm = (TskContShmData_s *)shmat(tsk_cont_sh_mem_id, NULL, 0);  // Attach 
-  //p_tsk_cont_shm->exit_proc_flags = 0;
-  //sem_post(p_tsk_cont_shs);
-
-
 
   database_pid = fork();
   switch(database_pid)
@@ -194,12 +186,7 @@ int main(int const argc, char const *argv[])
 
 
 
-  //sem_wait(p_tsk_cont_shs);
-  //p_tsk_cont_shm -> exit_proc_flags = (-1);  /* The value is set to "-1" to enable all the flags. The reason why "-1" and not 0xFF is to put the value to maximal independently of the variable size. */
   TaskContSh.ExitAllProcesses();
-  // for(int i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
-  //  TaskContSh.ExitProcess((ProcTypeID_e)i);  //p_tsk_cont_shm->set_flag((ProcTypeID_e)i, true);
-  //sem_post(p_tsk_cont_shs);
   
 
   WaitUntilFinised();
