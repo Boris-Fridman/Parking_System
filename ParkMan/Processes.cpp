@@ -15,41 +15,52 @@
 /*======================================================================================================================*/
 
 
-ShSemMem_c::ShSemMem_c(int size)
+ShSemMem_c::ShSemMem_c(size_t size)
  :created(true), ShMnc(false), ShSnc(false)
  {
-  GetShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
-  GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
-  sem_post(p_shs);
+  LoadShm(size);
+  LoadShs();
+
+  // GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
+  // sem_post(p_shs);
+  // GetShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
  }
 
-ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], int size)
+ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
  :created(false), ShMnc(false), ShSnc(false)
  {
-  sh_mem_id = shmget(sh_mem_key, size, 0666);
-  if(sh_mem_id == -1)
-   {
-    ShMnc = true;
-    return;
-   }
-  p_shs = sem_open(sem_name, 0, 0600);
-  if(p_shs == SEM_FAILED)
-   {
-    ShSnc = true; 
-    return;
-   }
-  p_shm = shmat(sh_mem_id, NULL, 0);
+  this->sh_mem_key = sh_mem_key;
+  this->sem_name = sem_name;
+  LoadShm(size);
+  LoadShs();
+
+  // p_shs = sem_open(sem_name, 0, 0600);
+  // if(p_shs == SEM_FAILED)
+  //  {
+  //   ShSnc = true; 
+  //   return;
+  //  }
+  // sh_mem_id = shmget(sh_mem_key, size, 0666);
+  // if(sh_mem_id == -1)
+  //  {
+  //   ShMnc = true;
+  //   return;
+  //  }
+  // p_shm = shmat(sh_mem_id, NULL, 0);
  }
 
 ShSemMem_c::~ShSemMem_c()
  {
-  if(p_shm != NULL)
-   shmdt(p_shm);  // Detach
-  if(created)
-   {
-    shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-    sem_unlink(sem_name.c_str());
-   }
+  // if(p_shm != NULL)
+  //  shmdt(p_shm);  // Detach
+  // if(created)
+  //  {
+  //   shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  //   sem_unlink(sem_name.c_str());
+  //  }
+  RemoveShm();
+  RemoveShs();
+
  }
 
 
@@ -97,6 +108,68 @@ bool TaskControl_ShSM_c::ProcessMustExit(ProcTypeID_e ProcToExit)
  {
   return ((TskContShmData_s*)p_shm)->get_flag(ProcToExit);
  }
+
+
+void ShSemMem_c::LoadShm(size_t size)
+ {
+  if(size)
+   {
+    if(created)
+     GetShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
+    else
+     {
+      sh_mem_id = shmget(sh_mem_key, size, 0666);
+      if(sh_mem_id == -1)
+       {
+        ShMnc = true;
+        return;
+       }
+      p_shm = shmat(sh_mem_id, NULL, 0);
+     }
+   }
+ }
+
+void ShSemMem_c::LoadShs()
+ {
+  if(created)
+   {
+    GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
+    sem_post(p_shs);
+   }
+  else
+   {
+    p_shs = sem_open(sem_name.c_str(), 0, 0600);
+    if(p_shs == SEM_FAILED)
+     {
+      ShSnc = true; 
+      return;
+     }
+   }
+ }
+
+void ShSemMem_c::RemoveShm()
+ {
+  if(p_shm != NULL)
+   {
+    shmdt(p_shm);  // Detach
+    p_shm = NULL;
+   }
+  if(created)
+   {
+    shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+   }
+ }
+
+void ShSemMem_c::RemoveShs()
+ {
+  if(created)
+   {
+    sem_unlink(sem_name.c_str());
+   }
+ }
+
+
+
 
 /*======================================================================================================================*/
 
@@ -159,7 +232,7 @@ Process_c::~Process_c()
  }
 
 
-/* Breaks the default loop existing in the OnRunProcess. */
+/* Breaks the default loop existing in the RunProcess. */
 void Process_c::MakeExit()
  { 
   exit_required = true;
@@ -167,24 +240,39 @@ void Process_c::MakeExit()
 
 
 
-/* This procedure contains main loop with exit condition where is running the "DoMainProg()" procedure, but can be overwritten according to requirements. */
-void Process_c::OnRunProcess()
+/* This procedure contains main loop with exit condition where is running the "OnRunProcess()" procedure, but can be overwritten according to requirements. */
+void Process_c::RunProcess()
  {
+  OnStartProcess();
   while (!(exit_required || error_in_creation))
    {
-    DoMainProg();
+    OnRunProcess();
     CheckExitStatus();
-   }
-  
+   }  
+  OnFinishProcess();
  }
 
-/* This procedure contains the 1 second sleep and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
-void Process_c::DoMainProg()
+/* This procedure is empty and runs before starting running the process for any initializations. */ 
+void Process_c::OnStartProcess()     
+ {
+
+ }
+
+
+
+/* This procedure contains the 1 second sleep and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
+void Process_c::OnRunProcess()
  {
   sleep(1);
  }
 
-/* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */ 
+/* This procedure is empty and runs after finishing running the process for any deinitializations. */ 
+void Process_c::OnFinishProcess()    
+ {
+
+ }
+
+/* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */ 
 void Process_c::CheckExitStatus()
  {
   exit_required |= p_shm->get_flag(proc_type);  //( p_shm->exit_proc_flags & (0x1 << proc_type) );     

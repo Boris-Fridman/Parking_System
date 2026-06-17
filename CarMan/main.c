@@ -115,9 +115,9 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
  {
   UNUSED(context);
   UNUSED(info);
-  // if (sig == DB_UPADATE_SIGNAL)  /* Database update signal */
+  // if (sig == SIGUSR1)  /* Database update signal */
   //  {
-  //   printf("\nDB_UPADATE_SIGNAL signal was received successfully. \n");
+  //   printf("\nSIGUSR1 signal was received successfully. \n");
   //   int passed_val = info->si_value.sival_int;  /* Reading value sent with signal from the sending program. */
   //   int process_pid = info->si_pid;             /* Reading value sent with signal from the sending program. */
   //   printf("The passed value is: %d  From process id: %d\n\r", passed_val, process_pid);
@@ -148,8 +148,8 @@ void EnableSignals()
   sa.sa_flags = SA_SIGINFO;                  /* CRITICAL: Enables extra parameters */
   sigemptyset(&sa.sa_mask);
 
-  // /* Bind DB_UPADATE_SIGNAL to our handler function */
-  // sigaction(DB_UPADATE_SIGNAL, &sa, NULL);
+  // /* Bind SIGUSR1 to our handler function */
+  // sigaction(SIGUSR1, &sa, NULL);
   /* Bind Ctrl-C signal to our handler function */
   sigaction(SIGINT, &sa, NULL);
   /* Bind Ctrl-\ signal to our handler function */

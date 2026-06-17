@@ -2,6 +2,7 @@
 
 #include "CommonData.h"
 #include "main.hpp"
+//#include "Processes.hpp"
 
 #include <sys/sem.h>
 #include <sys/shm.h>
@@ -27,9 +28,14 @@ class ShSemMem_c
     bool created = false;
     bool ShMnc = false;        /* Shered memory not created    */
     bool ShSnc = false;        /* Shared Semaphore not created */
+    void LoadShm(size_t size);
+    void LoadShs();
+    void RemoveShm();
+    void RemoveShs();
+
   public:
-    ShSemMem_c(int size);
-    ShSemMem_c(key_t sh_mem_key, const char sem_name[], int size);
+    ShSemMem_c(size_t size);
+    ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size);
     virtual ~ShSemMem_c();
     key_t ShMemKey();
     std::string SemName();
@@ -79,16 +85,20 @@ class Process_c
   public:
      Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
      virtual ~Process_c();
-     void MakeExit();                  /* Breaks the default loop existing in the OnRunProcess. */
-     virtual void OnRunProcess();      /* This procedure contains main loop with exit condition where is running the "DoMainProg()" procedure, but can be overwritten according to requirements. */
-     virtual void DoMainProg();        /* This procedure contains the 1 second sleep and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
-     virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "OnRunProcess()" procedure, but can be overwritten. */
+     void MakeExit();                  /* Breaks the default loop existing in the RunProcess. */
+     virtual void RunProcess();        /* This procedure contains main loop with exit condition where is running the "OnRunProcess()" procedure, but can be overwritten according to requirements. */
+     virtual void OnStartProcess();    /* This procedure is empty and runs before starting running the process for any initializations. */
+     virtual void OnRunProcess();      /* This procedure contains the 1 second sleep and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
+     virtual void OnFinishProcess();   /* This procedure is empty and runs after finishing running the process for any deinitializations. */
+     virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
      Process_c& operator = (const Process_c &other) = delete;
      Process_c(const Process_c &other) = delete;
  };
 
 
 
+ 
 
+ 
 
 

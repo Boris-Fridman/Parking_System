@@ -30,7 +30,7 @@ class Network_c: public Process_c
   public:
     Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
     virtual ~Network_c();
-    virtual void DoMainProg();
+    virtual void OnRunProcess();
  };
 
 
@@ -41,7 +41,7 @@ class Network_c: public Process_c
 void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
  {
   Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, ProcType);
-  Netw_Process.OnRunProcess();
+  Netw_Process.RunProcess();
  }
 
 void HandleClient(int clientSocket) 
@@ -170,9 +170,9 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   std::cout << "Server listening on port " << DESTIN_PORT << "...\n\r";
  }
 
-void Network_c::DoMainProg()
+void Network_c::OnRunProcess()
  {
-  //Process_c::DoMainProg();
+  //Process_c::OnRunProcess();
   
   /* Accept connections in a loop */
   if ((newSocket = accept(serverSocket, (struct sockaddr *)&address, (socklen_t*)&addrlen)) >= 0) 

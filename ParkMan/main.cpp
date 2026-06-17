@@ -63,20 +63,6 @@ pid_t parking_pid;
 pid_t network_pid;
 pid_t own_pid;
 
-// struct ShmemPar_s
-//  {
-//   key_t sh_mem_key;          /* Task Control shared memroy key           */                              // Is used as reference for other side process.
-//   int sh_mem_id;             /* Task Control shared memroy ID            */  // Is used for removing.
-//   void *p_shm;               /* Pointer to Task Control shared memory    */  // Is used for detatching.                                                   // Is used as reference for accessing.
-//  };
-
-// struct ShsemPar_s
-//  {
-//   key_t sh_sem_key;          /* Task Control shared semaphore key        */
-//   sem_t *p_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
-//   std::string sem_name = ""; /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
-//  };
-
 
 bool FullExist = false;
 
