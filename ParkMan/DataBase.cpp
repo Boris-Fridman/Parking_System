@@ -18,8 +18,8 @@
 
 class DataBase_c: public Process_c
  {
-   DBShmemPriceData_c *DBShmemPriceData = NULL;
-   
+    DBShmemPriceData_c *DBShmemPriceData = NULL;
+    sqlite3 *conn = NULL;
   public:
     DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
     virtual ~DataBase_c();
@@ -73,7 +73,19 @@ DataBase_c::~DataBase_c()
 
 void DataBase_c::LoadDataBase()
  {
-  //p_shm->ControlDBPriceShMem.DBFileName;
+  // std::string DBFileName;
+  // uint16_t NewNumCities = 0;
+  // int result;
+  
+  // DBFileName = GetDBFileName();
+  // result = sqlite3_open(DBFileName.c_str(), &conn);
+  // if(result == SQLITE_OK)
+  //  {
+  //   //DBShmemPriceData->ReallocateShmem(NewNumCities);
+  //   sqlite3_close(conn);
+  //  }
+
+  
  }
 
 

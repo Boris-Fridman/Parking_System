@@ -39,10 +39,10 @@ struct CustomerTab_s
 class DBShmemPriceData_c:public ShSemMem_c
  {
   public:
-  DBShmemPriceData_c(int NCities);
-  DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities);
-  ~DBShmemPriceData_c();
-  void ReallocateShmem(uint16_t NewNumCities);
+    DBShmemPriceData_c(int NCities);
+    DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities);
+    ~DBShmemPriceData_c();
+    void ReallocateShmem(uint16_t NewNumCities);
  };
 
 

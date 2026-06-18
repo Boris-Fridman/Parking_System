@@ -75,13 +75,13 @@ typedef void(*subprocess_t)(ProcParams_t Procparams, int count, ...);
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcName[], int count, ...);
 
 
-class Process_c
+class Process_c: public TaskControl_ShSM_c
  {
      ProcTypeID_e proc_type;
-     sem_t *p_shs;
-     TskContShmData_s *p_shm;
+    //  sem_t *p_shs;
+    //  TskContShmData_s *p_shm;
      std::string proc_name;
-     int sh_mem_id;
+    //  int sh_mem_id;
      bool exit_required;
      bool error_in_creation;           /* Is set to true in case of constructor couldn't initialize required variables. */
   public:
