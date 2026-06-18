@@ -170,9 +170,31 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size);
  */
 void FreeList(PriceTab_s **list_to_free);
 
+/**
+ * @brief Sets DataBase file name exactly as in parameter. (Was defined for multiprocess variant.)
+ * 
+ * @code
+ * void SetDBPathName(char FileNameToSet[]);
+ * @code
+ * 
+ * @param FileNameToSet The name that must be set.
+ * 
+ */
+void SetDBPathName(char const FileNameToSet[]);
 
 
-
+/**
+ * @brief Applys the path to the database file.
+ * 
+ * @code 
+ * void ApplyDBPath(int const argc, char const *argv[]);
+ * @code
+ * 
+ * @param argc  The argc taken from the main() parameter: the count of the aguments.
+ * 
+ * @param argv  The argv taken from the main() parameter: the vector of the arguments.
+ * 
+ */
 void ApplyDBPath(int const argc, char const *argv[]);
 
 /*======================================================================================================================*/

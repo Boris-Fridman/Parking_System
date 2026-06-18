@@ -452,6 +452,19 @@ void FreeList(PriceTab_s **list_to_free)
  * *************************************************************************************************************
  */
 
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Sets DataBase file name exactly as in parameter. (Was defined for multiprocess variant.)                            */
+void SetDBPathName(char const FileNameToSet[])
+ {
+  int len = MIN(strlen(FileNameToSet), PATH_LEN);
+  strncpy(PathFileName, FileNameToSet, len);
+  PathFileName[len] = '\0';
+  printf("%s\n\r", PathFileName);
+ }
+
+
+
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Applys the path to the database file.                                                                               */
 void ApplyDBPath(int const argc, char const *argv[])

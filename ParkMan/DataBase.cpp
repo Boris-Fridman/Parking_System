@@ -43,6 +43,7 @@ void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType
 void DataBase_c::OnStartProcess()
  {
   DBShmemPriceData = new DBShmemPriceData_c(0);
+  LoadDataBase();
  }
 
 void DataBase_c::OnRunProcess()
@@ -59,7 +60,7 @@ void DataBase_c::OnFinishProcess()
 DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
  :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
  {
-
+  
  }
 
 DataBase_c::~DataBase_c()
@@ -74,19 +75,20 @@ DataBase_c::~DataBase_c()
 
 void DataBase_c::LoadDataBase()
  {
-  // std::string DBFileName;
-  // uint16_t NewNumCities = 0;
-  // int result;
+  std::string DBFileName;
+  int result;
+  PriceTab_s *ListOfCities = NULL;
+  int ListSize;
   
-  // DBFileName = GetDBFileName();
-  // result = sqlite3_open(DBFileName.c_str(), &conn);
-  // if(result == SQLITE_OK)
-  //  {
-  //   //DBShmemPriceData->ReallocateShmem(NewNumCities);
-  //   sqlite3_close(conn);
-  //  }
-
-  
+  DBFileName = GetDBFileName();
+  SetDBPathName(DBFileName.c_str());
+  result = GetCitiesList(&conn, &ListOfCities, &ListSize);
+  if((result == 0)&&(ListSize > 0))
+   {
+    DBShmemPriceData->LoadCitiesList(ListOfCities, ListSize);
+    ((ControlDBPrice_s*)p_shm)->PriceDBSize = ListSize;
+   }
+  FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
 
@@ -198,6 +200,13 @@ void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities)
   LoadShm(NewNumCities * sizeof(PriceTab_s));
  }
 
+void DBShmemPriceData_c::LoadCitiesList(PriceTab_s ListOfCities[], int ListSize)
+ {
+  sem_wait(p_shs);
+  ReallocateShmem(ListSize);
+  memcpy(p_shm, ListOfCities, ListSize * sizeof(ListOfCities[0]));
+  sem_post(p_shs);
+ }
 
 
 

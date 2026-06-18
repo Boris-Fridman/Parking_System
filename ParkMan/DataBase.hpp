@@ -42,7 +42,10 @@ class DBShmemPriceData_c:public ShSemMem_c
     DBShmemPriceData_c(int NCities);
     DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities);
     ~DBShmemPriceData_c();
+  protected:
     void ReallocateShmem(uint16_t NewNumCities);
+  public:
+    void LoadCitiesList(PriceTab_s ListOfCities[], int ListSize);
  };
 
 
