@@ -99,7 +99,7 @@ void TaskControl_ShSM_c::ExitAllProcesses()
  {
   int i;
   sem_wait(p_shs);
-  for(i=0;i<PROC_NUM_PROC_TYPES_E;i++)
+  for(i = 0; i < PROC_NUM_PROC_TYPES_E; i++)
    ((TskContShmData_s*)p_shm)->set_flag((ProcTypeID_e)i, true);
   sem_post(p_shs);
  } 
@@ -108,6 +108,19 @@ bool TaskControl_ShSM_c::ProcessMustExit(ProcTypeID_e ProcToExit)
  {
   return ((TskContShmData_s*)p_shm)->get_flag(ProcToExit);
  }
+
+
+void TaskControl_ShSM_c::SetDBFileName(std::string NameToSet)
+ {
+  ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName = NameToSet;
+ }
+       
+std::string TaskControl_ShSM_c::GetDBFileName()
+ {
+  return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName;
+ }
+
+
 
 
 void ShSemMem_c::LoadShm(size_t size)

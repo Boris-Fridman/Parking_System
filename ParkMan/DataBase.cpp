@@ -8,15 +8,79 @@
 #include <iostream>
 #include <sys/sem.h>
 #include <sys/shm.h>
+#include <sqlite3.h>
 
 #define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
+
+
+
+/*======================================================================================================================*/
+
+class DataBase_c: public Process_c
+ {
+   DBShmemPriceData_c *DBShmemPriceData = NULL;
+   
+  public:
+    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    virtual ~DataBase_c();
+    virtual void OnStartProcess();
+    virtual void OnRunProcess();
+    virtual void OnFinishProcess();
+    DataBase_c& operator = (const DataBase_c &other) = delete;
+    DataBase_c(const DataBase_c &other) = delete;
+  protected:
+    void LoadDataBase();
+ };
+
+void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ {
+  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  DB_Process.RunProcess();
+ }
+
+
+void DataBase_c::OnStartProcess()
+ {
+  DBShmemPriceData = new DBShmemPriceData_c(0);
+ }
+
+void DataBase_c::OnRunProcess()
+ {
+  Process_c::OnRunProcess();
+ };
+
+void DataBase_c::OnFinishProcess()
+ {
+  delete DBShmemPriceData;
+ }
+
+
+DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+ {
+
+ }
+
+DataBase_c::~DataBase_c()
+ {
+
+ }
+
+
+
+
+
+
+void DataBase_c::LoadDataBase()
+ {
+  //p_shm->ControlDBPriceShMem.DBFileName;
+ }
 
 
 
 
 
 /*======================================================================================================================*/
-
 
 // DBShMemCont_c::DBShMemCont_c()
 //  :ShSemMem_c(sizeof(ControlDBPrice_s))
@@ -125,54 +189,3 @@ void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities)
 
 
 /*======================================================================================================================*/
-class DataBase_c: public Process_c
- {
-   DBShmemPriceData_c *DBShmemPriceData = NULL;
-  public:
-    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
-    virtual ~DataBase_c();
-    virtual void OnStartProcess();
-    virtual void OnRunProcess();
-    virtual void OnFinishProcess();
-     DataBase_c& operator = (const DataBase_c &other) = delete;
-     DataBase_c(const DataBase_c &other) = delete;
-
- };
-
-void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
- {
-  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, ProcType);
-  DB_Process.RunProcess();
- }
-
-
-void DataBase_c::OnStartProcess()
- {
-  DBShmemPriceData = new DBShmemPriceData_c(0);
- }
-
-void DataBase_c::OnRunProcess()
- {
-  Process_c::OnRunProcess();
- };
-
-void DataBase_c::OnFinishProcess()
- {
-  delete DBShmemPriceData;
- }
-
-
-DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
- :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
- {
-
- }
-
-DataBase_c::~DataBase_c()
- {
-
- }
-
-
-/*======================================================================================================================*/
-

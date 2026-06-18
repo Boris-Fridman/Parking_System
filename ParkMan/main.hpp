@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
 #include <sys/types.h>
+#include <string>
 
 #define TSK_CONT_SH_MEM_SIZE     (sizeof(TskContShmData_s))
 
@@ -21,6 +22,7 @@ struct ControlDBPrice_s
   uint16_t PriceDBSize = 0;
   bool UpdateRequired = false; 
   bool DBUpdated = false;
+  std::string DBFileName = "";
  };
 
 

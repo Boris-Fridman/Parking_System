@@ -86,6 +86,14 @@ int main(int const argc, char const *argv[])
   std::cout << "The current program is: "<< argv[0] <<"\n\r";
   std::cout << "The pid is: " << own_pid << "\n\r";
 
+  {
+   char PathFileName[PATH_LEN] = {0};
+   GetDataBaseFile(argc, argv, PathFileName);
+   TaskContSh.SetDBFileName(PathFileName);
+   std::cout << "Loaded DataBase File: " << PathFileName << "\n\r";
+  }
+  
+
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 

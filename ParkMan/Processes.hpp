@@ -53,6 +53,8 @@ class TaskControl_ShSM_c:public ShSemMem_c
     void ExitProcess(ProcTypeID_e ProcToExit);        /* Is used from the master process side. */
     void ExitAllProcesses();
     bool ProcessMustExit(ProcTypeID_e ProcToExit);    /* Is used from slaves processes sides.  */
+    void SetDBFileName(std::string NameToSet);
+    std::string GetDBFileName();
  };
 
 
