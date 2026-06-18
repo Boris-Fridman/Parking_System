@@ -1,11 +1,20 @@
-#ifndef ____DataBase_h__
-#define ____DataBase_h__
+#ifndef ____PriceDataBase_h__
+#define ____PriceDataBase_h__
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 
 /*======================================================================================================================*/
-
+#ifdef __cplusplus
+#include <cstdint>
+#include <cstdbool>
+#else
 #include <stdint.h>
 #include <stdbool.h>
+#endif
+
 #include <time.h>
 #include "CommonData.h"
 #include <sqlite3.h>
@@ -167,6 +176,11 @@ void FreeList(PriceTab_s **list_to_free);
 void ApplyDBPath(int const argc, char const *argv[]);
 
 /*======================================================================================================================*/
+
+
+#ifdef __cplusplus
+}
+#endif
 
 
 #endif //  ____DataBase_h__

@@ -4,7 +4,8 @@
             "name": "Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../Common_Libs"
+                "${workspaceFolder}/../Common_Libs",
+                "${workspaceFolder}/../Common_Libs/DataBase"
             ],
             "defines": ["_GNU_SOURCE"],
             "compilerPath": "/usr/bin/clang",

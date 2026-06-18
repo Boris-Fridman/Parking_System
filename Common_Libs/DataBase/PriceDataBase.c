@@ -1,9 +1,21 @@
-#include "DataBase.h"
+#include "PriceDataBase.h"
+
+#ifdef __cplusplus
+#include <cstdio>
+#include <cstdlib>
+#include <cstdint>
+#include <cstdbool>
+#else
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdbool.h>
+#endif
+
 #include <unistd.h>
 #include <string.h>
+
+
 
 
 /*======================================================================================================================*/
@@ -89,7 +101,7 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
        }
       else
        {
-        CityIDs = calloc(total_rows, sizeof(int));
+        CityIDs = (int *)calloc(total_rows, sizeof(int));
         if(CityIDs != NULL)
          {
           for(i = 0, result = SQLITE_ROW; (i < total_rows)&&(result == SQLITE_ROW); i++)
@@ -378,7 +390,7 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
     *list_size = GetNumRows(conn);
     if(*list_size >= 0)
      {
-      *list = calloc(*list_size, sizeof(PriceTab_s));
+      *list = (PriceTab_s*)calloc(*list_size, sizeof(PriceTab_s));
       if(*list == NULL)  /*  Memory couldn't be allocated. */
        {
         valtoret = -2;

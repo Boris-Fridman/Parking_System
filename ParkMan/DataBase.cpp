@@ -2,6 +2,7 @@
 #include "main.hpp"
 #include "Errors.hpp"
 #include "Processes.hpp"
+#include "PriceDataBase.h"
 
 #include <semaphore.h>
 #include <unistd.h>
