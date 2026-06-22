@@ -65,6 +65,7 @@ pid_t own_pid;
 
 
 bool FullExist = false;
+bool UpdateDataBase = false;
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Main function from which the program starts running.                                                                */
@@ -96,6 +97,8 @@ int main(int const argc, char const *argv[])
 
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
+
+  //ProcParams_s Procparams = {.ProcType = PROC_DATABASE_E , .sem_name = TaskContSh.SemName().c_str(), .sh_mem_key = TaskContSh.ShMemKey()};
 
   database_pid = fork();
   switch(database_pid)
@@ -163,6 +166,11 @@ int main(int const argc, char const *argv[])
   do
    {
     /* code */
+    if(UpdateDataBase)
+     {
+      TaskContSh.ReloadDatabase();
+      UpdateDataBase = false;
+     }
     CatchChildZombie();
     sleep(1);
    } while (!FullExist);
@@ -254,8 +262,9 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
    {
     std::cout << "\nDB_UPADATE_SIGNAL signal was received successfully. \n";
     int passed_val = info->si_value.sival_int;  /* Reading value sent with signal from the sending program. */
-    int process_pid = info->si_pid;             /* Reading value sent with signal from the sending program. */
+    int process_pid = info->si_pid;             /* Reading process pid of the signal sending program.       */
     std::cout << "The passed value is: " << passed_val << "  From process id: " << process_pid << "\n\r";
+    UpdateDataBase = true;
    }
 
   if (sig == SIGINT)   /* Ctrl-C Signal */

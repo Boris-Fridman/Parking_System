@@ -2,6 +2,7 @@
 #include <cstdint>
 #include <sys/types.h>
 #include <string>
+#include "CommonData.h"
 
 #define TSK_CONT_SH_MEM_SIZE     (sizeof(TskContShmData_s))
 
@@ -18,10 +19,11 @@ enum ProcTypeID_e
 
 struct ControlDBPrice_s
  { 
-  key_t NewShmKey = 0;
-  uint16_t PriceDBSize = 0;
-  bool UpdateRequired = false; 
-  bool DBUpdated = false;
+  key_t CitiesNewShmKey = 0;
+  char CitiesSemName[NAME_LEN] = {""};
+  uint16_t NumPriceDBCities = 0;
+  bool DBUpdateRequired = false; 
+  //bool DBUpdated = false;
   std::string DBFileName = "";
  };
 

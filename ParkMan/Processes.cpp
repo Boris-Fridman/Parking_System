@@ -120,6 +120,23 @@ std::string TaskControl_ShSM_c::GetDBFileName()
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName;
  }
 
+void TaskControl_ShSM_c::ReloadDatabase()
+ {
+  sem_wait(p_shs);
+  ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = true;
+  sem_post(p_shs);
+ }
+
+bool TaskControl_ShSM_c::DataBaseMusgBeReloaded()
+ {
+  bool Result;
+  sem_wait(p_shs);
+  Result = ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired;
+  ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
+  sem_post(p_shs);
+  return Result;
+ }
+
 
 
 
@@ -187,9 +204,8 @@ void ShSemMem_c::RemoveShs()
 /*======================================================================================================================*/
 
 
-pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcName[], int count, ...)
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[])
  {
-  va_list args;
   pid_t proc_pid;
   proc_pid = fork();
   switch(proc_pid)
@@ -200,9 +216,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcNam
      break;
     case 0:
       printf("Starting new process\n\r");
-      va_start(args, count);
-      ProcToOpen(Procparams, count, args);// ProcToOpen(Procparams, count, args);
-      va_end(args);
+      ProcToOpen(Procparams);
       exit(EXIT_SUCCESS);
      break;
     default:

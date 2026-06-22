@@ -25,13 +25,13 @@ class ShSemMem_c
     sem_t *p_shs = NULL;       /* Pointer to Task Control shared semaphore */                                                                                    // Is used as reference for accessing.
     std::string sem_name = ""; /* Task Control shared semaphore name       */       // Is used for unlinking.   // Is used for sharing by other side process.
 
-    bool created = false;
+    bool created = false;      /* "true" if the class is implemmented as the "Master" "false" if the class is used as "Slave". In case of master the shared memory and semaphore are created with generating their ID and name. In case of slave the shared memory and semaphore are only connected to the allready generated ID and name. After the usage the slave only disconnects from them while the master also distroys them. */
     bool ShMnc = false;        /* Shered memory not created    */
     bool ShSnc = false;        /* Shared Semaphore not created */
-    void LoadShm(size_t size);
-    void LoadShs();
-    void RemoveShm();
-    void RemoveShs();
+    void LoadShm(size_t size); /* In case of master it generates Memory key and creates the shared memory. In case of slave it connects to allready created shared memory according to given key. */
+    void LoadShs();            /* In case of master it generates semaphore name and creates the semaphore itself. In case of slave it connects to allready created semaphore according to the given semaphore name. */
+    void RemoveShm();          /* In case of master it disconnects from shared memory and distroys it. In case of slave it only disconnects from the shared memory. */
+    void RemoveShs();          /* In case of master it unlinkes the semaphore. In case of slave it doesn't nothing. */
 
   public:
     ShSemMem_c(size_t size);
@@ -55,6 +55,8 @@ class TaskControl_ShSM_c:public ShSemMem_c
     bool ProcessMustExit(ProcTypeID_e ProcToExit);    /* Is used from slaves processes sides.  */
     void SetDBFileName(std::string NameToSet);
     std::string GetDBFileName();
+    void ReloadDatabase();
+    bool DataBaseMusgBeReloaded();  /* Is used from the slave side. Attention After reading the "DBUpdateRequired" flag it resets it immediately. So the result must be read at least and not more than one time. In case of multiusage the result must be saved in an emporary variable.*/    
  };
 
 
@@ -63,16 +65,16 @@ class TaskControl_ShSM_c:public ShSemMem_c
 
 
 
-struct ProcParams_t
+struct ProcParams_s
  {
   key_t sh_mem_key; 
-  char *sem_name; 
+  const char *sem_name; 
   ProcTypeID_e ProcType;
  };
 
-typedef void(*subprocess_t)(ProcParams_t Procparams, int count, ...);
+typedef void(*subprocess_t)(ProcParams_s Procparams);
 
-pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_t Procparams, char ProcName[], int count, ...);
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[]);
 
 
 class Process_c: public TaskControl_ShSM_c

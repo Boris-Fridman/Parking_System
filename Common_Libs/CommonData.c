@@ -152,7 +152,7 @@ void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t Ti
       strftime(TimeAsStr, TimeStrSize, "%G/%m/%d %a   %H:%M:%S", &tmp);  
      break;
     case E_DUR_FORMAT:   /* Duration format  d-h:m:s               */
-      snprintf(TimeAsStr, TimeStrSize, "%ld %02ld:%02ld:%02ld", *TimeToConvert/(24*60*60), (*TimeToConvert/(60*60))%24, (*TimeToConvert/60)%60, *TimeToConvert%60);
+      snprintf(TimeAsStr, TimeStrSize, "%ldd %02ld:%02ld:%02ld", *TimeToConvert/(24*60*60), (*TimeToConvert/(60*60))%24, (*TimeToConvert/60)%60, *TimeToConvert%60);
      break;
    }
  }

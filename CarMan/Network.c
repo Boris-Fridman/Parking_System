@@ -129,7 +129,7 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
   else 
    if (bytes_read == 0) 
     {
-     printf("Server closed the connection.\n\r");
+     printf("%sServer closed the connection.%s\n\r", TermRed, TermColorsReset);
     } 
    else 
     {
@@ -139,17 +139,16 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
      if(DecodeResult)
       {
        printf("The vehicle is parked in: %s   (ID: %d)\n\r", CustAckInfo.City_Name, CustAckInfo.City_ID);
-       printf("Vehicle ID: %d\n\r", CustAckInfo.Vechicle_ID);
+       printf("Vehicle ID: %s%s%d%s\n\r", TermBGYello, TermBlack, CustAckInfo.Vechicle_ID, TermColorsReset);
 
        ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
        printf("Parking started at: %s\n\r", timedurbuf);
        ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
-       printf("Parking duration: %s\n\r", timedurbuf);
-       
+       printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, TermBrightBlue, CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, TermMagenta, TermColorsReset);
       }
      else
       {
-       printf("Error in response.\n\r");
+       printf("%sError in response.%s\n\r", TermRed, TermColorsReset);
       }
 
     }

@@ -236,8 +236,8 @@ struct CustAcknowledge_s
   uint32_t Vechicle_ID;
   uint16_t City_ID;
   time_t   ParkingStartTime;
-  time_t   ParkingDurationTime;
-  uint16_t AccumulatedPrice;              /*  0.01₪ / hour  */
+  time_t   ParkingDurationTime;           /* seconds */
+  uint16_t AccumulatedPrice;              /*  0.01₪  */
   char     City_Name[NAME_LEN];
  }
 #ifndef __cplusplus  

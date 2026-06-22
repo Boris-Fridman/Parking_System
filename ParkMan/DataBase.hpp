@@ -38,14 +38,14 @@ struct CustomerTab_s
 
 class DBShmemPriceData_c:public ShSemMem_c
  {
+    uint16_t OldNumCities = 0;
   public:
     DBShmemPriceData_c(int NCities);
     DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities);
     ~DBShmemPriceData_c();
-  protected:
-    void ReallocateShmem(uint16_t NewNumCities);
-  public:
+    void ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key = 0);
     void LoadCitiesList(PriceTab_s ListOfCities[], int ListSize);
+    void GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo);
  };
 
 
