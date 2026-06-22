@@ -293,6 +293,8 @@ double sqr(double x);
 
 uint64_t RandGenLongLong();
 
+int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection); /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
+
 /*======================================================================================================================*/
 
 
@@ -301,6 +303,12 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
+
+/*======================================================================================================================*/
+
+void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID);
+
+void CreateVechIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored);
 
 /*======================================================================================================================*/
 

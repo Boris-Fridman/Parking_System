@@ -49,7 +49,11 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
  }
 
 
+// void CalculateParkingPriceTime(Customer_s *CustomerInfo, CustAcknowledge_s CustAckInfo)
+//  {
+  
 
+//  }
 
 void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c *DBShmemPriceData = NULL) 
  {
@@ -79,23 +83,28 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   while (true) 
    {
     memset(buffer, 0, BUFFER_SIZE);
-    int bytesRead = read(clientSocket, buffer, BUFFER_SIZE);
+    int BytesRead = read(clientSocket, buffer, BUFFER_SIZE);
     
-    if (bytesRead <= 0) 
+    if (BytesRead <= 0) 
      {
-      std::cout << (StdOutNoPiping?TermRed:"") << "Client disconnected or error."<< (StdOutNoPiping?TermColorsReset:"") << "\n\r";
+      std::cout << (StdOutNoPiping ? TermRed : "") << "Client disconnected or error." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+
       break;
      }
 
-    std::cout << "Received " << bytesRead << " Bytes\n\r";
+    std::cout << "Received " << BytesRead << " Bytes\n\r";
 
-    DecodeResult = DecodeNetData((uint8_t*)buffer, bytesRead, (uint8_t *)&CustomerInfo);
+    DecodeResult = DecodeNetData((uint8_t*)buffer, BytesRead, (uint8_t *)&CustomerInfo);
 
     if(DecodeResult)
      {
-      std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << CustomerInfo.Vechicle_ID << " In coordinates: ";
+      //std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << CustomerInfo.Vechicle_ID << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      //VehicleIDToString(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID);
+      //std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      CreateVechIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
+      std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       PrintGPSCords(CustomerInfo.Cords);
-      std::cout << "\n\r";
+      std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
       //DetectedCityName = "Tel Aviv";
       DetectedCityName = "Givataim";
@@ -114,7 +123,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
               char old_fill = std::cout.fill();
 
               CityPPH = CityPriceInfo.Price;
-              std::cout << (StdOutNoPiping?TermGreen:"") <<"New parking detected in the city: " << CityPriceInfo.City_Name << " ID: " << CityPriceInfo.City_ID << " Parking Price " << CityPriceInfo.Price / 100<< "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h" << (StdOutNoPiping?TermColorsReset:"") << "\n\r";
+              std::cout << (StdOutNoPiping ? TermGreen : "") << "New parking detected in the city: " << CityPriceInfo.City_Name << " ID: " << CityPriceInfo.City_ID << " Parking Price " << CityPriceInfo.Price / 100<< "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
               std::cout.copyfmt(old_state);
               std::cout.fill(old_fill);
@@ -137,7 +146,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
      }
     else
      {
-      std::cerr << (StdErrNoPiping?TermRed:"") << "Error in decoding"<< (StdErrNoPiping?TermColorsReset:"") << "\n\r";
+      std::cerr << (StdErrNoPiping ? TermRed : "") << "Error in decoding" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
       CustAckInfo.City_ID = 1;
       strcpy(CustAckInfo.City_Name, "  -----  ");
       CustAckInfo.ParkingDurationTime = 0;
@@ -158,6 +167,9 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
 Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
  :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int opt = 1;
   timeval timeout;
 
@@ -170,14 +182,14 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
    {
     //std::cerr << "Socket creation failed\n\r";
-    perr() << "Socket creation failed";
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Socket creation failed" << (StdErrNoPiping ? TermColorsReset : "");
     return;
    }
 
   /* Attach socket to the port (prevents 'Address already in use' errors) */
   if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) 
    {
-    perr() << "setsockopt failed";
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "setsockopt failed" << (StdErrNoPiping ? TermColorsReset : "");
     MakeExit();
     return;
    }
@@ -186,7 +198,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) 
    {
     //std::cerr << "Setting SO_RCVTIMEO failed\n\r";
-    perr() << "Setting SO_RCVTIMEO failed";
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");
     // Handle error or close socket
    }
 
@@ -199,7 +211,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   if (bind(serverSocket, (struct sockaddr *)&address, sizeof(address)) < 0) 
    {
     //std::cerr << "Bind failed\n\r";
-    perr() << "Bind failed";
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Bind failed" << (StdErrNoPiping ? TermColorsReset : "");
     MakeExit();
     return;
    }
@@ -208,15 +220,18 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   if (listen(serverSocket, 3) < 0) 
    {
     //std::cerr << "Listen failed\n\r";
-    perr() << "Listen failed";
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Listen failed" << (StdErrNoPiping ? TermColorsReset : "");
     MakeExit();
     return;
    }
-  std::cout << "Server listening on port " << DESTIN_PORT << "...\n\r";
+  std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "Server listening on port " << DESTIN_PORT << "..." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
  }
 
 void Network_c::OnRunProcess()
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   if((LastPriceShmKey != ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) && (((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) != 0) /* Checking if the cities' prices' database memory was loaded or changed. */
    {
     if(DBShmemPriceData != NULL)
@@ -237,10 +252,10 @@ void Network_c::OnRunProcess()
 
     if (setsockopt(newSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) 
      {
-      perr() << "Setting SO_RCVTIMEO failed";
+      perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");      
      }
 
-    std::cout << "New connection accepted.\n\r";
+    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New connection accepted." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     /* Spawn a new thread to handle the client */
     std::thread t(HandleClient, newSocket, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, DBShmemPriceData);
     t.detach(); /* Detach the thread so it runs independently */
