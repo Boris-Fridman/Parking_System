@@ -122,7 +122,7 @@ int main(int const argc, char const *argv[])
   //  }
    
   Procparams.ProcType = PROC_PARKING_E;
-  OpenProcess(ParkingProc, Procparams, (char*)"Parking");
+  parking_pid = OpenProcess(ParkingProc, Procparams, (char*)"Parking");
 
   // parking_pid = fork();
   // switch(parking_pid)
@@ -143,7 +143,7 @@ int main(int const argc, char const *argv[])
   //  }
 
   Procparams.ProcType = PROC_NETWORK_E;
-  OpenProcess(NetworkProc, Procparams, (char*)"Network");
+  network_pid = OpenProcess(NetworkProc, Procparams, (char*)"Network");
 
   // network_pid = fork();
   // switch(network_pid)
