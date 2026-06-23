@@ -98,61 +98,70 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  //ProcParams_s Procparams = {.ProcType = PROC_DATABASE_E , .sem_name = TaskContSh.SemName().c_str(), .sh_mem_key = TaskContSh.ShMemKey()};
+  ProcParams_s Procparams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .ProcType = PROC_DATABASE_E};
 
-  database_pid = fork();
-  switch(database_pid)
-   {
-    case -1:
-      perr() << "fork error.";
-      exit(EXIT_FAILURE);
-     break;
-    case 0:
-      std::cout << "Starting DataBase process\n\r";
-      DataBaseProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_DATABASE_E);  //DataBaseProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str() , PROC_DATABASE_E);
-      std::cout << "Finishing DataBase process\n\r";
-      exit(EXIT_SUCCESS);
-     break;
-    default:
-      std::cout << "The DataBase process started with PID: "<< database_pid <<"\n\r";
-     break;
-   }
+  Procparams.ProcType = PROC_DATABASE_E;
+  database_pid = OpenProcess(DataBaseProc, Procparams, (char*)"DataBase");
+  
+  // database_pid = fork();
+  // switch(database_pid)
+  //  {
+  //   case -1:
+  //     perr() << "fork error.";
+  //     exit(EXIT_FAILURE);
+  //    break;
+  //   case 0:
+  //     std::cout << "Starting DataBase process\n\r";
+  //     DataBaseProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_DATABASE_E);  //DataBaseProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str() , PROC_DATABASE_E);
+  //     std::cout << "Finishing DataBase process\n\r";
+  //     exit(EXIT_SUCCESS);
+  //    break;
+  //   default:
+  //     std::cout << "The DataBase process started with PID: "<< database_pid <<"\n\r";
+  //    break;
+  //  }
    
-  parking_pid = fork();
-  switch(parking_pid)
-   {
-    case -1:
-      perr()<<"fork error.";
-      exit(EXIT_FAILURE);
-     break;
-    case 0:
-      std::cout << "Starting Parking process\n\r";
-      ParkingProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_PARKING_E);  //ParkingProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_PARKING_E);
-      std::cout << "Finishing Parking process\n\r";
-      exit(EXIT_SUCCESS);
-     break;
-    default:
-      std::cout << "The Parking process started with PID: " << parking_pid << "\n\r";
-     break;
-   }
+  Procparams.ProcType = PROC_PARKING_E;
+  OpenProcess(ParkingProc, Procparams, (char*)"Parking");
 
-  network_pid = fork();
-  switch(network_pid)
-   {
-    case -1:
-      perr() << "fork error.";
-      exit(EXIT_FAILURE);
-     break;
-    case 0:
-      std::cout << "Starting Network process\n\r";
-      NetworkProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_NETWORK_E);  //NetworkProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_NETWORK_E);
-      std::cout << "Finishing Network process\n\r";
-      exit(EXIT_SUCCESS);
-     break;
-    default:
-      std::cout << "The Network process started with PID: " << network_pid << "\n\r";
-     break;
-   }
+  // parking_pid = fork();
+  // switch(parking_pid)
+  //  {
+  //   case -1:
+  //     perr()<<"fork error.";
+  //     exit(EXIT_FAILURE);
+  //    break;
+  //   case 0:
+  //     std::cout << "Starting Parking process\n\r";
+  //     ParkingProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_PARKING_E);  //ParkingProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_PARKING_E);
+  //     std::cout << "Finishing Parking process\n\r";
+  //     exit(EXIT_SUCCESS);
+  //    break;
+  //   default:
+  //     std::cout << "The Parking process started with PID: " << parking_pid << "\n\r";
+  //    break;
+  //  }
+
+  Procparams.ProcType = PROC_NETWORK_E;
+  OpenProcess(NetworkProc, Procparams, (char*)"Network");
+
+  // network_pid = fork();
+  // switch(network_pid)
+  //  {
+  //   case -1:
+  //     perr() << "fork error.";
+  //     exit(EXIT_FAILURE);
+  //    break;
+  //   case 0:
+  //     std::cout << "Starting Network process\n\r";
+  //     NetworkProc(TaskContSh.ShMemKey(), TaskContSh.SemName().c_str(), PROC_NETWORK_E);  //NetworkProc(tsk_cont_sh_mem_key, tsk_cont_sem_name.c_str(), PROC_NETWORK_E);
+  //     std::cout << "Finishing Network process\n\r";
+  //     exit(EXIT_SUCCESS);
+  //    break;
+  //   default:
+  //     std::cout << "The Network process started with PID: " << network_pid << "\n\r";
+  //    break;
+  //  }
 
 //  sleep(10);
 //  TaskContSh.ExitProcess(PROC_DATABASE_E);

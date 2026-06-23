@@ -221,7 +221,7 @@ PriceTab_s
   {
    GPS_Cords_s Cords;
    uint32_t    Vechicle_ID;
-   char        Name[NAME_LEN];
+   char        Customer_Name[NAME_LEN];
   }
 #ifndef __cplusplus  
 Customer_s

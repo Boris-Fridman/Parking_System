@@ -94,6 +94,9 @@ void StartNetwork(NetworkParams_s *NetPars)
 
 void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   char buffer[BUFFER_SIZE] = {0}, timedurbuf[100];
   CustAcknowledge_s CustAckInfo;
   bool DecodeResult;
@@ -129,7 +132,7 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
   else 
    if (bytes_read == 0) 
     {
-     printf("%sServer closed the connection.%s\n\r", TermRed, TermColorsReset);
+     printf("%sServer closed the connection.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
     } 
    else 
     {
@@ -142,17 +145,17 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
        //  printf("Vehicle ID: %s%s%d%s\n\r", TermBGYello, TermBlack, CustAckInfo.Vechicle_ID, TermColorsReset);
        //VehicleIDToString(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID);
        //printf("Vehicle ID: %s%s%s%s\n\r", TermBGYello, TermBlack, buffer, TermColorsReset);
-       CreateVechIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, true);
-       printf("Vehicle ID: %s%s\n\r", buffer, TermColorsReset);
+       CreateVechIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, StdOutNoPiping);
+       printf("Vehicle ID: %s%s\n\r", buffer, (StdErrNoPiping ? TermColorsReset : ""));
 
        ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
        printf("Parking started at: %s\n\r", timedurbuf);
        ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
-       printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, TermBrightBlue, CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, TermMagenta, TermColorsReset);
+       printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? TermBlue : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? TermMagenta : ""), (StdOutNoPiping ? TermColorsReset : ""));
       }
      else
       {
-       printf("%sError in response.%s\n\r", TermRed, TermColorsReset);
+       printf("%sError in response.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
       }
 
     }

@@ -62,8 +62,9 @@ int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection) /*   "RoundDirrection=
 {
   int32_t Result;
   /*  If rounding up is required the comparison result will be "(Value!=0)". If tequired the rounding down the comparison result will be "(Value>=10)".   */
-  for (Result = 0; (RoundDirrection ? (Value >= 10) : (Value != 0)); Value /= 10, ++Result)
+  for (Result = 0; (RoundDirrection ? (Value != 0) : (Value >= 10)); Value /= 10)
   {
+   ++Result;
   }
   return Result;
 }

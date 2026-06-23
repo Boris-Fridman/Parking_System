@@ -9,8 +9,8 @@
             ],
             "defines": ["_GNU_SOURCE", "_POSIX_C_SOURCE = 1", "NET_PRINT_ERRORS", "NET_PRINT_SUCCESS"],
             "compilerPath": "/usr/bin/clang",
-            "cStandard": "c17",
-            "cppStandard": "c++17",
+            "cStandard": "c23",//"cStandard": "c17",
+            "cppStandard": "c++20",//"cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64"            
         }
     ],

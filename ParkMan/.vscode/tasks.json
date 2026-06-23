@@ -16,7 +16,7 @@
                 "-Wextra",
                 "-Weffc++",
                 "-pedantic",
-                "-std=c++17",
+                "-std=c++20",//"-std=c++17",
                 
                 //defines
                 "-D_GNU_SOURCE",

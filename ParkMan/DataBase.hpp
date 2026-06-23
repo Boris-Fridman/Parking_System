@@ -57,7 +57,9 @@ class DBShmemPriceData_c:public ShSemMem_c
 
 
 
- void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
 
+
+void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo);
 
  

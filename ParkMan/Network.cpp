@@ -98,11 +98,11 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
 
     if(DecodeResult)
      {
-      //std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << CustomerInfo.Vechicle_ID << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << CustomerInfo.Vechicle_ID << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       //VehicleIDToString(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID);
-      //std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       CreateVechIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
-      std::cout << "The customer is: " << CustomerInfo.Name << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       PrintGPSCords(CustomerInfo.Cords);
       std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
@@ -143,7 +143,10 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.ParkingDurationTime = CurrentTime - CustAckInfo.ParkingStartTime;
       CustAckInfo.Vechicle_ID = CustomerInfo.Vechicle_ID;
       CustAckInfo.AccumulatedPrice = DIV_RND(CityPPH * CustAckInfo.ParkingDurationTime, 3600); /* Making diviation with rounding without using real (float or double) numbers. */
-     }
+
+      /* Enqueuing response to the database. */
+      SndClientParkingInfo(&CustomerInfo, &CustAckInfo);
+    }
     else
      {
       std::cerr << (StdErrNoPiping ? TermRed : "") << "Error in decoding" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
@@ -152,10 +155,13 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.ParkingDurationTime = 0;
       CustAckInfo.Vechicle_ID = 0;
      }
+
+
     /* Sending Response. */
     AckDataSize = EncodeNetData((uint8_t*)&CustAckInfo, sizeof(CustAckInfo), &DataForSending);
     write(clientSocket, DataForSending, AckDataSize);
     FreeData(&DataForSending);
+
    }
   
   close(clientSocket);

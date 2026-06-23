@@ -72,7 +72,7 @@ struct ProcParams_s
   ProcTypeID_e ProcType;
  };
 
-typedef void(*subprocess_t)(ProcParams_s Procparams);
+typedef void(*subprocess_t)(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
 
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[]);
 

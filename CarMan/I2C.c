@@ -35,7 +35,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
 
   ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
   
-  strcpy(CustomerData.Name, "Boris Fridman");
+  strcpy(CustomerData.Customer_Name, "Boris Fridman");
   CustomerData.Vechicle_ID = 13248551;
 
   printf("Staritng I2C Task.\n\r");
@@ -48,7 +48,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
 
 
-    printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Name, CustomerData.Vechicle_ID);
+    printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
     printf("The generated cordinates are: ");
     PrintGPSCords(CustomerData.Cords);
     printf("\n\r");

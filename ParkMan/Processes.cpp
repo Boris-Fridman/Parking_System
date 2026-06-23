@@ -216,7 +216,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
      break;
     case 0:
       printf("Starting new process\n\r");
-      ProcToOpen(Procparams);
+      ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.ProcType);
       exit(EXIT_SUCCESS);
      break;
     default:

@@ -13,6 +13,8 @@
 
 #define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
 
+#define QUEUE_NAME     "/park_price_database_queue"
+#define MAX_SIZE       1024
 
 
 /*======================================================================================================================*/
@@ -38,6 +40,36 @@ void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType
  {
   DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, ProcType);
   DB_Process.RunProcess();
+ }
+
+
+struct ClientQueueMsg_s
+ {
+  GPS_Cords_s Cords;
+  uint32_t    Vechicle_ID;
+  uint16_t    City_ID;
+  time_t      ParkingStartTime;
+  time_t      ParkingDurationTime;           /* seconds */
+  uint16_t    AccumulatedPrice;              /*  0.01₪  */
+  char        Customer_Name[NAME_LEN];
+  char        City_Name[NAME_LEN];
+ };
+
+void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo)
+ {
+  ClientQueueMsg_s ClientMsg;
+
+  ClientMsg.Cords               =  CustomerInfo->Cords;
+  strcpy(ClientMsg.Customer_Name,  CustomerInfo->Customer_Name);
+  ClientMsg.Vechicle_ID         =  CustomerInfo->Vechicle_ID;
+
+  ClientMsg.ParkingStartTime    =   CustAckInfo->ParkingStartTime;
+  ClientMsg.ParkingDurationTime =   CustAckInfo->ParkingDurationTime;
+  ClientMsg.City_ID             =   CustAckInfo->City_ID;
+  strcpy(ClientMsg.City_Name,   CustAckInfo->City_Name);
+  ClientMsg.AccumulatedPrice    =   CustAckInfo->AccumulatedPrice;
+
+
  }
 
 
