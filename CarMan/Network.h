@@ -3,13 +3,7 @@
 
 #include <mqueue.h>
 #include <arpa/inet.h>
-
-typedef enum QueueDirection_e
- {
-  QUEUE_SEND_E,
-  QUEUE_RECEIVE_E
- }
-QueueDirection_e;
+#include "CommonData.h"
 
 typedef struct NetQueue_s
  {
@@ -29,8 +23,8 @@ void NetworkProc(key_t sh_mem_key, char sem_name[]);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 
-void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive);
-void CloseNetQueue(NetQueue_s *NetQ);
+void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive);
+void CloseNetQueue(mqd_t *mq);
 
 
 

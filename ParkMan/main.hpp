@@ -21,6 +21,8 @@ struct ControlDBPrice_s
  { 
   key_t CitiesNewShmKey = 0;
   char CitiesSemName[NAME_LEN] = {""};
+  char ReportQueueName[NAME_LEN] = {""};
+  char ReportSemName[NAME_LEN] = {""};
   uint16_t NumPriceDBCities = 0;
   bool DBUpdateRequired = false; 
   //bool DBUpdated = false;

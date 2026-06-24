@@ -49,7 +49,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
 /*======================================================================================================================*/
 
 
-void GetShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size)
+void GenShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size)
  {
   do
    {
@@ -75,7 +75,7 @@ void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
 
 void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size)
  {
-  GetShMemKeyID(&MasterShMem->sh_mem_key, &MasterShMem->sh_mem_id, &MasterShMem->p_shm, size);
+  GenShMemKeyID(&MasterShMem->sh_mem_key, &MasterShMem->sh_mem_id, &MasterShMem->p_shm, size);
   GenShSemKeyID(&MasterShMem->sh_sem_key,  MasterShMem->sem_name,  &MasterShMem->p_shs);
   sem_post(MasterShMem->p_shs);
  }

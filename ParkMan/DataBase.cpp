@@ -13,7 +13,7 @@
 
 #define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
 
-#define QUEUE_NAME     "/park_price_database_queue"
+#define QUEUE_NAME     "/park_pr_db_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 #define MAX_SIZE       1024
 
 
@@ -126,10 +126,13 @@ void DataBase_c::LoadDataBase()
     DBShmemPriceData->LoadCitiesList(ListOfCities, NumCities);
     ((ControlDBPrice_s*)p_shm)->NumPriceDBCities = NumCities;
     ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey = DBShmemPriceData->ShMemKey();
-    const char *SmNm = DBShmemPriceData->SemName().c_str();
-    strcpy( ((ControlDBPrice_s*)p_shm)->CitiesSemName , SmNm );
+    strncpy( ((ControlDBPrice_s*)p_shm)->CitiesSemName , DBShmemPriceData->SemName().c_str() , NAME_LEN - 1 );
     //((ControlDBPrice_s*)p_shm)->DBUpdated = true;
     ((ControlDBPrice_s*)p_shm)->DBUpdateRequired = false;
+
+    strncpy( ((ControlDBPrice_s*)p_shm)->ReportQueueName , DBShmemPriceData->ReportQueueName().c_str(), NAME_LEN - 1);
+    strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->ReprotQSemName().c_str(), NAME_LEN - 1);
+
    }
   FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
@@ -225,15 +228,23 @@ void DataBase_c::LoadDataBase()
 DBShmemPriceData_c::DBShmemPriceData_c(int NCities)
  :ShSemMem_c(NCities*sizeof(PriceTab_s))
  {
+  LoadShq(QUEUE_RECEIVE_E);
+  LoadShqs();
  }
   
-DBShmemPriceData_c::DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities)
+DBShmemPriceData_c::DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities)
  :ShSemMem_c(sh_mem_key, sem_name, NCities * sizeof(PriceTab_s))
  {
+  this->sq_name = sq_name;
+  this->qsem_name = qsem_name;
+  LoadShq(QUEUE_SEND_E);
+  LoadShqs();
  }
   
 DBShmemPriceData_c::~DBShmemPriceData_c()
  {
+  RemoveShq();
+  RemoveShqs();
  }
 
 void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key)
@@ -263,5 +274,119 @@ void DBShmemPriceData_c::GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo)
   sem_post(p_shs);
 
  }
+
+
+std::string DBShmemPriceData_c::ReportQueueName()
+ {
+  return sq_name;
+ }
+
+std::string DBShmemPriceData_c::ReprotQSemName()
+ {
+  return qsem_name;
+ }
+
+
+
+
+
+
+
+
+void DBShmemPriceData_c::LoadShq(QueueDirection_e SendReceive)
+ {
+  struct mq_attr attr;
+
+  /* Define queue attributes */
+  attr.mq_flags = 0;
+  attr.mq_maxmsg = 10;        // Maximum messages in queue
+  attr.mq_msgsize = MAX_SIZE; // Maximum size of any message
+  attr.mq_curmsgs = 0;
+
+  std::string const basic_name = QUEUE_NAME;
+  if(created)  /* "Master" Side */
+   {
+    GenShQueName(basic_name, sq_name);
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+  switch(SendReceive)
+   {
+    case QUEUE_SEND_E:
+      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_WRONLY, 0644, &attr);
+     break;
+    case QUEUE_RECEIVE_E:
+      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDONLY, 0644, &attr);
+     break;
+   }
+  if (p_sq == (mqd_t)(-1)) 
+   {
+    perror("mq_open failed");
+    //exit(1);
+   }
+
+ }
+
+void DBShmemPriceData_c::LoadShqs()
+ {
+  if(created)  /* "Master" Side */
+   {
+    GenShSemKeyID(sh_qsem_key, qsem_name,  p_shqs);
+    sem_post(p_shs);
+   }
+  else         /* "Slave" Side  */
+   {
+    p_shqs = sem_open(qsem_name.c_str(), 0, 0600);
+    if(p_shqs == SEM_FAILED)
+     {
+      //ShSnc = true; /* Shared Semaphore not created */
+      return;
+     }
+   }
+ }
+
+void DBShmemPriceData_c::RemoveShq()
+ {
+  if(created)  /* "Master" Side */
+   {
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+  mq_close(p_sq);
+  mq_unlink(sq_name.c_str()); /* Removes queue from system completely */
+ }
+
+void DBShmemPriceData_c::RemoveShqs()
+ {
+  if(created)  /* "Master" Side */
+   {
+    sem_unlink(qsem_name.c_str());
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /*======================================================================================================================*/

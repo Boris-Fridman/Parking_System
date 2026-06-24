@@ -41,7 +41,7 @@ void NetworkProc(key_t sh_mem_key, char sem_name[])
 
   ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
 
-  InitNetQueue(&NetQueue, true);
+  InitNetQueue(&NetQueue.mq, true);
 
   StartNetwork(&NetworkParams);
   
@@ -49,7 +49,7 @@ void NetworkProc(key_t sh_mem_key, char sem_name[])
 
   CloseNetwork(&NetworkParams);
 
-  CloseNetQueue(&NetQueue);
+  CloseNetQueue(&NetQueue.mq);
   DeactivateSlaveShMem(&SlaveShMem);
  }
 
@@ -201,11 +201,11 @@ void CloseNetwork(NetworkParams_s *NetPars)
 
 
 
-void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive)
+void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive)
  {
   struct mq_attr attr;
 
-  // Define queue attributes
+  /* Define queue attributes */
   attr.mq_flags = 0;
   attr.mq_maxmsg = 10;        // Maximum messages in queue
   attr.mq_msgsize = MAX_SIZE; // Maximum size of any message
@@ -214,14 +214,14 @@ void InitNetQueue(NetQueue_s *NetQ, QueueDirection_e SendReceive)
   switch(SendReceive)
    {
     case QUEUE_SEND_E:
-      NetQ->mq = mq_open(QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr);
+      *mq = mq_open(QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr);
      break;
     case QUEUE_RECEIVE_E:
-      NetQ->mq = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
+      *mq = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
      break;
    }
    
-  if (NetQ->mq == (mqd_t)-1) 
+  if (*mq == (mqd_t)(-1)) 
    {
     perror("mq_open failed");
     exit(1);
@@ -241,8 +241,8 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
    }
  }
 
-void CloseNetQueue(NetQueue_s *NetQ)
+void CloseNetQueue(mqd_t *mq)
  {
-  mq_close(NetQ->mq);
+  mq_close(*mq);
   mq_unlink(QUEUE_NAME); /* Removes queue from system completely */
  }

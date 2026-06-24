@@ -39,7 +39,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
   CustomerData.Vechicle_ID = 13248551;
 
   printf("Staritng I2C Task.\n\r");
-  InitNetQueue(&NetQueue, QUEUE_SEND_E);
+  InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
   while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem.p_shm, PROC_I2C_E) != true))
    {
@@ -58,7 +58,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     /* Making delay between sendings. */
     sleep(10);
    }
-  CloseNetQueue(&NetQueue);
+  CloseNetQueue(&NetQueue.mq);
   DeactivateSlaveShMem(&SlaveShMem);
 
   printf("Finishing I2C Task.\n\r");

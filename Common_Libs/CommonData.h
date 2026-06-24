@@ -137,6 +137,21 @@ enum Error_Results_e
  #endif
  ;
 
+#ifndef __cplusplus
+typedef 
+#endif
+enum QueueDirection_e
+ {
+  QUEUE_SEND_E,
+  QUEUE_RECEIVE_E
+ }
+#ifndef __cplusplus
+QueueDirection_e
+#endif
+;
+
+
+
 /* GPS Coordinates. Are given in degrees. */
 #ifndef __cplusplus
 typedef 

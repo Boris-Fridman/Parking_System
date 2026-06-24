@@ -6,12 +6,15 @@
 
 #include <sys/sem.h>
 #include <sys/shm.h>
+#include <sys/stat.h>
+#include <mqueue.h>
 #include <semaphore.h>
 #include <string>
 
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size);
+void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size);
 void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs);
+void GenShQueName(std::string const &basic_name, std::string &que_name);
 
 
 class ShSemMem_c

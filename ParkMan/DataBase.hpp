@@ -38,14 +38,33 @@ struct CustomerTab_s
 
 class DBShmemPriceData_c:public ShSemMem_c
  {
+  protected:
     uint16_t OldNumCities = 0;
+
+    std::string sq_name = "";
+    mqd_t p_sq = 0;
+
+    key_t sh_qsem_key = 0;      /* Queue shared semaphore key        */     
+    sem_t *p_shqs = NULL;       /* Pointer to Queue shared semaphore */
+    std::string qsem_name = ""; /* Queue shared semaphore name       */
+
+    void LoadShq(QueueDirection_e SendReceive);
+    void LoadShqs();
+    void RemoveShq();
+    void RemoveShqs();
+
+
   public:
     DBShmemPriceData_c(int NCities);
-    DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], uint16_t NCities);
+    DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities);
     ~DBShmemPriceData_c();
     void ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key = 0);
     void LoadCitiesList(PriceTab_s ListOfCities[], int ListSize);
     void GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo);
+    std::string ReportQueueName();
+    std::string ReprotQSemName();
+    DBShmemPriceData_c& operator = (const DBShmemPriceData_c &other) = delete;
+    DBShmemPriceData_c(const DBShmemPriceData_c &other) = delete;
  };
 
 

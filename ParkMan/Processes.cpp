@@ -8,6 +8,8 @@
 
 #include <sys/sem.h>
 #include <sys/shm.h>
+#include <sys/stat.h>
+#include <mqueue.h>
 #include <fcntl.h>
 
 
@@ -23,7 +25,7 @@ ShSemMem_c::ShSemMem_c(size_t size)
 
   // GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
   // sem_post(p_shs);
-  // GetShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
+  // GenShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
  }
 
 ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
@@ -73,6 +75,67 @@ std::string ShSemMem_c::SemName()
  {
   return sem_name;
  }
+
+void ShSemMem_c::LoadShm(size_t size)
+ {
+  if(size)
+   {
+    if(created)  /* "Master" Side */
+     GenShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
+    else         /* "Slave" Side  */
+     {
+      sh_mem_id = shmget(sh_mem_key, size, 0666);
+      if(sh_mem_id == -1)
+       {
+        ShMnc = true;  /* Shered memory not created    */
+        return;
+       }
+      p_shm = shmat(sh_mem_id, NULL, 0);
+     }
+   }
+ }
+
+void ShSemMem_c::LoadShs()
+ {
+  if(created)  /* "Master" Side */
+   {
+    GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
+    sem_post(p_shs);
+   }
+  else         /* "Slave" Side  */
+   {
+    p_shs = sem_open(sem_name.c_str(), 0, 0600);
+    if(p_shs == SEM_FAILED)
+     {
+      ShSnc = true; /* Shared Semaphore not created */
+      return;
+     }
+   }
+ }
+
+void ShSemMem_c::RemoveShm()
+ {
+  if(p_shm != NULL)
+   {
+    shmdt(p_shm);  // Detach
+    p_shm = NULL;
+   }
+  if(created)
+   {
+    shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+   }
+ }
+
+void ShSemMem_c::RemoveShs()
+ {
+  if(created)
+   {
+    sem_unlink(sem_name.c_str());
+   }
+ }
+
+
+/*======================================================================================================================*/
 
 
 TaskControl_ShSM_c::TaskControl_ShSM_c()
@@ -137,66 +200,6 @@ bool TaskControl_ShSM_c::DataBaseMusgBeReloaded()
   return Result;
  }
 
-
-
-
-void ShSemMem_c::LoadShm(size_t size)
- {
-  if(size)
-   {
-    if(created)
-     GetShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
-    else
-     {
-      sh_mem_id = shmget(sh_mem_key, size, 0666);
-      if(sh_mem_id == -1)
-       {
-        ShMnc = true;
-        return;
-       }
-      p_shm = shmat(sh_mem_id, NULL, 0);
-     }
-   }
- }
-
-void ShSemMem_c::LoadShs()
- {
-  if(created)
-   {
-    GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
-    sem_post(p_shs);
-   }
-  else
-   {
-    p_shs = sem_open(sem_name.c_str(), 0, 0600);
-    if(p_shs == SEM_FAILED)
-     {
-      ShSnc = true; 
-      return;
-     }
-   }
- }
-
-void ShSemMem_c::RemoveShm()
- {
-  if(p_shm != NULL)
-   {
-    shmdt(p_shm);  // Detach
-    p_shm = NULL;
-   }
-  if(created)
-   {
-    shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
-   }
- }
-
-void ShSemMem_c::RemoveShs()
- {
-  if(created)
-   {
-    sem_unlink(sem_name.c_str());
-   }
- }
 
 
 
@@ -309,7 +312,7 @@ void Process_c::CheckExitStatus()
 /*======================================================================================================================*/
 
 
-void GetShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
+void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
  {
   do
    {
@@ -336,4 +339,19 @@ void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)
   while (p_shs == SEM_FAILED);
  }
 
- 
+void GenShQueName(std::string const &basic_name, std::string &que_name)
+ {
+  std::string RandSoufix;
+  struct stat st;
+  do
+   {
+    /* code */
+    RandSoufix = std::to_string(rand());
+    que_name = basic_name + "_" + RandSoufix;
+    //que_name = basic_name;
+    if(que_name.c_str()[0] != '/')
+     que_name = "/" + que_name;
+   } 
+  while (stat(("/dev/mqueue" + que_name).c_str(), &st) == 0);
+ }
+
