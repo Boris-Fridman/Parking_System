@@ -14,7 +14,6 @@
 #define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
 
 #define QUEUE_NAME     "/park_pr_db_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
-#define MAX_SIZE       1024
 
 
 /*======================================================================================================================*/
@@ -55,22 +54,6 @@ struct ClientQueueMsg_s
   char        City_Name[NAME_LEN];
  };
 
-void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo)
- {
-  ClientQueueMsg_s ClientMsg;
-
-  ClientMsg.Cords               =  CustomerInfo->Cords;
-  strcpy(ClientMsg.Customer_Name,  CustomerInfo->Customer_Name);
-  ClientMsg.Vechicle_ID         =  CustomerInfo->Vechicle_ID;
-
-  ClientMsg.ParkingStartTime    =   CustAckInfo->ParkingStartTime;
-  ClientMsg.ParkingDurationTime =   CustAckInfo->ParkingDurationTime;
-  ClientMsg.City_ID             =   CustAckInfo->City_ID;
-  strcpy(ClientMsg.City_Name,   CustAckInfo->City_Name);
-  ClientMsg.AccumulatedPrice    =   CustAckInfo->AccumulatedPrice;
-
-
- }
 
 
 void DataBase_c::OnStartProcess()
@@ -83,10 +66,15 @@ void DataBase_c::OnRunProcess()
  {
   Process_c::OnRunProcess();
   
-  if(DataBaseMusgBeReloaded())
+  if(DataBaseMustBeReloaded())
    {
     LoadDataBase();
    }
+
+  if(DBShmemPriceData != NULL)
+   DBShmemPriceData->CheckMessageExistance();
+  
+  
  };
 
 void DataBase_c::OnFinishProcess()
@@ -137,7 +125,24 @@ void DataBase_c::LoadDataBase()
   FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
+void DBShmemPriceData_c::CheckMessageExistance()
+ {
+  unsigned int prio;
+  ClientQueueMsg_s ClientQueueMsg;  /* Customer Acknowledge Information. */
+  struct timespec ts;
 
+  if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
+   {
+    ++ts.tv_sec;
+   }
+  
+  ssize_t bytes_read = mq_timedreceive(p_sq, (char*)&ClientQueueMsg, sizeof(ClientQueueMsg_s), &prio, &ts);
+  //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
+  if(bytes_read >= 0)
+   {
+    std::cout << "City: " << ClientQueueMsg.City_Name << "    Price: " << ClientQueueMsg.AccumulatedPrice << " ag \n\r";
+   }
+ }
 
 
 
@@ -295,12 +300,15 @@ std::string DBShmemPriceData_c::ReprotQSemName()
 
 void DBShmemPriceData_c::LoadShq(QueueDirection_e SendReceive)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   struct mq_attr attr;
 
   /* Define queue attributes */
   attr.mq_flags = 0;
-  attr.mq_maxmsg = 10;        // Maximum messages in queue
-  attr.mq_msgsize = MAX_SIZE; // Maximum size of any message
+  attr.mq_maxmsg = 10;                         // Maximum messages in queue
+  attr.mq_msgsize = sizeof(ClientQueueMsg_s);  // Maximum size of any message
   attr.mq_curmsgs = 0;
 
   std::string const basic_name = QUEUE_NAME;
@@ -322,28 +330,38 @@ void DBShmemPriceData_c::LoadShq(QueueDirection_e SendReceive)
    }
   if (p_sq == (mqd_t)(-1)) 
    {
-    perror("mq_open failed");
+    perr() << (StdErrNoPiping ? TermRed : "") << "mq_open failed" << (StdErrNoPiping ? TermColorsReset : "");
     //exit(1);
+   }
+  else
+   {
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The queue was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_sq << " " << sq_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
    }
 
  }
 
 void DBShmemPriceData_c::LoadShqs()
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   if(created)  /* "Master" Side */
    {
     GenShSemKeyID(sh_qsem_key, qsem_name,  p_shqs);
-    sem_post(p_shs);
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was generated and created successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
    }
   else         /* "Slave" Side  */
    {
     p_shqs = sem_open(qsem_name.c_str(), 0, 0600);
     if(p_shqs == SEM_FAILED)
      {
+      perr() << (StdErrNoPiping ? TermRed : "") << "The semaphore wasn't created" << (StdErrNoPiping ? TermColorsReset : "");
       //ShSnc = true; /* Shared Semaphore not created */
       return;
      }
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
    }
+  sem_post(p_shqs);
  }
 
 void DBShmemPriceData_c::RemoveShq()
@@ -370,6 +388,38 @@ void DBShmemPriceData_c::RemoveShqs()
  }
 
 
+void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo)
+ {
+  ClientQueueMsg_s ClientMsg;
+  size_t Len;
+
+  ClientMsg.Cords               =  CustomerInfo->Cords;
+  strcpy(ClientMsg.Customer_Name,  CustomerInfo->Customer_Name);
+  ClientMsg.Vechicle_ID         =  CustomerInfo->Vechicle_ID;
+
+  ClientMsg.ParkingStartTime    =   CustAckInfo->ParkingStartTime;
+  ClientMsg.ParkingDurationTime =   CustAckInfo->ParkingDurationTime;
+  ClientMsg.City_ID             =   CustAckInfo->City_ID;
+  strcpy(ClientMsg.City_Name    ,   CustAckInfo->City_Name);
+  ClientMsg.AccumulatedPrice    =   CustAckInfo->AccumulatedPrice;
+
+  Len = sizeof(ClientQueueMsg_s);
+
+//  std::cout << "Trying to take queue semaphore ... " << p_shqs << "\n\r";
+  sem_wait(p_shqs);
+//  std::cout << "The semaphore was taken successrully. \n\r";
+  if (mq_send(p_sq, (char*)&ClientMsg, Len, 0) == -1)
+   {
+    perror("mq_send failed");
+   } 
+  else 
+   {
+    printf("Message sent successfully. %ld bytes sent.\n\r", Len);
+   }
+//  std::cout << "Giving the queue semaphore back ... \n\r";
+  sem_post(p_shqs);
+//  std::cout << "The semaphore was given successfully. \n\r";
+ }
 
 
 

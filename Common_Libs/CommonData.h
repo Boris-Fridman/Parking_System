@@ -323,7 +323,7 @@ void PrintGPSCords(GPS_Cords_s CordsToPrint);
 
 void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID);
 
-void CreateVechIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored);
+void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored);
 
 /*======================================================================================================================*/
 

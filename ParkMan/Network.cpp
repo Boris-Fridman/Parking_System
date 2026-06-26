@@ -101,7 +101,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << CustomerInfo.Vechicle_ID << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       //VehicleIDToString(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID);
       //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
-      CreateVechIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
+      CreateVehIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
       std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
       PrintGPSCords(CustomerInfo.Cords);
       std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
@@ -123,7 +123,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
               char old_fill = std::cout.fill();
 
               CityPPH = CityPriceInfo.Price;
-              std::cout << (StdOutNoPiping ? TermGreen : "") << "New parking detected in the city: " << CityPriceInfo.City_Name << " ID: " << CityPriceInfo.City_ID << " Parking Price " << CityPriceInfo.Price / 100<< "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+              std::cout << (StdOutNoPiping ? TermGreen : "") << "New parking detected in the city: " << CityPriceInfo.City_Name << " ID: " << CityPriceInfo.City_ID << " Parking Price " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
               std::cout.copyfmt(old_state);
               std::cout.fill(old_fill);
@@ -134,7 +134,6 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
           FirstInt = false;
          }
        }
-
       
       /* Loading info for response. */
       strcpy(CustAckInfo.City_Name, DetectedCityName.c_str());
@@ -145,7 +144,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.AccumulatedPrice = DIV_RND(CityPPH * CustAckInfo.ParkingDurationTime, 3600); /* Making diviation with rounding without using real (float or double) numbers. */
 
       /* Enqueuing response to the database. */
-      SndClientParkingInfo(&CustomerInfo, &CustAckInfo);
+      if(DBShmemPriceData != NULL)
+       DBShmemPriceData->SndClientParkingInfo(&CustomerInfo, &CustAckInfo);
     }
     else
      {

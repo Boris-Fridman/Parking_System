@@ -41,9 +41,11 @@ class DBShmemPriceData_c:public ShSemMem_c
   protected:
     uint16_t OldNumCities = 0;
 
-    std::string sq_name = "";
-    mqd_t p_sq = 0;
-
+    /* Report shared queue variables */
+    std::string sq_name = "";   /* Shared Queue name */
+    mqd_t p_sq = 0;             /* Shared Queue variable */
+    
+    /* Report shared queue semaphore variables */
     key_t sh_qsem_key = 0;      /* Queue shared semaphore key        */     
     sem_t *p_shqs = NULL;       /* Pointer to Queue shared semaphore */
     std::string qsem_name = ""; /* Queue shared semaphore name       */
@@ -65,6 +67,9 @@ class DBShmemPriceData_c:public ShSemMem_c
     std::string ReprotQSemName();
     DBShmemPriceData_c& operator = (const DBShmemPriceData_c &other) = delete;
     DBShmemPriceData_c(const DBShmemPriceData_c &other) = delete;
+    void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo);
+    void CheckMessageExistance();
+
  };
 
 
@@ -79,6 +84,6 @@ class DBShmemPriceData_c:public ShSemMem_c
 void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
 
 
-void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo);
+
 
  

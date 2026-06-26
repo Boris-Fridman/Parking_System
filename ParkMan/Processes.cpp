@@ -172,7 +172,6 @@ bool TaskControl_ShSM_c::ProcessMustExit(ProcTypeID_e ProcToExit)
   return ((TskContShmData_s*)p_shm)->get_flag(ProcToExit);
  }
 
-
 void TaskControl_ShSM_c::SetDBFileName(std::string NameToSet)
  {
   ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName = NameToSet;
@@ -190,14 +189,46 @@ void TaskControl_ShSM_c::ReloadDatabase()
   sem_post(p_shs);
  }
 
-bool TaskControl_ShSM_c::DataBaseMusgBeReloaded()
+bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
  {
   bool Result;
-  sem_wait(p_shs);
-  Result = ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired;
-  ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
-  sem_post(p_shs);
-  return Result;
+
+  struct timespec ts;
+  if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
+   {
+    ++ts.tv_sec;
+   }
+  if(sem_timedwait(p_shs, &ts) == -1)
+   {
+    if (errno == ETIMEDOUT) 
+     {
+      std::cout << "Timeout reached! Semaphore was not available.\n";
+     } 
+    else if (errno == EINTR) 
+     {
+      std::cout << "The call was interrupted by a signal handler.\n";
+     } 
+    else 
+     {
+      perr()<<"sem_timedwait failed";
+     }
+    return false;
+   }
+  else
+   {
+    //sem_wait(p_shs);
+    Result = ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired;
+    ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
+    sem_post(p_shs);
+    return Result;
+
+   }
+  return false;
+  // sem_wait(p_shs);
+  // Result = ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired;
+  // ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
+  // sem_post(p_shs);
+  // return Result;
  }
 
 
