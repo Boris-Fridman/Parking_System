@@ -142,6 +142,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.ParkingDurationTime = CurrentTime - CustAckInfo.ParkingStartTime;
       CustAckInfo.Vechicle_ID = CustomerInfo.Vechicle_ID;
       CustAckInfo.AccumulatedPrice = DIV_RND(CityPPH * CustAckInfo.ParkingDurationTime, 3600); /* Making diviation with rounding without using real (float or double) numbers. */
+      CustAckInfo.ParkingEndTime = CurrentTime;
+      CustAckInfo.PricePerHour = CityPPH;
 
       /* Enqueuing response to the database. */
       if(DBShmemPriceData != NULL)

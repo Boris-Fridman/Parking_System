@@ -251,14 +251,41 @@ struct CustAcknowledge_s
   uint32_t Vechicle_ID;
   uint16_t City_ID;
   time_t   ParkingStartTime;
-  time_t   ParkingDurationTime;           /* seconds */
-  uint16_t AccumulatedPrice;              /*  0.01₪  */
+  time_t   ParkingEndTime;
+  time_t   ParkingDurationTime;           /* seconds    */
+  uint16_t AccumulatedPrice;              /*  0.01₪     */
+  uint16_t PricePerHour;                  /*  0.01₪ / h */
   char     City_Name[NAME_LEN];
  }
 #ifndef __cplusplus  
 CustAcknowledge_s
 #endif
 ;
+
+
+#ifndef __cplusplus
+typedef 
+#endif
+struct ClientQueueMsg_s
+ {
+  GPS_Cords_s Cords;
+  uint32_t    Vechicle_ID;
+  uint16_t    City_ID;
+  time_t      ParkingStartTime;
+  time_t      ParkingEndTime;
+  time_t      ParkingDurationTime;           /* seconds       */
+  uint16_t    PricePerHour;                  /*  0.01₪ / hour */
+  uint16_t    AccumulatedPrice;              /*  0.01₪        */
+  char        Customer_Name[NAME_LEN];
+  char        City_Name[NAME_LEN];
+ }
+ #ifndef __cplusplus
+ClientQueueMsg_s 
+#endif
+
+ ;
+
+
 
 
 

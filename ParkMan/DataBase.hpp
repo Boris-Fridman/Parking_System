@@ -6,7 +6,7 @@
 #include "Processes.hpp"
 
 #include "CommonData.h"
-
+#include <sqlite3.h>
 
 
 #include <sys/types.h>
@@ -68,8 +68,8 @@ class DBShmemPriceData_c:public ShSemMem_c
     DBShmemPriceData_c& operator = (const DBShmemPriceData_c &other) = delete;
     DBShmemPriceData_c(const DBShmemPriceData_c &other) = delete;
     void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo);
-    void CheckMessageExistance();
-
+    void CheckMessageExistance(sqlite3 **conn);
+    void AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMsg_s &ClientQueueMsg);
  };
 
 

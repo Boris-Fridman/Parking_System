@@ -7,6 +7,7 @@
 #include <semaphore.h>
 #include <unistd.h>
 #include <iostream>
+#include <iomanip>
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sqlite3.h>
@@ -42,17 +43,6 @@ void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType
  }
 
 
-struct ClientQueueMsg_s
- {
-  GPS_Cords_s Cords;
-  uint32_t    Vechicle_ID;
-  uint16_t    City_ID;
-  time_t      ParkingStartTime;
-  time_t      ParkingDurationTime;           /* seconds */
-  uint16_t    AccumulatedPrice;              /*  0.01₪  */
-  char        Customer_Name[NAME_LEN];
-  char        City_Name[NAME_LEN];
- };
 
 
 
@@ -72,8 +62,7 @@ void DataBase_c::OnRunProcess()
    }
 
   if(DBShmemPriceData != NULL)
-   DBShmemPriceData->CheckMessageExistance();
-  
+   DBShmemPriceData->CheckMessageExistance(&conn);
   
  };
 
@@ -125,8 +114,10 @@ void DataBase_c::LoadDataBase()
   FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
-void DBShmemPriceData_c::CheckMessageExistance()
+void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
  {
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   unsigned int prio;
   ClientQueueMsg_s ClientQueueMsg;  /* Customer Acknowledge Information. */
   struct timespec ts;
@@ -141,7 +132,67 @@ void DBShmemPriceData_c::CheckMessageExistance()
   if(bytes_read >= 0)
    {
     std::cout << "City: " << ClientQueueMsg.City_Name << "    Price: " << ClientQueueMsg.AccumulatedPrice << " ag \n\r";
+    AddOrUpdateParkingSession(conn, ClientQueueMsg);
    }
+ }
+
+
+void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMsg_s &ClientQueueMsg)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  int result = 0;
+  char timedurbuf[100], vehidbuf[50];
+
+  CreateVehIDFormated(vehidbuf, sizeof(vehidbuf), ClientQueueMsg.Vechicle_ID, StdOutNoPiping);
+
+  CreateLoadDatabase(conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
+  result = UpdateParkSessionInDataBase(conn, ClientQueueMsg);
+  if(result == 0)  /* The reqauired parking session allready exists in database. */
+   {
+    std::ios old_state(nullptr);
+    old_state.copyfmt(std::cout); 
+    char old_fill = std::cout.fill();
+
+    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of "<< ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " was already existing. Were updated only time and price." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " ₪."<< (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+
+    // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+    // printf("The parking session of %s %s was already existing. Were updated only time and price.\n\r", ClientQueueMsg.Customer_Name, vehidbuf);
+    // printf("The parking price was updated to:%d.%02d ₪.\n\r", ClientQueueMsg.AccumulatedPrice / 100, ClientQueueMsg.AccumulatedPrice % 100);
+    // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+
+    std::cout.copyfmt(old_state);
+    std::cout.fill(old_fill);
+
+   }
+  else if(result < 0)  /* The update wasn't be possible because the parking session didn't exist. */
+   {
+    result =  WriteNewParkSessionToDataBase(conn, ClientQueueMsg);
+    if(result == 0)
+     {
+      ConvertTime(&ClientQueueMsg.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
+
+      std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of " << ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " starting at " << timedurbuf << " was added successfully. "<< (StdOutNoPiping ? TermColorsReset : "") <<"\n\r";
+
+      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+      // printf("The parking session of %s %s starting at %s was added successfully. \n\r", ClientQueueMsg.Customer_Name, vehidbuf, timedurbuf);
+      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+
+     }
+   }
+  if(result == -1)
+   {
+    
+    std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Error" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+
+    // if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
+    // printf("Error\n\r");
+    // if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+
+   }
+
  }
 
 
@@ -397,11 +448,13 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
   strcpy(ClientMsg.Customer_Name,  CustomerInfo->Customer_Name);
   ClientMsg.Vechicle_ID         =  CustomerInfo->Vechicle_ID;
 
-  ClientMsg.ParkingStartTime    =   CustAckInfo->ParkingStartTime;
-  ClientMsg.ParkingDurationTime =   CustAckInfo->ParkingDurationTime;
-  ClientMsg.City_ID             =   CustAckInfo->City_ID;
-  strcpy(ClientMsg.City_Name    ,   CustAckInfo->City_Name);
-  ClientMsg.AccumulatedPrice    =   CustAckInfo->AccumulatedPrice;
+  ClientMsg.ParkingStartTime    =  CustAckInfo->ParkingStartTime;
+  ClientMsg.ParkingEndTime      =  CustAckInfo->ParkingEndTime;
+  ClientMsg.ParkingDurationTime =  CustAckInfo->ParkingDurationTime;
+  ClientMsg.City_ID             =  CustAckInfo->City_ID;
+  strcpy(ClientMsg.City_Name    ,  CustAckInfo->City_Name);
+  ClientMsg.AccumulatedPrice    =  CustAckInfo->AccumulatedPrice;
+  ClientMsg.PricePerHour        =  CustAckInfo->PricePerHour;
 
   Len = sizeof(ClientQueueMsg_s);
 

@@ -65,6 +65,26 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn);
 int FindCityInDataBase(sqlite3 **conn, const char city_name[]);
 
 /**
+ * @brief Finds parking session by vehicle id, client name and start parking time in the database.
+ * 
+ * @code
+ * int FindParkSessionInDataBase(sqlite3 **conn, uint32_t vehicle_id, const char client_name[], time_t parking_start_time);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param vehicle_id the ID of the parking vehicle.
+ * 
+ * @param client_name the name of the city to find.
+ * 
+ * @param parking_start_time start time of the parking. - Is required to detemine the parking session.
+ * 
+ * @return the first row number where the client was found, "-1" if error or "-3" if wasn't found.
+ */
+int FindParkSessionInDataBase(sqlite3 **conn, uint32_t vehicle_id, const char client_name[], time_t parking_start_time);
+
+
+/**
  * @brief Updates existing city in the database.
  * 
  * @code
@@ -81,11 +101,27 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[]);
  */
 int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price);
 
+/**
+ * @brief Updates existing parking session in the database.
+ * 
+ * @code
+ * int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_msg);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param client_queue_msg the structure containint the parking session data.
+ * 
+ * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
+ */
+int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_msg);
+
+
 /** 
  * @brief Writes new city to the database.
  * 
  * @code
- * int WriteToDataBase(sqlite3 **conn, int test_id, char date_time[], TestResType_e result);
+ * int WriteNewCityToDataBase(sqlite3 **conn, int test_id, char date_time[], TestResType_e result);
  * @code
  * 
  * @param conn pointer to the sqlite database handle.
@@ -98,7 +134,23 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price);
  * 
  * @return One of the database CAPI3REF Result Codes. (See lines 434 - 476 in the "sqlite3.h"-file).
  */
-int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price);
+int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price);
+
+
+/** 
+ * @brief Writes new parking session to the database.
+ * 
+ * @code
+ * int WriteNewParkSessionToDataBase(sqlite3 **conn, ClientQueueMsg_s ClientQueueMsg);
+ * @code
+ * 
+ * @param conn pointer to the sqlite database handle.
+ * 
+ * @param client_queue_msg the structure containint the parking session data.
+ * 
+ * @return One of the database CAPI3REF Result Codes. (See lines 434 - 476 in the "sqlite3.h"-file).
+ */
+int WriteNewParkSessionToDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_msg);
 
 
 /**

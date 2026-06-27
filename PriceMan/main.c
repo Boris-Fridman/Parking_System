@@ -278,17 +278,17 @@ void AddOrUpdateNewCity(char CityName[], int CityPrice)
   printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice / 100, CityPrice % 100);
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
   result = UpdateCityPriceInDataBase(&conn, CityName, CityPrice);
-  if(result == 0)
+  if(result == 0)  /* The reqauired city allready exists in database. */
    {
     if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
     printf("The city \"%s\" was already existing. Was updated only price.\n\r", CityName);
     printf("The price was updated to:%d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
     if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
    }
-  else if(result < 0)  // The update wasn't be possible because the city didn't exist
+  else if(result < 0)  /* The update wasn't be possible because the city didn't exist. */
    {
     CityID = GetCityIDNotExistingInDataBase(&conn);
-    result = WriteToDataBase(&conn, CityID, CityName, CityPrice);
+    result = WriteNewCityToDataBase(&conn, CityID, CityName, CityPrice);
     if(result == 0)
      {
       if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);

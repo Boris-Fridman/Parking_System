@@ -40,9 +40,8 @@ void PrintDBError(int ErrorCode);
 /*  Loads existing database or creates a new one if any database doesn't exist.                                         */
 int CreateLoadDatabase(sqlite3 **conn)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   if(conn == NULL)
    return -2;  /* The pointer to the database wasn't given. */
@@ -51,11 +50,14 @@ int CreateLoadDatabase(sqlite3 **conn)
    {
     char *err_msg;
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_PRICES(city_id INT, city_name TEXT, price_per_hour_in_ag INT);", 0, 0, &err_msg);
+    result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_COORDINATES(city_id INT, city_name TEXT, shape_type NUMERIC, p0 BLOB, p1 BLOB, p2 BLOB, p3 BLOB, p4 BLOB, p5 BLOB, p6 BLOB, p7 BLOB, p8 BLOB, p9 BLOB, p10 BLOB, p11 BLOB, p12 BLOB, p13 BLOB, p14 BLOB, p15 BLOB, p16 BLOB, p17 BLOB, p18 BLOB, p20 BLOB);", 0, 0, &err_msg);
+    result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);", 0, 0, &err_msg);
+   
     if(result != SQLITE_OK)
      {
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepare the table: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
     sqlite3_close(*conn);
     return 0; /* The database was loaded successfully. */
@@ -78,13 +80,12 @@ int compare(const void *d1, const void *d2)
 /*  Checks all the cities' ids in the database and returns the not esisting one. (Tries to find a smallest not existing.) */
 int GetCityIDNotExistingInDataBase(sqlite3 **conn)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result, valtoret = 0, v;
   int total_rows;
   int *CityIDs = NULL;
   int i;
   sqlite3_stmt* stmt;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
@@ -95,9 +96,9 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
       result = sqlite3_prepare_v2(*conn, "SELECT city_id FROM CITIES_PRICES;", -1, &stmt, 0);
       if(result != SQLITE_OK)
        {
-        if(NoPiping)fprintf(stderr, TermRed);
+        if(StdErrNoPiping)fprintf(stderr, TermRed);
         fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
-        if(NoPiping)fprintf(stderr, TermColorsReset);
+        if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
        }
       else
        {
@@ -113,7 +114,7 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
               CityIDs[i] = v;
              }
            }
-          // sorting.
+          /* sorting. */
           qsort(CityIDs, total_rows, sizeof(CityIDs[0]), compare);
           for(i = 0; i < total_rows - 1; i++)
            {
@@ -151,12 +152,11 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
 /*  Finds city by name in the database.                                                                                 */
 int FindCityInDataBase(sqlite3 **conn, const char city_name[])
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result, valtoret = 0;
   //int id, price;
   const unsigned char *foundname;
   sqlite3_stmt* stmt;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
@@ -164,9 +164,9 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
     result = sqlite3_prepare_v2(*conn, "SELECT city_id, city_name, price_per_hour_in_ag FROM CITIES_PRICES;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
       valtoret = -1;
      }
     else
@@ -188,7 +188,7 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
          }
        }
       while(result == SQLITE_ROW);
-      if(result != SQLITE_ROW)  // The name wasn't found.
+      if(result != SQLITE_ROW)  /* The name wasn't found. */
        valtoret = -3;
      }
    }
@@ -202,14 +202,68 @@ int FindCityInDataBase(sqlite3 **conn, const char city_name[])
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
+/*  Finds parking session by vehicle id, client name and start parking time in the database.                            */
+int FindParkSessionInDataBase(sqlite3 **conn, uint32_t vehicle_id, const char client_name[], time_t parking_start_time)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  int result, valtoret = 0;
+  int id;
+  time_t start_time;
+
+  const unsigned char *foundname;
+  sqlite3_stmt* stmt;
+
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
+   {
+    result = sqlite3_prepare_v2(*conn, "SELECT vehicle_id, client_name, parking_start_time FROM CUSTOMERS_PRICE_REPORTS;", -1, &stmt, 0);
+    if(result != SQLITE_OK)
+     {
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
+      fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
+      valtoret = -1;
+     }
+    else
+     {
+      do
+       {
+        result = sqlite3_step(stmt);
+        if(result == SQLITE_ROW)
+         {
+          id         = sqlite3_column_int (stmt, 0);
+          foundname  = sqlite3_column_text(stmt, 1);
+          start_time = sqlite3_column_int (stmt, 2);
+          if(((uint32_t)id == vehicle_id) && (!strcmp((const char *)foundname, client_name)) && (start_time == parking_start_time))
+           {
+            break;
+           }
+          valtoret++;
+         }
+       } 
+      while (result == SQLITE_ROW);
+      if(result != SQLITE_ROW)  /* The client's parking session wasn't found. */
+       valtoret = -3;
+     }    
+   }
+  else
+   {
+    valtoret = -1;
+   }
+  sqlite3_reset(stmt);
+  sqlite3_finalize(stmt);
+  sqlite3_close(*conn);
+  return valtoret;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 /*  Updates existing city in the database.                                                                              */
 int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result, valtoret = SQLITE_OK;
   int affected_rows;
   sqlite3_stmt* stmt = NULL;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
@@ -217,24 +271,24 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
     result = sqlite3_prepare_v2(*conn, "UPDATE CITIES_PRICES SET price_per_hour_in_ag = ? WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepair for updating data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
       valtoret = -1;
      }
 
     result = sqlite3_bind_int(stmt, 1, city_price);
     if(result != SQLITE_OK){PrintDBError(result);}
-    result = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_STATIC);
+    result = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_TRANSIENT);
     if(result != SQLITE_OK){PrintDBError(result);}
 
     result = sqlite3_step(stmt);
     if((result != SQLITE_OK) && (result != SQLITE_DONE))
      {
       valtoret = -1;
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot update data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
     affected_rows = sqlite3_changes(*conn);
     if(affected_rows == 0) // No value was found.
@@ -250,8 +304,67 @@ int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
+/*  Updates existing parking session in the database.                                                                   */
+int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_msg)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  int result, valtoret = SQLITE_OK;
+  int affected_rows;
+  sqlite3_stmt* stmt = NULL;
+
+  result = OpenDataBase(conn);
+  if(result == SQLITE_OK)
+   {
+    //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
+    
+    //  end_time INT, duration INT, accumulated_price_in_ag INT
+    result = sqlite3_prepare_v2(*conn, "UPDATE CUSTOMERS_PRICE_REPORTS SET end_time = ?, duration = ?, accumulated_price_in_ag = ? WHERE start_time = ? AND vehicle_id = ? AND customer_name = ?;", -1, &stmt, 0);
+    if(result != SQLITE_OK)
+     {
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
+      fprintf(stderr, "Cannot prepair for updating data: %s\n\r", sqlite3_errmsg(*conn));
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
+      valtoret = -1;
+     }
+    
+    result = sqlite3_bind_int (stmt, 1, client_queue_msg.ParkingEndTime);
+    if(result != SQLITE_OK){PrintDBError(result);}
+    result = sqlite3_bind_int (stmt, 2, client_queue_msg.ParkingDurationTime);
+    if(result != SQLITE_OK){PrintDBError(result);}
+    result = sqlite3_bind_int (stmt, 3, client_queue_msg.AccumulatedPrice);
+    if(result != SQLITE_OK){PrintDBError(result);}
+
+    result = sqlite3_bind_int (stmt, 4, client_queue_msg.ParkingStartTime);
+    if(result != SQLITE_OK){PrintDBError(result);}
+    result = sqlite3_bind_int (stmt, 5, client_queue_msg.Vechicle_ID);
+    if(result != SQLITE_OK){PrintDBError(result);}
+    result = sqlite3_bind_text(stmt, 6, client_queue_msg.Customer_Name, -1, SQLITE_TRANSIENT);
+    if(result != SQLITE_OK){PrintDBError(result);}
+
+    result = sqlite3_step(stmt);
+    if((result != SQLITE_OK) && (result != SQLITE_DONE))
+     {
+      valtoret = -1;
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
+      fprintf(stderr, "Cannot update data: %s\n\r", sqlite3_errmsg(*conn));
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
+     }
+    affected_rows = sqlite3_changes(*conn);
+    if(affected_rows == 0) // No value was found.
+     {
+      valtoret = -3; 
+     }
+   } 
+  else
+   valtoret = -1;
+  sqlite3_finalize(stmt);
+  sqlite3_close(*conn);
+  return valtoret;
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
 /*  Writes new city to the database.                                                                                    */
-int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price)
+int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price)
  {
   int valtoret = SQLITE_OK;
   sqlite3_stmt* stmt = NULL;
@@ -262,11 +375,11 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
      {
        valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CITIES_PRICES (city_id, city_name, price_per_hour_in_ag) VALUES (?, ?, ?);", -1, &stmt, 0);
        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-       valtoret = sqlite3_bind_int (stmt, 1, city_id                     );
+       valtoret = sqlite3_bind_int (stmt, 1, city_id                        );
        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-       valtoret = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_STATIC);
+       valtoret = sqlite3_bind_text(stmt, 2, city_name, -1, SQLITE_TRANSIENT);
        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
-       valtoret = sqlite3_bind_int (stmt, 3, city_price                  );
+       valtoret = sqlite3_bind_int (stmt, 3, city_price                     );
        if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
       sqlite3_step(stmt);
       valtoret = sqlite3_finalize(stmt);
@@ -279,15 +392,60 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
   return valtoret;
  }
 
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Writes new parking session to the database.                                                                         */
+int WriteNewParkSessionToDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_msg)
+ {
+  int valtoret = SQLITE_OK;
+  sqlite3_stmt* stmt = NULL;
+  valtoret = OpenDataBase(conn);
+  if(valtoret == SQLITE_OK)
+   {
+    do
+     {
+      //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
+      valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CUSTOMERS_PRICE_REPORTS (start_time, end_time, duration, vehicle_id, customer_name, parking_cords, city_id, city_name, price_per_hour_in_ag, accumulated_price_in_ag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", -1, &stmt, 0);
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  1,  client_queue_msg.ParkingStartTime                                        );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  2,  client_queue_msg.ParkingEndTime                                          );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  3,  client_queue_msg.ParkingDurationTime                                     );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  4,  client_queue_msg.Vechicle_ID                                             );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_text(stmt,  5,  client_queue_msg.Customer_Name, -1, SQLITE_TRANSIENT                     );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_blob(stmt,  6, &client_queue_msg.Cords, sizeof(client_queue_msg.Cords), SQLITE_TRANSIENT );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  7,  client_queue_msg.City_ID                                                 );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_text(stmt,  8,  client_queue_msg.City_Name, -1, SQLITE_TRANSIENT                         );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt,  9,  client_queue_msg.PricePerHour                                            );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int (stmt, 10,  client_queue_msg.AccumulatedPrice                                        );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      sqlite3_step(stmt);
+      valtoret = sqlite3_finalize(stmt);
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
+     } 
+    while (0);
+    sqlite3_close(*conn);
+   }
+  return valtoret;   
+ }
+
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Removes the given city from the database.                                                                           */
- int RemoveCityFromDataBase(sqlite3 **conn, char city_name[])
-  {
+int RemoveCityFromDataBase(sqlite3 **conn, char city_name[])
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int result, valtoret = SQLITE_OK;
   int affected_rows;
   sqlite3_stmt* stmt = NULL;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
@@ -295,9 +453,9 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
     result = sqlite3_prepare_v2(*conn, "DELETE FROM CITIES_PRICES WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepair for deleteing data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
 
     result = sqlite3_bind_text(stmt, 1, city_name, -1, SQLITE_STATIC);
@@ -307,9 +465,9 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
     if((result != SQLITE_OK) && (result != SQLITE_DONE))
      {
       valtoret = -1;
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot delete data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
     affected_rows = sqlite3_changes(*conn);
     if(affected_rows == 0) // No value was found.
@@ -323,27 +481,27 @@ int WriteToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_pric
   sqlite3_close(*conn);
   return valtoret;
 
-  }
+ }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Renames city according old and new names.                                                                           */
 int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int result, valtoret = SQLITE_OK;
   int affected_rows;
   sqlite3_stmt* stmt = NULL;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-
+  
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
    {
     result = sqlite3_prepare_v2(*conn, "UPDATE CITIES_PRICES SET city_name = ? WHERE city_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot prepair for updating data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
 
     result = sqlite3_bind_text(stmt, 1, new_name, -1, SQLITE_STATIC);
@@ -355,9 +513,9 @@ int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
     if((result != SQLITE_OK) && (result != SQLITE_DONE))
      {
       valtoret = -1;
-      if(NoPiping)fprintf(stderr, TermRed);
+      if(StdErrNoPiping)fprintf(stderr, TermRed);
       fprintf(stderr, "Cannot update data: %s\n\r", sqlite3_errmsg(*conn));
-      if(NoPiping)fprintf(stderr, TermColorsReset);
+      if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
     affected_rows = sqlite3_changes(*conn);
     if(affected_rows == 0) // No value was found.
@@ -376,12 +534,11 @@ int RenameCityByName(sqlite3 **conn, char old_name[], char new_name[])
 /*  Gives a list of the all existing cities in the database.                                                            */
 int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result = 0, valtoret = 0;
   int i;
   sqlite3_stmt* stmt = NULL;
   const unsigned char *name;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   
   *list = NULL;  // To ensure that the pointer is NULL even the allocating memory function didn't run.
   result = OpenDataBase(conn);
@@ -401,9 +558,9 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
         result = sqlite3_prepare_v2(*conn, "SELECT city_id, city_name, price_per_hour_in_ag FROM CITIES_PRICES;", -1, &stmt, 0);
         if(result != SQLITE_OK)
          {
-          if(NoPiping)fprintf(stderr, TermRed);
+          if(StdErrNoPiping)fprintf(stderr, TermRed);
           fprintf(stderr, "Cannot prepere the table: %s\n\r", sqlite3_errmsg(*conn));
-          if(NoPiping)fprintf(stderr, TermColorsReset);
+          if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
           FreeList(list);
           *list_size = 0;
           valtoret = -3;
@@ -479,14 +636,13 @@ void ApplyDBPath(int const argc, char const *argv[])
 int OpenDataBase(sqlite3 **conn)
  {
   int result;
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   result = sqlite3_open(PathFileName, conn);  //result = sqlite3_open(DB_FILENAME, conn);
   if(result != SQLITE_OK)
    {
-    if(NoPiping)fprintf(stderr, TermRed);
+    if(StdErrNoPiping)fprintf(stderr, TermRed);
     fprintf(stderr, "Cannot open the file with table: %s\n\r", sqlite3_errmsg(*conn));
-    if(NoPiping)fprintf(stderr, TermColorsReset);
+    if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
    }
   return result;
  }
@@ -523,9 +679,8 @@ int GetNumRows(sqlite3 **conn)
 /*  Prints error message according to the error number.                                                                 */
 void PrintDBError(int ErrorCode)
  {
-  bool NoPiping;
-  NoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  if(NoPiping) 
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  if(StdOutNoPiping) 
    {
     Error_Results_e ErrRes;
 #pragma GCC diagnostic push
@@ -583,5 +738,5 @@ void PrintDBError(int ErrorCode)
     case SQLITE_ROW        : fprintf(stderr, "sqlite3_step() has another row ready\n\r"); break;
     case SQLITE_DONE       : fprintf(stderr, "sqlite3_step() has finished executing\n\r"); break;
    }
-  if(NoPiping) fprintf(stderr, "%s", TermColorsReset);
+  if(StdOutNoPiping) fprintf(stderr, "%s", TermColorsReset);
  }
