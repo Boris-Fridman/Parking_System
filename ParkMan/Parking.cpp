@@ -9,6 +9,8 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 
+#include <vector>
+#include <cmath>
 
 #define PARK_PROC_NAME     (char *)"Parking"     /* Parking process name*/
 
@@ -63,4 +65,14 @@ Parking_c::~Parking_c()
  {
 
  }
+
+
+
+
+ ///////////////////////////////////////////////////////////////////////////////////
+
+
+
+
+
 

@@ -16,7 +16,7 @@
                 "-Wextra",
                 "-Weffc++",
                 "-pedantic",
-                "-std=c++20",//"-std=c++17",
+                "-std=c++20",//"-std=c++17", //"-std=c++14",
                 
                 //defines
                 "-D_GNU_SOURCE",
@@ -28,13 +28,13 @@
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
                 "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
-
+                
                 //source file - use all top level .cpp files:
                 "*.cpp",
                 
                 //outputfile - always "program" at workspace directory:
                 "-o",
-                "parkman",
+                "createcitycords",
                 "-lrt",
 
                 // Include Directories
@@ -45,6 +45,7 @@
 
                 //implementing database:
                 "-lsqlite3",
+
 
             ],
             "options": {

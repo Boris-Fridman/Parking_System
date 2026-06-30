@@ -24,6 +24,10 @@ Folders:
     ┃ 4. ┃ PriceMan          ┃ Manages prices witten in the database. If DB-File doesn't exist it creates it.         ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃ 5. ┃ CommonLibs        ┃ The folder containing libaries common for two or more subprojects.                     ┃  
+    ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
+    ┃ a. ┃ CreateCityCords   ┃ Auxilar program for creating database with cities for city detection by coordinates.   ┃  
+    ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
+    ┃    ┃                   ┃                                                                                        ┃  
     ┗━━━━┻━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  
 
 

@@ -158,8 +158,8 @@ typedef
 #endif
 struct GPS_Cords_s
  {
-  double Latitude;    /* (˚) (deg) */  /* Positive number - North , Negative nomber - South .     > 0 - NL ;  < 0 - SL .  */
   double Longitude;   /* (˚) (deg) */  /* Positive number - East  , Negative number - West  .     > 0 - EL ;  < 0 - WL .  */
+  double Latitude;    /* (˚) (deg) */  /* Positive number - North , Negative nomber - South .     > 0 - NL ;  < 0 - SL .  */
  }
  #ifndef __cplusplus
  GPS_Cords_s
