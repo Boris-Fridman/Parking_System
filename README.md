@@ -11,7 +11,7 @@ Folders:
     ┃    ┃                   ┃                                                                                        ┃  
     ┃    ┃                   ┃                                                                                        ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
-    ┃ 1. ┃                   ┃                                                                                        ┃  
+    ┃ 1. ┃ GPSMan            ┃ GPS simulating program generating randomly PGS coorditates                             ┃  
     ┣━━━━╋━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃ 2. ┃ CarMan            ┃ The car managaer program.                                                              ┃  
     ┃    ┃                   ┃ Is built for the Beagle Bone Green Borard and works as the car sending its place       ┃  

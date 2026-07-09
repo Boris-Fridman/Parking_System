@@ -19,7 +19,14 @@ extern "C" {
 #include <stdbool.h>
 #endif
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+//#if !(defined(__GNUC__) || defined(__ICCARM__) || defined(__CC_ARM) )
 #include <netdb.h>
+#else
+#include <time.h>
+#endif
+
+
 
 /*======================================================================================================================*/
 

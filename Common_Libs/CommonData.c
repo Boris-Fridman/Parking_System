@@ -126,7 +126,11 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
   AngDegMinSec_s LatConvAng, LongConvAng;
   AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
   snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d lat %d˚%d'%d\".%08d long", LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000), LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000));
+#else
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08ld lat %d˚%d'%d\".%08ld long", LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000), LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000));
+#endif
 
   // snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
 }
@@ -147,22 +151,46 @@ void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
   switch (NumDigits)
   {
   case 5: /*  XX-XXX  */
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
     snprintf(Buf, MaxSize, "%02d-%03d", VehcleID / 1000, VehcleID % 1000);
+#else
+    snprintf(Buf, MaxSize, "%02ld-%03ld", VehcleID / 1000, VehcleID % 1000);
+#endif
     break;
   case 6: /*  XXX-XXX  */
-    snprintf(Buf, MaxSize, "%03d-%03d", VehcleID / 1000, VehcleID % 1000);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+	    snprintf(Buf, MaxSize, "%03d-%03d", VehcleID / 1000, VehcleID % 1000);
+#else
+	    snprintf(Buf, MaxSize, "%03ld-%03ld", VehcleID / 1000, VehcleID % 1000);
+#endif
     break;
   case 7: /*  XX-XXX-XX  */
-    snprintf(Buf, MaxSize, "%02d-%03d-%02d", VehcleID / 100000, (VehcleID % 100000) / 100, VehcleID % 100);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+	    snprintf(Buf, MaxSize, "%02d-%03d-%02d", VehcleID / 100000, (VehcleID % 100000) / 100, VehcleID % 100);
+#else
+	    snprintf(Buf, MaxSize, "%02ld-%03ld-%02ld", VehcleID / 100000, (VehcleID % 100000) / 100, VehcleID % 100);
+#endif
     break;
   case 8: /*  XXX-XX-XXX  */
-    snprintf(Buf, MaxSize, "%03d-%02d-%03d", VehcleID / 100000, (VehcleID % 100000) / 1000, VehcleID % 1000);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+	    snprintf(Buf, MaxSize, "%03d-%02d-%03d", VehcleID / 100000, (VehcleID % 100000) / 1000, VehcleID % 1000);
+#else
+	    snprintf(Buf, MaxSize, "%03ld-%02ld-%03ld", VehcleID / 100000, (VehcleID % 100000) / 1000, VehcleID % 1000);
+#endif
     break;
   case 9: /*  XXX-XXX-XXX  */
-    snprintf(Buf, MaxSize, "%03d-%03d-%03d", VehcleID / 1000000, (VehcleID % 1000000) / 1000, VehcleID % 1000);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+      snprintf(Buf, MaxSize, "%03d-%03d-%03d", VehcleID / 1000000, (VehcleID % 1000000) / 1000, VehcleID % 1000);
+#else
+      snprintf(Buf, MaxSize, "%03ld-%03ld-%03ld", VehcleID / 1000000, (VehcleID % 1000000) / 1000, VehcleID % 1000);
+#endif
     break;
   default: /* Case undefined. Writing number without any deviation. */
-    snprintf(Buf, MaxSize, "%01d", VehcleID);
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+	    snprintf(Buf, MaxSize, "%01d", VehcleID);
+#else
+	    snprintf(Buf, MaxSize, "%01ld", VehcleID);
+#endif
     break;
   }
 }

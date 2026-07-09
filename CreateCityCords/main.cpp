@@ -3,6 +3,8 @@
 #include "CitiesInfo.hpp"
 #include "cmath"
 
+#include "CitiesCords.hpp"
+
 #define NUM_TOWNS 4
 
 GPS_Cords_s p0 = { 1, 1},
@@ -81,8 +83,12 @@ int main()
   //    break;
   //  }
 
-  GPS_Cords_s ShapeTestPoint = { 11, 3};
-  result = PointInPoly(ShapeForTest.CityCords, ShapeTestPoint);
+  // GPS_Cords_s ShapeTestPoint = { 11, 3};
+  // result = PointInPoly(ShapeForTest.CityCords, ShapeTestPoint);
+
+  GPS_Cords_s TelAvivPoint = {34.78475, 32.09370};
+  result = PointInPoly(Tel_Aviv_Shape.CityCords, TelAvivPoint);
+
   switch(result)
    {
     case OUTSIZE_E:
@@ -132,3 +138,7 @@ int main()
   //round(1.5);
  }
 
+
+
+
+ 
