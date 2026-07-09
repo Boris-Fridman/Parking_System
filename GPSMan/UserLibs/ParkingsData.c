@@ -11,18 +11,48 @@
 #include "main.h"
 
 
+extern ParkingData_s const ParkingData[];
+extern const size_t PARKDATA_SIZE;
+
+
+
+
+
+
+int randind;
+
+
+void GenRandNumber()
+ {
+  randind = rand();
+ }
+
+
+void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
+ {
+  int n = randind;
+  n %= PARKDATA_SIZE;
+  *ParkingInd = n;
+  *Parking = ParkingData[n];
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 ParkingData_s const ParkingData[] =
  {
-
-
-
-
-
-
-
 //			English Name				Longitude		Latitude
 	{"1",	{	34.84207507	,	31.96751423	}		}	,
 	{"1 Reading East Parking Lot",	{	34.78165579	,	32.09936606	}		}	,
@@ -11941,19 +11971,16 @@ ParkingData_s const ParkingData[] =
 	{"",	{	35.02641551	,	32.77612372	}		}	,
 	{"",	{	34.76899351	,	31.98858882	}		}	,
 	{"",	{	35.21509639	,	31.6869258	}		}
-
-
-
-
-
-
-
-
-
-
  };
 
 
 
 const size_t PARKDATA_SIZE = sizeof(ParkingData)/sizeof(ParkingData_s);
+
+
+
+
+
+
+
 

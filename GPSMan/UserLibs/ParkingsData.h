@@ -21,7 +21,19 @@ ParkingData_s;
 
 
 
-extern ParkingData_s const ParkingData[];
-extern const size_t PARKDATA_SIZE;
+
+
+
+
+void GenRandNumber();
+void GetRandParking(int *ParkingInd, ParkingData_s *Parking);
+
+
+
+
+
+
+
+
 
 #endif /* PARKINGSDATA_H_ */

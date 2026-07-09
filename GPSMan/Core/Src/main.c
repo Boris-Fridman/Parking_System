@@ -116,21 +116,22 @@ int main(void)
   MX_I2C1_Init();
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-//  GPS_Cords_s p1 = {1, 2}, p2 = {3, 4};
-//  GetDistance(p1, p2);
-  /* USER CODE END 2 */
-  printf("Stargint GPS Manager...\n\r");
 
-  for(size_t i = 0; i < PARKDATA_SIZE; i++)
-   {
-    if(ParkingData[i].ParkingName[0] != 0)
-     printf("%s\n\r", ParkingData[i].ParkingName);
-   }
+  int ParkPlace;
+  srand(HAL_GetTick());
+  printf("Stargint GPS Manager...  \n\r");
+  ParkingData_s Parking;
+
+  /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+   GenRandNumber();
+   GetRandParking(&ParkPlace, &Parking);
+   printf("%4d: (%0.8f,%0.8f) %s\n\r", ParkPlace, Parking.ParkingCords.Longitude, Parking.ParkingCords.Latitude, Parking.ParkingName);
+   HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
