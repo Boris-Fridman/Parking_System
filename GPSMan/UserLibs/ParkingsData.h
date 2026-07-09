@@ -11,13 +11,6 @@
 #include "main.h"
 #include "CommonData.h"
 
-typedef struct
-ParkingData_s
- {
-  char ParkingName[64];
-  GPS_Cords_s ParkingCords;
- }
-ParkingData_s;
 
 
 

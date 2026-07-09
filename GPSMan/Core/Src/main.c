@@ -32,7 +32,7 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define WORKING_I2C hi2c1
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -47,7 +47,7 @@ I2C_HandleTypeDef hi2c1;
 UART_HandleTypeDef huart3;
 
 /* USER CODE BEGIN PV */
-
+bool GenerationEmabled = true;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -118,9 +118,10 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   int ParkPlace;
-  srand(HAL_GetTick());
-  printf("Stargint GPS Manager...  \n\r");
   ParkingData_s Parking;
+  srand(HAL_GetTick());
+  printf("Stargint GPS Manager...\n\r");
+  HAL_I2C_EnableListen_IT(&WORKING_I2C);
 
   /* USER CODE END 2 */
 
@@ -128,9 +129,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-   GenRandNumber();
-   GetRandParking(&ParkPlace, &Parking);
-   printf("%4d: (%0.8f,%0.8f) %s\n\r", ParkPlace, Parking.ParkingCords.Longitude, Parking.ParkingCords.Latitude, Parking.ParkingName);
+   if(GenerationEmabled)
+    {
+     GenRandNumber();
+     GetRandParking(&ParkPlace, &Parking);
+     printf("%5d: (%0.8f,%0.8f) %s\n\r", ParkPlace, Parking.ParkingCords.Longitude, Parking.ParkingCords.Latitude, Parking.ParkingName);
+    }
    HAL_Delay(1000);
     /* USER CODE END WHILE */
 
@@ -205,7 +209,7 @@ static void MX_I2C1_Init(void)
   /* USER CODE END I2C1_Init 1 */
   hi2c1.Instance = I2C1;
   hi2c1.Init.Timing = 0x00301739;
-  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.OwnAddress1 = 170;
   hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
   hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
   hi2c1.Init.OwnAddress2 = 0;
@@ -375,6 +379,73 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+//void HAL_I2C_RxCpltCallback(I2C_HandleTypeDef *hi2c)
+// {
+//  if( hi2c == &WORKING_I2C )
+//   {
+//    static int ParkPlace;
+//    static ParkingData_s Parking;
+//    GetRandParking(&ParkPlace, &Parking);
+//    HAL_I2C_DisableListen_IT(hi2c);
+//    HAL_I2C_Slave_Transmit_IT(&WORKING_I2C, (uint8_t *)&Parking, sizeof(Parking));
+//    HAL_I2C_EnableListen_IT(hi2c);
+//   }
+// }
+
+
+
+void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
+ {
+  uint8_t TransferDirection;
+  HAL_I2C_EnableListen_IT(hi2c);
+  TransferDirection = I2C_GET_DIR(hi2c);
+  if(TransferDirection == I2C_DIRECTION_RECEIVE)
+   {
+    // After transmitting data.
+    HAL_I2C_SlaveTxCpltCallback(hi2c);
+   }
+  else
+   {
+    // After receiving data.
+    HAL_I2C_SlaveRxCpltCallback(hi2c);
+   }
+ }
+
+void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode)
+ {
+  if(TransferDirection == I2C_DIRECTION_RECEIVE)
+   {
+    if( hi2c == &WORKING_I2C )
+     {
+      static int ParkPlace;
+      static ParkingData_s Parking;
+      if(GenerationEmabled)
+       {
+        GetRandParking(&ParkPlace, &Parking);
+        GenerationEmabled = false;
+       }
+      HAL_I2C_DisableListen_IT(hi2c);
+      HAL_I2C_Slave_Seq_Transmit_IT(&WORKING_I2C, (uint8_t *)&Parking, sizeof(Parking), I2C_NEXT_FRAME);
+      HAL_I2C_EnableListen_IT(hi2c);
+     }
+
+    //HAL_I2C_Slave_Seq_Transmit_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
+   }
+  else
+   {
+    //HAL_I2C_Slave_Seq_Receive_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
+   }
+ }
+
+void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
+ {
+  GenerationEmabled = true;
+ }
+
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
+ {
+
+ }
 
 /* USER CODE END 4 */
 

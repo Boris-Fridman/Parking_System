@@ -286,13 +286,24 @@ struct ClientQueueMsg_s
   char        Customer_Name[NAME_LEN];
   char        City_Name[NAME_LEN];
  }
- #ifndef __cplusplus
+#ifndef __cplusplus
 ClientQueueMsg_s 
 #endif
+;
 
- ;
 
-
+#ifndef __cplusplus
+typedef
+#endif
+struct ParkingData_s
+ {
+  char ParkingName[64];  /* The name of the parking must be at least 64 chars because the most longest name is very big (has about 62 characters). */
+  GPS_Cords_s ParkingCords;
+ }
+#ifndef __cplusplus
+ParkingData_s
+#endif
+;
 
 
 

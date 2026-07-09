@@ -195,6 +195,7 @@ void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
   }
 }
 
+
 void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored)
  {
    //  ✡  🔯  🕎 🟌 🇮🇱 🇺🇸
@@ -224,13 +225,17 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
   {
   case E_CAL_FORMAT: /* Regular Calendar format d/m/y  h:m:s   */
     strftime(TimeAsStr, TimeStrSize, "%d/%b/%Y - %H:%M:%S", &tmp);
-    break;
+   break;
   case E_DBS_FORMAT: /* Database fromat  yyyy/mm/dd - hh:mm:ss */
     strftime(TimeAsStr, TimeStrSize, "%G/%m/%d %a   %H:%M:%S", &tmp);
-    break;
+   break;
   case E_DUR_FORMAT: /* Duration format  d-h:m:s               */
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
     snprintf(TimeAsStr, TimeStrSize, "%ldd %02ld:%02ld:%02ld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
-    break;
+#else
+    snprintf(TimeAsStr, TimeStrSize, "%lldd %02lld:%02lld:%02lld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
+#endif
+   break;
   }
 }
 
