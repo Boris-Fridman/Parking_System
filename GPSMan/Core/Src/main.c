@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "CommonData.h"
+#include "ParkingsData.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -61,6 +62,22 @@ static void MX_USART3_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Is used for sending characters to the required UART port (huart3) while calling the standard output functions       */
+/*  as "printf()", "putch()" or "puts()".                                                                               */
+int _write(int file, char *ptr, int len)
+ {
+  HAL_UART_Transmit(&huart3, (uint8_t*)ptr, len - 1, HAL_MAX_DELAY);
+  if (ptr[len - 1] == '\n')
+   {
+    HAL_UART_Transmit(&huart3, (uint8_t*)"\r\n", 2, HAL_MAX_DELAY);
+   }
+  else
+   {
+    HAL_UART_Transmit(&huart3, (uint8_t*)ptr + len - 1, 1, HAL_MAX_DELAY);
+   }
+return len;
+}
 
 /* USER CODE END 0 */
 
@@ -102,6 +119,13 @@ int main(void)
 //  GPS_Cords_s p1 = {1, 2}, p2 = {3, 4};
 //  GetDistance(p1, p2);
   /* USER CODE END 2 */
+  printf("Stargint GPS Manager...\n\r");
+
+  for(size_t i = 0; i < PARKDATA_SIZE; i++)
+   {
+    if(ParkingData[i].ParkingName[0] != 0)
+     printf("%s\n\r", ParkingData[i].ParkingName);
+   }
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
