@@ -118,6 +118,9 @@ extern "C" {
 #define DB_MAN_PID_FILENAME       "DB_MAN_PID"
 #define DB_UPADATE_SIGNAL         SIGUSR1
 
+#define I2C_ADDR                  0x55
+
+
 /*======================================================================================================================*/
 
 /**

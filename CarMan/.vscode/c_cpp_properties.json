@@ -1,17 +1,32 @@
 {
     "configurations": [
         {
-            "name": "Linux",
+            "name": "Host-PC-Local",  //"Linux",
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../Common_Libs"
             ],
             "defines": ["_GNU_SOURCE"],
             "compilerPath": "/usr/bin/clang",
+            //"compilerPath": "/usr/bin/arm-linux-gnueabihf-gcc",
             "cStandard": "c17",
             "cppStandard": "c++17",
             "intelliSenseMode": "linux-clang-x64"
+        },
+        {
+            "name": "BeagleBone-ARM",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "${workspaceFolder}/../Common_Libs"
+            ],
+            "defines": ["_GNU_SOURCE","BEAGLE_BONE"],
+            //"compilerPath": "/usr/bin/clang",
+            "compilerPath": "/usr/bin/arm-linux-gnueabihf-gcc",
+            "cStandard": "c17",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "linux-gcc-arm"
         }
+
     ],
     "version": 4
 }

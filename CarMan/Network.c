@@ -118,9 +118,11 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
    }
   
 
-
-
+#if !defined(__arm__)
   printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
+#else
+  printf("Were sent %d bytes to the network.\n\r", SentDataSize);
+#endif
   FreeData(&DataForSending);
 
   /* Receive data back from the server */
@@ -137,7 +139,12 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
    else 
     {
      buffer[bytes_read] = '\0'; // Null-terminate the received string
+
+#if !defined(__arm__)
      printf("Server responded data contains %ld bytes.\n\r", bytes_read);
+#else
+     printf("Server responded data contains %d bytes.\n\r", bytes_read);
+#endif
      DecodeResult = DecodeNetData((uint8_t*)buffer, bytes_read, (uint8_t *)&CustAckInfo);
      if(DecodeResult)
       {
@@ -180,8 +187,13 @@ void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *N
     if (bytes_read >= 0) 
      {
       //printf("Received message: %s\n\r", buffer);
+
+#if !defined(__arm__)
       printf("Were forwarded from the queue to the network %ld bytes.\n\r", bytes_read);
- 
+#else
+      printf("Were forwarded from the queue to the network %d bytes.\n\r", bytes_read);
+#endif
+
       SendToNetwork(NetPars, buffer, bytes_read);
      } 
     
@@ -237,7 +249,11 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
    } 
   else 
    {
+#if !defined(__arm__)
     printf("Message sent successfully. %ld bytes sent.\n\r", Len);
+#else
+    printf("Message sent successfully. %d bytes sent.\n\r", Len);
+#endif
    }
  }
 

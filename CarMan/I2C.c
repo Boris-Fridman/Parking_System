@@ -11,6 +11,13 @@
 
 #include "Network.h"
 
+#ifdef BEAGLE_BONE
+#include <linux/i2c-dev.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#else
+#endif
+
 
 #define MAX_LATITUDE               90             /*  ±90˚   */
 #define MAX_LONGIGUDE              180            /*  ±180˚  */
@@ -24,6 +31,25 @@ void InitI2C();
 void DoI2C();
 void CloseI2C();
 
+#ifdef BEAGLE_BONE
+#else
+#endif
+
+
+#ifdef BEAGLE_BONE
+void read_i2c(int file, unsigned char buffer[], size_t size) 
+ {
+  ssize_t result;
+
+  result = read(file, buffer, size);
+  printf("Where read %d bytes.\n\r",result);
+  if (result != (ssize_t)size) 
+   {
+    perror("Failed to read from the i2c bus");
+   }
+ }
+#else
+#endif
 
 
 
@@ -32,21 +58,55 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
   SlaveShMem_s SlaveShMem;
+#ifdef BEAGLE_BONE
+  /* Specify the I2C slave address  */
+  int addr = I2C_ADDR; /* Device address */
+  int file;
+  //int ParkPlace;
+  ParkingData_s Parking;
+#else
+#endif
 
+  printf("Staritng I2C Task.\n\r");
+
+#ifdef BEAGLE_BONE
+  /* Open the I2C bus device file (e.g., "/dev/i2c-2")  */
+  if ((file = open("/dev/i2c-2", O_RDWR)) < 0) {
+      perror("Failed to open the i2c bus");
+      exit(1);
+  }
+  if (ioctl(file, I2C_SLAVE, addr) < 0) {
+      perror("Failed to acquire bus access and/or talk to slave");
+      exit(1);
+  }
+#else
+#endif
+
+  
   ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
   
   strcpy(CustomerData.Customer_Name, "Boris Fridman");
   CustomerData.Vechicle_ID = 13248551;
 
-  printf("Staritng I2C Task.\n\r");
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
   while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem.p_shm, PROC_I2C_E) != true))
    {
-    /* Generating random GPS coordingates. Later will be moved to the STM32 Program with zone-dependent. */
+#ifdef BEAGLE_BONE
+    // /* Generating random GPS coordingates. */
+    // CustomerData.Cords.Latitude  = (RandGenLongLong() % (MAX_LATITUDE  * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE ;
+    // CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
+
+    /* Reading random generated GPS coordingates from STM32 Board. */
+    read_i2c(file, (uint8_t *)&Parking, sizeof(Parking));
+    CustomerData.Cords.Latitude  = Parking.ParkingCords.Latitude;
+    CustomerData.Cords.Longitude = Parking.ParkingCords.Longitude;
+
+#else
+    /* Generating random GPS coordingates. */
     CustomerData.Cords.Latitude  = (RandGenLongLong() % (MAX_LATITUDE  * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE ;
     CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
-
+#endif
 
     printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
     printf("The generated cordinates are: ");
@@ -60,6 +120,11 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
    }
   CloseNetQueue(&NetQueue.mq);
   DeactivateSlaveShMem(&SlaveShMem);
+
+#ifdef BEAGLE_BONE
+  close(file);
+#else
+#endif
 
   printf("Finishing I2C Task.\n\r");
  }

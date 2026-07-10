@@ -1,0 +1,12 @@
+{
+    //"project.target": "host" 
+    //"project.target": "beaglebone",
+    //"compiler.active": "Host-PC",
+    //"compiler.active": "BeagleBone",
+
+    // "compilerPath.Host-PC": "/usr/bin/gcc",
+    // "compilerPath.BeagleBone": "/usr/bin/arm-linux-gnueabihf-gcc",
+
+    // "intelliSenseMode.Host-PC": "linux-clang-x64",
+    // "intelliSenseMode.BeagleBone": "linux-gcc-arm"
+}
