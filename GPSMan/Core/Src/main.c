@@ -226,28 +226,32 @@ void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
 
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode)
  {
-  if(TransferDirection == I2C_DIRECTION_RECEIVE)
+  if( hi2c == &WORKING_I2C )
    {
-    if( hi2c == &WORKING_I2C )
+    if(TransferDirection == I2C_DIRECTION_RECEIVE)
      {
       static int ParkPlace;
       static ParkingData_s Parking;
       if(GenerationEmabled)
        {
-        GetRandParking(&ParkPlace, &Parking);
         GenerationEmabled = false;
+        GetRandParking(&ParkPlace, &Parking);
        }
-      HAL_I2C_DisableListen_IT(hi2c);
+      //HAL_I2C_DisableListen_IT(hi2c);
+      __disable_irq();
       HAL_I2C_Slave_Seq_Transmit_IT(&WORKING_I2C, (uint8_t *)&Parking, sizeof(Parking), I2C_NEXT_FRAME);
-      HAL_I2C_EnableListen_IT(hi2c);
+      __enable_irq();
+      //HAL_I2C_EnableListen_IT(hi2c);
+
+      //HAL_I2C_Slave_Seq_Transmit_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
+     }
+    else  // Transmit
+     {
+      //HAL_I2C_Slave_Seq_Receive_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
      }
 
-    //HAL_I2C_Slave_Seq_Transmit_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
    }
-  else
-   {
-    //HAL_I2C_Slave_Seq_Receive_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
-   }
+
  }
 
 void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
