@@ -8,6 +8,7 @@
 #include <time.h>
 
 #include <unistd.h>
+#include <errno.h>
 
 #include <arpa/inet.h>
 #include <sys/socket.h>
@@ -26,9 +27,9 @@
 
 
 
-void StartNetwork(NetworkParams_s *NetPars);
+bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled);
 void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ);
-void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len);
+bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len);
 void CloseNetwork(NetworkParams_s *NetPars);
 
 
@@ -43,11 +44,7 @@ void NetworkProc(key_t sh_mem_key, char sem_name[])
 
   InitNetQueue(&NetQueue.mq, true);
 
-  StartNetwork(&NetworkParams);
-  
   DoNetwork(&SlaveShMem, &NetworkParams, &NetQueue);
-
-  CloseNetwork(&NetworkParams);
 
   CloseNetQueue(&NetQueue.mq);
   DeactivateSlaveShMem(&SlaveShMem);
@@ -56,43 +53,59 @@ void NetworkProc(key_t sh_mem_key, char sem_name[])
 
 
 
-void StartNetwork(NetworkParams_s *NetPars)
+bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
  {
-
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  static int last_errno = 0;
   /* Create the socket */
   NetPars->sock_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (NetPars->sock_fd < 0) 
    {
-    perror("Socket creation error");
-    exit(EXIT_FAILURE);
+    if(AllwaysTermEnabled)
+     perror("Socket creation error");
+    return false;
    }
 
   /* Configure the server address structure */
   memset(&NetPars->server_addr, 0, sizeof(NetPars->server_addr));
   NetPars->server_addr.sin_family = AF_INET;
   NetPars->server_addr.sin_port = htons(DESTIN_PORT);
+
   /* Convert IPv4 address from text to binary format */
   if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
    {
-    perror("Invalid address or Address not supported");
+    if((AllwaysTermEnabled) || (last_errno != errno))
+     {
+      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      perror("Invalid address or Address not supported");
+      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      last_errno = errno;
+     }
     close(NetPars->sock_fd);
-    exit(EXIT_FAILURE);
+    return false;
    }
-
 
   /* Connect to the server */
   if (connect(NetPars->sock_fd, (struct sockaddr *)&NetPars->server_addr, sizeof(NetPars->server_addr)) < 0) 
    {
-    perror("Connection Failed");
+    if((AllwaysTermEnabled) || (last_errno != errno))
+     {
+      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      perror("Connection Failed");
+      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_WARNING] : ""));
+      fprintf(stderr, "Recheck server\n\r");
+      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      last_errno = errno;
+     }
     close(NetPars->sock_fd);
-    exit(EXIT_FAILURE);
+    return false;
    }
-  printf("Connected successfully to the server.\n\r");
-
-
+  printf("%sConnected successfully to the server.%s\n\r", (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? TermColorsReset : ""));  /* Must be printed anyway */
+  return true;
  }
 
-void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
+bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -101,83 +114,108 @@ void SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
   CustAcknowledge_s CustAckInfo;
   bool DecodeResult;
   ssize_t nsndbt;
-  bool SendResult;
+  ssize_t bytes_read;
+  bool Result;
   uint8_t *DataForSending;
   ssize_t SentDataSize;
   
   SentDataSize = EncodeNetData(Data, Len, &DataForSending);
-  
+  printf("%sData was encoded.%s\n\r", TermBlue, TermColorsReset);
   /* Send data to the server */
-  nsndbt = send(NetPars->sock_fd, DataForSending, SentDataSize, 0);
-  SendResult = (nsndbt >= 0);
-  if (SendResult)
+  nsndbt = send(NetPars->sock_fd, DataForSending, SentDataSize, MSG_NOSIGNAL);
+  printf("%sData was sent...%s\n\r", TermBlue, TermColorsReset);
+  Result = (nsndbt >= 0);
+  if (!Result)
    {
+    fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
     perror("Send failed");
-    //close(NetPars->sock_fd);
-    //return;
+    printf("errno %d\n\r", errno);
+    //EPIPE;
+    fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
    }
-  
-
-#if !defined(__arm__)
-  printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
-#else
-  printf("Were sent %d bytes to the network.\n\r", SentDataSize);
-#endif
-  FreeData(&DataForSending);
-
-  /* Receive data back from the server */
-  ssize_t bytes_read = recv(NetPars->sock_fd, buffer, BUFFER_SIZE - 1, 0);
-  if (bytes_read < 0) 
+  else
    {
-    perror("Receive failed");
-   } 
-  else 
-   if (bytes_read == 0) 
-    {
-     printf("%sServer closed the connection.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
-    } 
-   else 
-    {
-     buffer[bytes_read] = '\0'; // Null-terminate the received string
-
+    fprintf(stdout, "%s", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""));   
 #if !defined(__arm__)
-     printf("Server responded data contains %ld bytes.\n\r", bytes_read);
+    printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
 #else
-     printf("Server responded data contains %d bytes.\n\r", bytes_read);
+    printf("Were sent %d bytes to the network.\n\r", SentDataSize);
 #endif
-     DecodeResult = DecodeNetData((uint8_t*)buffer, bytes_read, (uint8_t *)&CustAckInfo);
-     if(DecodeResult)
+    fprintf(stdout, "%s", (StdOutNoPiping ? TermColorsReset : ""));
+  
+    FreeData(&DataForSending);
+  
+    /* Receive data back from the server */
+    bytes_read = recv(NetPars->sock_fd, buffer, BUFFER_SIZE - 1, 0);
+    Result = (bytes_read >= 0);
+    if (bytes_read < 0) 
+     {
+      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      perror("Receive failed");
+      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+     } 
+    else 
+     if (bytes_read == 0) 
       {
-       printf("The vehicle is parked in: %s   (ID: %d)\n\r", CustAckInfo.City_Name, CustAckInfo.City_ID);
-       //  printf("Vehicle ID: %s%s%d%s\n\r", TermBGYello, TermBlack, CustAckInfo.Vechicle_ID, TermColorsReset);
-       //VehicleIDToString(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID);
-       //printf("Vehicle ID: %s%s%s%s\n\r", TermBGYello, TermBlack, buffer, TermColorsReset);
-       CreateVehIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, StdOutNoPiping);
-       printf("Vehicle ID: %s%s\n\r", buffer, (StdErrNoPiping ? TermColorsReset : ""));
-
-       ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
-       printf("Parking started at: %s\n\r", timedurbuf);
-       ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
-       printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? TermBlue : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? TermMagenta : ""), (StdOutNoPiping ? TermColorsReset : ""));
-      }
-     else
+       printf("%sServer closed the connection.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+       Result = false;
+      } 
+     else 
       {
-       printf("%sError in response.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+       buffer[bytes_read] = '\0'; // Null-terminate the received string
+  
+#if !defined(__arm__)
+       printf("Server responded data contains %ld bytes.\n\r", bytes_read);
+#else
+       printf("Server responded data contains %d bytes.\n\r", bytes_read);
+#endif
+       DecodeResult = DecodeNetData((uint8_t*)buffer, bytes_read, (uint8_t *)&CustAckInfo);
+       if(DecodeResult)
+        {
+         printf("The vehicle is parked in: %s   (ID: %d)\n\r", CustAckInfo.City_Name, CustAckInfo.City_ID);
+         //  printf("Vehicle ID: %s%s%d%s\n\r", TermBGYello, TermBlack, CustAckInfo.Vechicle_ID, TermColorsReset);
+         //VehicleIDToString(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID);
+         //printf("Vehicle ID: %s%s%s%s\n\r", TermBGYello, TermBlack, buffer, TermColorsReset);
+         CreateVehIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, StdOutNoPiping);
+         printf("Vehicle ID: %s%s\n\r", buffer, (StdErrNoPiping ? TermColorsReset : ""));
+  
+         ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
+         printf("Parking started at: %s\n\r", timedurbuf);
+         ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
+         printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? TermBlue : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? TermMagenta : ""), (StdOutNoPiping ? TermColorsReset : ""));
+        }
+       else
+        {
+         printf("%sError in response.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+        }
       }
-
-    }
+   }
+  return Result;
  }
 
 void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool Connected = false;
+  bool PrintTermOnConnection = true;
   unsigned int prio;
   char buffer[BUFFER_SIZE] = {0};
   struct timespec ts;
+
+
   get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E);
 
 
   while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E) != true))
    {
+
+    if(!Connected)
+     {
+      Connected = StartNetwork(NetPars, PrintTermOnConnection);
+      PrintTermOnConnection = false;
+     }
+
     if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
      {
       ++ts.tv_sec;
@@ -186,19 +224,26 @@ void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *N
     ssize_t bytes_read = mq_timedreceive(NetQ->mq, buffer, MAX_SIZE, &prio, &ts);
     if (bytes_read >= 0) 
      {
-      //printf("Received message: %s\n\r", buffer);
 
 #if !defined(__arm__)
       printf("Were forwarded from the queue to the network %ld bytes.\n\r", bytes_read);
 #else
       printf("Were forwarded from the queue to the network %d bytes.\n\r", bytes_read);
 #endif
-
-      SendToNetwork(NetPars, buffer, bytes_read);
+      PrintTermOnConnection = true;
+      if(Connected)
+       {
+        Connected = SendToNetwork(NetPars, buffer, bytes_read);
+       }
+      if(!Connected)
+       {
+        CloseNetwork(NetPars);
+       }
      } 
     
    }
-  
+
+  CloseNetwork(NetPars);
 
  }
 

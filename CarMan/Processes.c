@@ -4,6 +4,8 @@
 #include <stdarg.h> /* Required header for variadic processing. */
 #include <fcntl.h>
 
+#define PROC_NAME_COLOR         TermBrightCyan
+#define PROC_PID_COLOR          TermBrightMagenta
 
 void set_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno, bool state)
  {
@@ -20,23 +22,31 @@ bool get_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno)
 /*======================================================================================================================*/
 
 
+
 pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, char sem_name[])
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   pid_t proc_pid;
   proc_pid = fork();
   switch(proc_pid)
    {
-    case -1:
+    case -1: /* Error */
+      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
       perror("fork error.");
+      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       exit(EXIT_FAILURE);
      break;
-    case 0:
-      printf("Starting new process\n\r");
+    case 0:  /* Child*/
+      proc_pid = getpid();
+      printf("Starting new process: %s%s%s  PID:%s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       ProcToOpen(sh_mem_key, sem_name);
+      printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);
      break;
-    default:
-      printf("The new %s process with PID: %d started.\n\r", ProcName, proc_pid);
+    default: /* Parent */
+      printf("The new %s%s%s process with PID: %s%d%s started.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       return proc_pid;
      break;
    }

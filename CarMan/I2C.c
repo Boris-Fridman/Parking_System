@@ -67,7 +67,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
 #else
 #endif
 
-  printf("Staritng I2C Task.\n\r");
+  printf("Starting I2C Task.\n\r");
 
 #ifdef BEAGLE_BONE
   /* Open the I2C bus device file (e.g., "/dev/i2c-2")  */

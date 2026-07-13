@@ -105,7 +105,7 @@ void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid)
    {
     perror("Was problem in wainting for the Network process.");
    }
-
+  
  }
 
 
@@ -134,6 +134,12 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
     printf("\nSIGQUIT signal was received successfully. \n");
     FullExit = true;
    }
+
+  if (sig == SIGPIPE)
+   {
+    printf("\nSIGPIPE signal was received successfully. \n");
+   } 
+
  }
 
 
@@ -154,6 +160,8 @@ void EnableSignals()
   sigaction(SIGINT, &sa, NULL);
   /* Bind Ctrl-\ signal to our handler function */
   sigaction(SIGQUIT, &sa, NULL);
+
+  sigaction(SIGPIPE, &sa, NULL);
   
   printf("The signals were created successfully.\n\r");
  }

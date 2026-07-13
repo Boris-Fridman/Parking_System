@@ -1,8 +1,6 @@
 {
     "version": "0.2.0",
     "configurations": [
-
-
         {
             "name": "gcc - Build and debug program",
             "type": "cppdbg",
@@ -64,8 +62,8 @@
             "name": "C/C++: gcc BeagleBone cross compiling",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${workspaceFolder}/carman",
-            "args": [],
+            "program": "/bin/scp",  //  "program": "${workspaceFolder}/carman",
+            "args": ["${workspaceFolder}/carman", "debian@beaglebone.local:/home/debian"], // "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
