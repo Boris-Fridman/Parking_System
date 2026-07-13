@@ -4,8 +4,6 @@
 #include <stdarg.h> /* Required header for variadic processing. */
 #include <fcntl.h>
 
-#define PROC_NAME_COLOR         TermBrightCyan
-#define PROC_PID_COLOR          TermBrightMagenta
 
 void set_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno, bool state)
  {
@@ -40,7 +38,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
      break;
     case 0:  /* Child*/
       proc_pid = getpid();
-      printf("Starting new process: %s%s%s  PID:%s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
+      printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       ProcToOpen(sh_mem_key, sem_name);
       printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);

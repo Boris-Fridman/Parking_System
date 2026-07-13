@@ -150,13 +150,16 @@ int main(int const argc, char const *argv[])
 /* Catching Zombie-Child-Processes and removing them. */ 
 void CatchChildZombie()
  {
+  //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int wstatus, w = 0;
   do
   {
    w = waitpid(-1, &wstatus, WNOHANG);  // WUNTRACED | WCONTINUED // WNOHANG
    if(w > 0)
     {
-     std::cout << "The process with PID: " << w << " finished running.\n\r";
+     std::cout << "The process with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << w  << (StdOutNoPiping ? TermColorsReset : "") << " finished running.\n\r";
     }
   } while (w > 0);
  }

@@ -76,13 +76,16 @@ int main(void)
 /* Catching Zombie-Child-Processes and removing them. */ 
 void CatchChildZombie()
  {
+  //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int wstatus, w = 0;
   do
   {
    w = waitpid(-1, &wstatus, WNOHANG);  // WUNTRACED | WCONTINUED // WNOHANG
    if(w > 0)
     {
-     printf("The process with PID: %d finished running.\n\r", w);
+     printf("The process with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_PID_COLOR : ""), w, (StdOutNoPiping ? TermColorsReset : ""));
     }
   } while (w > 0);
  }

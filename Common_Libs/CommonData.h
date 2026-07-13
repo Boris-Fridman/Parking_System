@@ -79,6 +79,8 @@ extern "C" {
 #define TermColorsReset   "\033[39;49m"
 
 
+#define PROC_NAME_COLOR         TermBrightCyan
+#define PROC_PID_COLOR          TermBrightMagenta
 
 /*======================================================================================================================*/
 
