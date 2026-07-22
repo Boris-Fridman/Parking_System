@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <math.h>
 
 #include "CommonData.h"
 #include "Processes.h"
@@ -16,13 +17,18 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #else
+#include "Israel_Shape.h"
 #endif
 
 
-#define MAX_LATITUDE               90             /*  ±90˚   */
-#define MAX_LONGIGUDE              180            /*  ±180˚  */
+#define MAX_LATITUDE              (  33.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // (  90  )
+#define MIN_LATITUDE              (  29.0 + 29.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // ( -90  )
+
+#define MAX_LONGIGUDE             (  35.0 + 54.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // (  180 )
+#define MIN_LONGIGUDE             (  34.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // ( -180 )
 
 #define RESOLUTIONS                10000000000  
+
 
 
 
@@ -94,8 +100,8 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
    {
 #ifdef BEAGLE_BONE
     // /* Generating random GPS coordingates. */
-    // CustomerData.Cords.Latitude  = (RandGenLongLong() % (MAX_LATITUDE  * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE ;
-    // CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
+    // CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
+    // CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
 
     /* Reading random generated GPS coordingates from STM32 Board. */
     read_i2c(file, (uint8_t *)&Parking, sizeof(Parking));
@@ -104,8 +110,20 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
 
 #else
     /* Generating random GPS coordingates. */
-    CustomerData.Cords.Latitude  = (RandGenLongLong() % (MAX_LATITUDE  * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LATITUDE ;
-    CustomerData.Cords.Longitude = (RandGenLongLong() % (MAX_LONGIGUDE * 2 * RESOLUTIONS)) * 1.0 / RESOLUTIONS - MAX_LONGIGUDE;
+    // PointState_e Result;
+    // do
+    //  {
+    //    /* code */
+    //   CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
+    //   CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
+    //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
+    //  } 
+    // while (Result != INSIDE_E);
+    //32.07841°, 34.77555°
+
+
+    CustomerData.Cords.Longitude  = 34.9355;  //34.77555;
+    CustomerData.Cords.Latitude   = 29.5434;  //32.07841;
 #endif
 
     printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);

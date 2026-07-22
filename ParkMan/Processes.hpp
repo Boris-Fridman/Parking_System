@@ -58,6 +58,8 @@ class TaskControl_ShSM_c:public ShSemMem_c
     bool ProcessMustExit(ProcTypeID_e ProcToExit);    /* Is used from slaves processes sides.  */
     void SetDBFileName(std::string NameToSet);
     std::string GetDBFileName();
+    void SetSHPFileName(std::string NameToSet);
+    std::string GetSHPFileName();    
     void ReloadDatabase();
     bool DataBaseMustBeReloaded();  /* Is used from the slave side. Attention After reading the "DBUpdateRequired" flag it resets it immediately. So the result must be read at least and not more than one time. In case of multiusage the result must be saved in an emporary variable.*/    
  };

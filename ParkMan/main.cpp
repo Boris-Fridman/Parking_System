@@ -92,6 +92,10 @@ int main(int const argc, char const *argv[])
    GetDataBaseFile(argc, argv, PathFileName);
    TaskContSh.SetDBFileName(PathFileName);
    std::cout << "Loaded DataBase File: " << PathFileName << "\n\r";
+
+   GetShapeFile(argc, argv, PathFileName);
+   TaskContSh.SetSHPFileName(PathFileName);
+   std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }
   
 

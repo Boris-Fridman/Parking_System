@@ -120,6 +120,9 @@ extern "C" {
 #define DB_MAN_PID_FILENAME       "DB_MAN_PID"
 #define DB_UPADATE_SIGNAL         SIGUSR1
 
+#define SHP_FILENAME              "Regions/Regions.shp"         /* The name of the shape file having the information about the cities regions. In the same path must be included the files with extentions ".dbf" and ".shx" containing the same name */
+#define SHP_FIELD_NAME            "latin name"
+
 #define I2C_ADDR                  0x55
 
 
@@ -493,6 +496,8 @@ void FreeData(uint8_t **Data);
 bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
 
 bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
+
+bool GetShapeFile(int const argc, char const *argv[], char NamePath[]);
 
 /*======================================================================================================================*/
 

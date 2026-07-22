@@ -429,6 +429,13 @@ bool GetPIDFile(int const argc, char const *argv[], char NamePath[])
   return result;
 }
 
+bool GetShapeFile(int const argc, char const *argv[], char NamePath[])
+ {
+  bool result;
+  result = GetConfigPath(argc, argv, NamePath);
+  strcat(NamePath, SHP_FILENAME);
+  return result;
+ }
 /*======================================================================================================================*/
 
 /*

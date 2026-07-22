@@ -17,7 +17,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-
+#include "Parking.hpp"
 
 
 
@@ -55,7 +55,7 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
 
 //  }
 
-void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c *DBShmemPriceData = NULL) 
+void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = NULL, std::string ShapeFileName = "") 
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -111,11 +111,15 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
 
       if(FirstInt)
        {
-        if(DBShmemPriceData != NULL)
+        if((DBShmemPriceData != nullptr) && (*DBShmemPriceData != nullptr))  /* Attention !!! The condition cannot be changed places. The second condition can be and checked only if the first condition is true and only in this case the second condition will be checked due to shortcyrcuit method. */
          {
+          std::cout << "Trying to detect the city..." << "\n\r";
+          // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".          
+          bool CityFound = DetectCity(CustomerInfo.Cords, DetectedCityName, ShapeFileName);
+          std::cout << (StdErrNoPiping ? ResultColors[CityFound] : "") << (CityFound ? "City was detected" : "City wasn\'t detected") << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
           for(i = 0; i < NumPriceDBCities; ++i)
            {
-            DBShmemPriceData->GetCity(i, &CityPriceInfo);
+            (*DBShmemPriceData)->GetCity(i, &CityPriceInfo);
             if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
              {
               std::ios old_state(nullptr);
@@ -133,6 +137,10 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
            }
           FirstInt = false;
          }
+        else
+         {
+          std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+         }
        }
       
       /* Loading info for response. */
@@ -146,8 +154,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.PricePerHour = CityPPH;
 
       /* Enqueuing response to the database. */
-      if(DBShmemPriceData != NULL)
-       DBShmemPriceData->SndClientParkingInfo(&CustomerInfo, &CustAckInfo);
+      if((DBShmemPriceData != nullptr) && (*DBShmemPriceData != nullptr))  /* Attention !!! The condition cannot be changed places. The second condition can be and checked only if the first condition is true and only in this case the second condition will be checked due to shortcyrcuit method. */
+       (*DBShmemPriceData)->SndClientParkingInfo(&CustomerInfo, &CustAckInfo);
     }
     else
      {
@@ -265,7 +273,8 @@ void Network_c::OnRunProcess()
 
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New connection accepted." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     /* Spawn a new thread to handle the client */
-    std::thread t(HandleClient, newSocket, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, DBShmemPriceData);
+    
+    std::thread t(HandleClient, newSocket, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, &DBShmemPriceData, GetSHPFileName());
     t.detach(); /* Detach the thread so it runs independently */
    }
   //std::cout << "Test Delay\n\r";

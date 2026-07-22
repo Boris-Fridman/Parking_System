@@ -182,6 +182,16 @@ std::string TaskControl_ShSM_c::GetDBFileName()
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName;
  }
 
+void TaskControl_ShSM_c::SetSHPFileName(std::string NameToSet)
+ {
+  ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName = NameToSet;
+ }
+       
+std::string TaskControl_ShSM_c::GetSHPFileName()
+ {
+  return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName;
+ }
+
 void TaskControl_ShSM_c::ReloadDatabase()
  {
   sem_wait(p_shs);
@@ -253,7 +263,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
       fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       exit(EXIT_FAILURE);
      break;
-    case 0:  /* Child*/
+    case 0:  /* Child */
       proc_pid = getpid();
       printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.ProcType);

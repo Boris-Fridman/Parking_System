@@ -26,7 +26,8 @@ struct ControlDBPrice_s
   uint16_t NumPriceDBCities = 0;
   bool DBUpdateRequired = false; 
   //bool DBUpdated = false;
-  std::string DBFileName = "";
+  std::string DBFileName = "";  /* File name including path to database with parking information. */
+  std::string SHPFileName = ""; /* File name including path to shapefile containing inforamtion aout border of the cities. */
  };
 
 

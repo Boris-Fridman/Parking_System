@@ -27,9 +27,9 @@
                 //source file - use all top level .c files:
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
-                "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
 
                 //source file - use all top level .cpp files:
+                "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
                 "*.cpp",
                 
                 //outputfile - always "program" at workspace directory:
@@ -42,9 +42,14 @@
                 "-I${workspaceFolder}/../Common_Libs",
                 "-I${workspaceFolder}/../Common_Libs/DataBase",
                 "-I${workspaceFolder}/../Common_Libs/CitiesRecognition",
+                "-I/usr/include/gdal",
 
                 //implementing database:
-                "-lsqlite3",
+                "-lsqlite3",  // Required for sqlite database library.
+                "-lgdal",     // Required for step files library.
+                "-licuuc",
+                "-licui18n"
+                
 
             ],
             "options": {
