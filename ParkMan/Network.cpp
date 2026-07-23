@@ -27,7 +27,7 @@
 class Network_c: public Process_c
  {
     key_t LastPriceShmKey = 0;
-    DBShmemPriceData_c *DBShmemPriceData = NULL;
+    DBShmemPriceData_c *DBShmemPriceData = nullptr;
     int serverSocket = 0, newSocket = 0;  
     sockaddr_in address = {{0},0,{0},{0}};
     int addrlen = 0;
@@ -55,7 +55,7 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
 
 //  }
 
-void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = NULL, std::string ShapeFileName = "") 
+void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = nullptr, std::string ShapeFileName = "") 
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -107,7 +107,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
       //DetectedCityName = "Tel Aviv";
-      DetectedCityName = "Givataim";
+      DetectedCityName = "Not Detected";
 
       if(FirstInt)
        {
@@ -250,7 +250,7 @@ void Network_c::OnRunProcess()
 
   if((LastPriceShmKey != ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) && (((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) != 0) /* Checking if the cities' prices' database memory was loaded or changed. */
    {
-    if(DBShmemPriceData != NULL)
+    if(DBShmemPriceData != nullptr)
      DBShmemPriceData->ReallocateShmem(((ControlDBPrice_s*)p_shm)->NumPriceDBCities, ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey);
     else
      DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName,((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities);
@@ -288,7 +288,7 @@ Network_c::~Network_c()
     serverSocket = 0;
     std::cout << "The socket was closed. \n\r";
    }
-  if(DBShmemPriceData == NULL)
+  if(DBShmemPriceData == nullptr)
    delete DBShmemPriceData;
  }
 

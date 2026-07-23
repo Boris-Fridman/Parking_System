@@ -255,11 +255,11 @@ void EnableSignals()
   sigemptyset(&sa.sa_mask);
 
   /* Bind DB_UPADATE_SIGNAL to our handler function */
-  sigaction(DB_UPADATE_SIGNAL, &sa, NULL);
+  sigaction(DB_UPADATE_SIGNAL, &sa, nullptr);
   /* Bind Ctrl-C signal to our handler function */
-  sigaction(SIGINT, &sa, NULL);
+  sigaction(SIGINT, &sa, nullptr);
   /* Bind Ctrl-\ signal to our handler function */
-  sigaction(SIGQUIT, &sa, NULL);
+  sigaction(SIGQUIT, &sa, nullptr);
   
   
 

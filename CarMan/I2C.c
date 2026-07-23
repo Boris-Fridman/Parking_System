@@ -21,11 +21,11 @@
 #endif
 
 
+#define MAX_LONGIGUDE             (  35.0 + 40.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // (  180 )
+#define MIN_LONGIGUDE             (  34.0 + 16.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // ( -180 )
+
 #define MAX_LATITUDE              (  33.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // (  90  )
 #define MIN_LATITUDE              (  29.0 + 29.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // ( -90  )
-
-#define MAX_LONGIGUDE             (  35.0 + 54.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // (  180 )
-#define MIN_LONGIGUDE             (  34.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // ( -180 )
 
 #define RESOLUTIONS                10000000000  
 
@@ -114,16 +114,21 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     // do
     //  {
     //    /* code */
-    //   CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
     //   CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
+    //   CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
     //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
     //  } 
     // while (Result != INSIDE_E);
-    //32.07841°, 34.77555°
+    //  34.77555°, 32.07841°  
+    //  34.8227°, 32.0655°  - Ramat Gan
+    //  34.8798°, 32.0904°  - Petach Tiqua
+ 
+    
+    
 
 
-    CustomerData.Cords.Longitude  = 34.9355;  //34.77555;
-    CustomerData.Cords.Latitude   = 29.5434;  //32.07841;
+    CustomerData.Cords.Longitude  = 34.8798;  //34.8227;  //34.9355;  //34.77555;
+    CustomerData.Cords.Latitude   = 32.0904;  //32.0655;  //29.5434;  //32.07841;
 #endif
 
     printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);

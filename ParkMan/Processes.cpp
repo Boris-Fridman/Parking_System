@@ -48,16 +48,16 @@ ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
   //   ShMnc = true;
   //   return;
   //  }
-  // p_shm = shmat(sh_mem_id, NULL, 0);
+  // p_shm = shmat(sh_mem_id, nullptr, 0);
  }
 
 ShSemMem_c::~ShSemMem_c()
  {
-  // if(p_shm != NULL)
+  // if(p_shm != nullptr)
   //  shmdt(p_shm);  // Detach
   // if(created)
   //  {
-  //   shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+  //   shmctl(sh_mem_id, IPC_RMID, nullptr); /* Shared memory control */
   //   sem_unlink(sem_name.c_str());
   //  }
   RemoveShm();
@@ -90,7 +90,7 @@ void ShSemMem_c::LoadShm(size_t size)
         ShMnc = true;  /* Shered memory not created    */
         return;
        }
-      p_shm = shmat(sh_mem_id, NULL, 0);
+      p_shm = shmat(sh_mem_id, nullptr, 0);
      }
    }
  }
@@ -115,14 +115,14 @@ void ShSemMem_c::LoadShs()
 
 void ShSemMem_c::RemoveShm()
  {
-  if(p_shm != NULL)
+  if(p_shm != nullptr)
    {
     shmdt(p_shm);  // Detach
-    p_shm = NULL;
+    p_shm = nullptr;
    }
   if(created)
    {
-    shmctl(sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
+    shmctl(sh_mem_id, IPC_RMID, nullptr); /* Shared memory control */
    }
  }
 
@@ -281,7 +281,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
 /*======================================================================================================================*/
 
 Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
-    : TaskControl_ShSM_c(sh_mem_key, sem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)//, p_shs(NULL), p_shm(NULL), proc_name(ProcName), sh_mem_id(-1), exit_required(false), error_in_creation(false)
+    : TaskControl_ShSM_c(sh_mem_key, sem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)//, p_shs(nullptr), p_shm(nullptr), proc_name(ProcName), sh_mem_id(-1), exit_required(false), error_in_creation(false)
  {
   //proc_name = ProcName;
   std::cout << "Entering to " << proc_name << " process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";
@@ -299,12 +299,12 @@ Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   //   error_in_creation = true;
   //   return;
   //  }
-  // p_shm = (TskContShmData_s *)shmat(sh_mem_id, NULL, 0);
+  // p_shm = (TskContShmData_s *)shmat(sh_mem_id, nullptr, 0);
  }
 
 Process_c::~Process_c()
  {
-  // if(p_shm != NULL)
+  // if(p_shm != nullptr)
   //  shmdt(p_shm);
   std::cout << "Exitting from " << proc_name << " process... \n\r";
  }
@@ -369,7 +369,7 @@ void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
     /* The memory can be checked by the ipcs command in linux command prompt. */
    } 
   while (sh_mem_id < 0);
-  p_shm = shmat(sh_mem_id, NULL, 0);
+  p_shm = shmat(sh_mem_id, nullptr, 0);
  }
 
 void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)

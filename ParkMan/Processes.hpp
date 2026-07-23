@@ -22,10 +22,10 @@ class ShSemMem_c
   protected:
     key_t sh_mem_key = 0;      /* Task Control shared memroy key           */                                   // Is used as reference for other side process.
     int sh_mem_id = 0;         /* Task Control shared memroy ID            */       // Is used for removing.
-    void *p_shm = NULL;        /* Pointer to Task Control shared memory    */       // Is used for detatching.                                                   // Is used as reference for accessing.
+    void *p_shm = nullptr;     /* Pointer to Task Control shared memory    */       // Is used for detatching.                                                   // Is used as reference for accessing.
 
     key_t sh_sem_key = 0;      /* Task Control shared semaphore key        */     
-    sem_t *p_shs = NULL;       /* Pointer to Task Control shared semaphore */                                                                                    // Is used as reference for accessing.
+    sem_t *p_shs = nullptr;    /* Pointer to Task Control shared semaphore */                                                                                    // Is used as reference for accessing.
     std::string sem_name = ""; /* Task Control shared semaphore name       */       // Is used for unlinking.   // Is used for sharing by other side process.
 
     bool created = false;      /* "true" if the class is implemmented as the "Master" "false" if the class is used as "Slave". In case of master the shared memory and semaphore are created with generating their ID and name. In case of slave the shared memory and semaphore are only connected to the allready generated ID and name. After the usage the slave only disconnects from them while the master also distroys them. */

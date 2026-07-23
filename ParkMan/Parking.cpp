@@ -93,8 +93,8 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName);
 // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".
 bool DetectCity(GPS_Cords_s Cords, std::string &CityName,  std::string &ShapeFileName)
  {
-  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   OGRPoint Point(0,0);
   OGRwkbGeometryType FigureType;
@@ -140,9 +140,9 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName,  std::string &ShapeFil
    }
 
   GDALAllRegister();
-  GDALDataset *poDS = (GDALDataset*) GDALOpenEx(ShapeFileName.c_str(), GDAL_OF_VECTOR, NULL, NULL, NULL);
+  GDALDataset *poDS = (GDALDataset*) GDALOpenEx(ShapeFileName.c_str(), GDAL_OF_VECTOR, nullptr, nullptr, nullptr);
 
-  if (poDS == NULL) 
+  if (poDS == nullptr) 
    { 
     std::cerr << "The shapefile couldn't be detected. Recheck the \"" << ShapeFileName << "\" file." << "\n\r";
     return false; 
@@ -167,7 +167,7 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName,  std::string &ShapeFil
   Point = OGRPoint(x,y);
   NumFeatures = poLayer->GetFeatureCount();
   std::cout << "The layer contains " << NumFeatures << " features.\n\r";
-  for(FeatureNo = 0;((poFeature = poLayer->GetNextFeature()) != NULL) && (FeatureNo < NumFeatures); FeatureNo++) 
+  for(FeatureNo = 0;((poFeature = poLayer->GetNextFeature()) != nullptr) && (FeatureNo < NumFeatures); FeatureNo++) 
    {
     // GetFeatureLatinName(poFeature, CityName);
     // std::cout << "Feature " << FeatureNo << "    " << CityName << "\n\r";

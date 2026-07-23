@@ -47,7 +47,7 @@ class DBShmemPriceData_c:public ShSemMem_c
     
     /* Report shared queue semaphore variables */
     key_t sh_qsem_key = 0;      /* Queue shared semaphore key        */     
-    sem_t *p_shqs = NULL;       /* Pointer to Queue shared semaphore */
+    sem_t *p_shqs = nullptr;    /* Pointer to Queue shared semaphore */
     std::string qsem_name = ""; /* Queue shared semaphore name       */
 
     void LoadShq(QueueDirection_e SendReceive);

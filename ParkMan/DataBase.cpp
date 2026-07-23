@@ -21,8 +21,8 @@
 
 class DataBase_c: public Process_c
  {
-    DBShmemPriceData_c *DBShmemPriceData = NULL;
-    sqlite3 *conn = NULL;
+    DBShmemPriceData_c *DBShmemPriceData = nullptr;
+    sqlite3 *conn = nullptr;
   public:
     DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
     virtual ~DataBase_c();
@@ -61,7 +61,7 @@ void DataBase_c::OnRunProcess()
     LoadDataBase();
    }
 
-  if(DBShmemPriceData != NULL)
+  if(DBShmemPriceData != nullptr)
    DBShmemPriceData->CheckMessageExistance(&conn);
   
  };
@@ -92,7 +92,7 @@ void DataBase_c::LoadDataBase()
  {
   std::string DBFileName;
   int result;
-  PriceTab_s *ListOfCities = NULL;
+  PriceTab_s *ListOfCities = nullptr;
   int NumCities;
   
   DBFileName = GetDBFileName();
@@ -111,7 +111,7 @@ void DataBase_c::LoadDataBase()
     strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->ReprotQSemName().c_str(), NAME_LEN - 1);
 
    }
-  FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
+  FreeList(&ListOfCities);  /* No need to compare the list to nullptr because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
 void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)

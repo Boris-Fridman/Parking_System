@@ -127,9 +127,9 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
   AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d lat %d˚%d'%d\".%08d long", LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000), LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000));
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d LONG %d˚%d'%d\".%08d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
 #else
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08ld lat %d˚%d'%d\".%08ld long", LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000), LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000));
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08ld LONG %d˚%d'%d\".%08ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
 #endif
 
   // snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
