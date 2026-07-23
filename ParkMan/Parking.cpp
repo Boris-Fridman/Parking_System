@@ -14,6 +14,7 @@
 
 #include <ogrsf_frmts.h>  /* Requires GDAL Library installation. See site "https://gdal.org/en/stable/doxygen/ogrsf__frmts_8h.html" */  
 #include <ogr_spatialref.h>
+#include <algorithm>
 
 
 /**
@@ -286,3 +287,29 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
    }
   return Result;
  }
+
+
+
+ 
+
+
+
+bool CondToRemove(char c) // Condition to remove.
+ {
+  return c == ' ' || c == '_' || c == '-' || c == '\'' || c == '\"' || c == '`' || c == ';' || c == ':' || c == '.' || c == ',';
+ }
+
+void RemoveUnneededChars(std::string &StringToClear)
+ {
+  StringToClear.erase(std::remove_if(StringToClear.begin(), StringToClear.end(), [](char c){return CondToRemove(c);}), StringToClear.end());
+ }
+
+bool StringsAreEqual(std::string str1, std::string str2)
+ {
+  // str1.erase(std::remove_if(str1.begin(), str1.end(), [](char c){return CondToRemove(c);}), str1.end());
+  // str2.erase(std::remove_if(str2.begin(), str2.end(), [](char c){return CondToRemove(c);}), str2.end());
+  RemoveUnneededChars(str1);
+  RemoveUnneededChars(str2);
+  return str1 == str2;
+ }
+  
