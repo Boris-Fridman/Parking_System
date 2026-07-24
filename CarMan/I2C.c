@@ -119,15 +119,17 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
     //  } 
     // while (Result != INSIDE_E);
-    //  34.8402, 32.0903
-    const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402,  .Latitude = 32.0903 };     
-    const GPS_Cords_s TelAviv     = {.Longitude = 34.77555, .Latitude = 32.07841};     
-    const GPS_Cords_s Eilat       = {.Longitude = 34.9355 , .Latitude = 29.5434 };     
-    const GPS_Cords_s RamatGan    = {.Longitude = 34.8227 , .Latitude = 32.0655 };     
-    const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798 , .Latitude = 32.0904 };     
+    //  35.021712, 32.457740
+    const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
+    const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
+    const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402  , .Latitude = 32.0903  };     
+    const GPS_Cords_s TelAviv     = {.Longitude = 34.77555 , .Latitude = 32.07841 };     
+    const GPS_Cords_s Eilat       = {.Longitude = 34.9355  , .Latitude = 29.5434  };     
+    const GPS_Cords_s RamatGan    = {.Longitude = 34.8227  , .Latitude = 32.0655  };     
+    const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798  , .Latitude = 32.0904  };     
 
     
-    CustomerData.Cords = BneyBraq;
+    CustomerData.Cords = GivatHaviva;
 
 #endif
 
