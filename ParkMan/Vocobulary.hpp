@@ -2,7 +2,11 @@
 
 #include "string"
 
-#define NUM_VOC_PAIRS 1630
+#define NUM_VOC_PAIRS       1630
+#define VOC_PAIR_SIZE       2
 
-extern const std::string VocNames[][2];
-extern const std::string AltNamesWords[][10];
+#define ALT_NAME_BLOCK_SIZE 10
+#define NUM_ALT_NAME_BLOCKS 165
+
+extern const std::string VocNames[NUM_VOC_PAIRS][VOC_PAIR_SIZE];
+extern const std::string AltNamesWords[NUM_ALT_NAME_BLOCKS][ALT_NAME_BLOCK_SIZE];

@@ -15,6 +15,7 @@
 #include <ogrsf_frmts.h>  /* Requires GDAL Library installation. See site "https://gdal.org/en/stable/doxygen/ogrsf__frmts_8h.html" */  
 #include <ogr_spatialref.h>
 #include <algorithm>
+#include "Vocobulary.hpp"
 
 
 /**
@@ -290,7 +291,7 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
 
 
 
- 
+
 
 
 
@@ -308,8 +309,37 @@ bool StringsAreEqual(std::string str1, std::string str2)
  {
   // str1.erase(std::remove_if(str1.begin(), str1.end(), [](char c){return CondToRemove(c);}), str1.end());
   // str2.erase(std::remove_if(str2.begin(), str2.end(), [](char c){return CondToRemove(c);}), str2.end());
+
   RemoveUnneededChars(str1);
   RemoveUnneededChars(str2);
+  ReplaceSubStrings(str1);
+  ReplaceSubStrings(str2);
+  // std::cout << TermYello << str1 << " = ? = " << str2 << TermColorsReset << "\n\r";
   return str1 == str2;
  }
   
+// ALT_NAME_BLOCK_SIZE
+// NUM_ALT_NAME_BLOCKS
+
+
+void ReplaceSubStrings(std::string &StringToCorrect)
+ {
+  size_t i, j;
+  size_t pos;
+  std::string LastStringToCorrect;
+
+  LastStringToCorrect = StringToCorrect;
+
+  for(i = 0; i < NUM_ALT_NAME_BLOCKS; i++)
+   {
+    for(j = 1; (j < ALT_NAME_BLOCK_SIZE) && (AltNamesWords[i][j] != ""); j++)
+     {
+      if((pos = StringToCorrect.find(AltNamesWords[i][j])) != std::string::npos)
+       {
+        StringToCorrect.replace(pos, AltNamesWords[i][j].length(), AltNamesWords[i][0]);
+        break;
+       }
+     }
+
+   }
+ }

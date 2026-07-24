@@ -117,7 +117,7 @@ void DataBase_c::LoadDataBase()
 void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   unsigned int prio;
   ClientQueueMsg_s ClientQueueMsg;  /* Customer Acknowledge Information. */
   struct timespec ts;
@@ -131,7 +131,7 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
   //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
   if(bytes_read >= 0)
    {
-    std::cout << "City: " << ClientQueueMsg.City_Name << "    Price: " << ClientQueueMsg.AccumulatedPrice << " ag \n\r";
+    std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << " ag"<< (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     AddOrUpdateParkingSession(conn, ClientQueueMsg);
    }
  }

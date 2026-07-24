@@ -74,6 +74,16 @@ int main(int const argc, char const *argv[])
   char PIDFileName[PATH_LEN];
   TaskControl_ShSM_c TaskContSh;
 
+  // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
+  // std::cout << TestString << "\n\r";
+  
+  // RemoveUnneededChars(TestString);
+  // std::cout << TestString << "\n\r";
+
+  // ReplaceSubStrings(TestString);
+  // std::cout << TestString << "\n\r";
+
+
   GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
   double d;
   d = GetDistance(TelAviv, Jerusalem);

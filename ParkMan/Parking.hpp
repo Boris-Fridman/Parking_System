@@ -26,3 +26,6 @@ void ParkingProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
 // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".
 bool DetectCity(GPS_Cords_s Cords, std::string &CityName, std::string &ShapeFileName);
 
+bool StringsAreEqual(std::string str1, std::string str2);
+void RemoveUnneededChars(std::string &StringToClear);
+void ReplaceSubStrings(std::string &StringToCorrect);

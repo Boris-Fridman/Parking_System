@@ -106,45 +106,58 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       PrintGPSCords(CustomerInfo.Cords);
       std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
-      //DetectedCityName = "Tel Aviv";
-      DetectedCityName = "Not Detected";
 
       if(FirstInt)
        {
+        DetectedCityName = "Not Detected";
         if((DBShmemPriceData != nullptr) && (*DBShmemPriceData != nullptr))  /* Attention !!! The condition cannot be changed places. The second condition can be and checked only if the first condition is true and only in this case the second condition will be checked due to shortcyrcuit method. */
          {
           std::cout << "Trying to detect the city..." << "\n\r";
           // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".          
           bool CityFound = DetectCity(CustomerInfo.Cords, DetectedCityName, ShapeFileName);
-          std::cout << (StdErrNoPiping ? ResultColors[CityFound] : "") << (CityFound ? "City was detected" : "City wasn\'t detected") << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+          if(CityFound)
+           {
+            std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "City was detected: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdOutNoPiping ? TermColorsReset : "") <<"\n\r";
+           }
+          else
+           {
+            std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "City wasn\'t detected" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+           }
+          
           for(i = 0; i < NumPriceDBCities; ++i)
            {
             (*DBShmemPriceData)->GetCity(i, &CityPriceInfo);
-            if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
+            
+            if(StringsAreEqual(DetectedCityName, CityPriceInfo.City_Name))  //  if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
              {
               std::ios old_state(nullptr);
               old_state.copyfmt(std::cout); 
               char old_fill = std::cout.fill();
 
               CityPPH = CityPriceInfo.Price;
-              std::cout << (StdOutNoPiping ? TermGreen : "") << "New parking detected in the city: " << CityPriceInfo.City_Name << " ID: " << CityPriceInfo.City_ID << " Parking Price " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-
+              std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
               std::cout.copyfmt(old_state);
               std::cout.fill(old_fill);
-
               break;
              }
+           }
+          if(i >= NumPriceDBCities) /* The city wasn't found. In database. */
+           {
+            std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "The City: " << (StdErrNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << " wasn't found in the database. Loading zero price." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+            strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
            }
           FirstInt = false;
          }
         else
          {
           std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+          strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
          }
        }
       
       /* Loading info for response. */
-      strcpy(CustAckInfo.City_Name, DetectedCityName.c_str());
+      //strcpy(CustAckInfo.City_Name, DetectedCityName.c_str());
+      strcpy(CustAckInfo.City_Name, CityPriceInfo.City_Name);
       time(&CurrentTime);
       CustAckInfo.City_ID = CityPriceInfo.City_ID;
       CustAckInfo.ParkingDurationTime = CurrentTime - CustAckInfo.ParkingStartTime;

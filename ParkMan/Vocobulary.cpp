@@ -2,7 +2,7 @@
 
 
 
-const std::string VocNames[NUM_VOC_PAIRS][2] = 	
+const std::string VocNames[NUM_VOC_PAIRS][VOC_PAIR_SIZE] = 	
   
  {
   //	name		latin name	
@@ -1642,7 +1642,7 @@ const std::string VocNames[NUM_VOC_PAIRS][2] =
  };
 
 
-const std::string AltNamesWords[][10] =
+const std::string AltNamesWords[NUM_ALT_NAME_BLOCKS][ALT_NAME_BLOCK_SIZE] =
  {
   {"Afek"      , "Afeq"       , "Afec"                                                                                                                  },
   {"Afeka"     , "Afeqa"      , "Afequa"                                                                                                                },
@@ -1660,7 +1660,7 @@ const std::string AltNamesWords[][10] =
   {"Barkan"    , "Barqan"     , "Barquan"                                                                                                               },
   {"Barkat"    , "Barqat"     , "Barquat"     , "Bareket"     , "Bareqet"      , "Barequet"                                                             },
   {"Batzra"    , "Batsra"     , "Bazra"                                                                                                                 },
-  {"Benei"     , "Beney"      , "Bnei"        , "Bney"                                                                                                  },
+  {"Benei"     , "Beney"      , "Bnei"        , "Bney"        , "Bne"          , "Bne"                                                                  },
   {"Beqa"      , "Bequa"      , "Beka"                                                                                                                  },
   {"Beqaot"    , "Bequaot"    , "Bekaot"                                                                                                                },
   {"Beqat"     , "Bequat"     , "Bekat"                                                                                                                 },
@@ -1704,7 +1704,7 @@ const std::string AltNamesWords[][10] =
   {"Hen"       , "Chen"                                                                                                                                 },
   {"Herzliya"  , "Hertzliya"  , "Hertsliya"   , "Herzlia"     , "Hertzlia"      , "Hertslia"                                                            },
   {"Hilkia"    , "Hilqia"     , "Hilquia"                                                                                                               },
-  {"Jerusalem" , "Yirushalaim", "Yerushalaim" , "Yirushalaiim", "Yerushalaiim" , "Yirushalayim" , "Yerushalayim"                                        },
+  {"Jerusalem" , "Yirushalaim", "Yerushalaim" , "Yirushalaiim", "Yerushalaiim"  , "Yirushalayim" , "Yerushalayim"                                       },
   {"Kadarim"   , "Qadarim"    , "Quadarim"    , "Cadarim"                                                                                               },
   {"Kadima"    , "Qadima"     , "Quadima"                                                                                                               },
   {"Kama"      , "Qama"       , "Quama"                                                                                                                 },
@@ -1722,11 +1722,11 @@ const std::string AltNamesWords[][10] =
   {"Khawaled"  , "Chawaled"   , "Hawaled"                                                                                                               },
   {"Kibbuts"   , "Qibbuts"    , "Quibbuts"    , "Kibbutz"     , "Qibbutz"       , "Quibbutz"    , "Kibbuz"     , "Qibbuz"    , "Quibbuz"                },
   {"Kidron"    , "Qidron"     , "Quidron"     , "Kedron"      , "Qedron"        , "Quedron"                                                             },
-  {"Kiryat"    , "Qiryat"     , "Quiryat"                                                                                                               },
-  {"Komemiyut" , "Qomemiyut"  , "Komemiut"    , "Qomemiut"    ,  "Kumemiyut"    , "Qumemiyut"   , "Kumemiut"   , "Qumemiut"  , "Quomemiyut", "Quomemiut"},
-  {"Kvutzat"   , "Kvutsat"    , "Kvutsat"     , "Qvutzat"     , "Qvutsat"      , "Qvutsat"                                                              },
-  {"Kvutzat"   , "Kvuzat"     , "Kvutsat"     , "Qvutzat"     , "Qvuzat"       , "Qvutsat"                                                              },
-  {"Kvutzot"   , "Kvuzot"     , "Kvutsot"     , "Qvutzot"     , "Qvuzot"       , "Qvutsot"                                                              },
+  {"Kiryat"    , "Qiryat"     , "Quiryat"     , "Kiriyat"     , "Qiriyat"       , "Quiriyat"    , "Kiriat"     , "Qiriat"    , "Quiriat"                },
+  {"Komemiyut" , "Qomemiyut"  , "Komemiut"    , "Qomemiut"    , "Kumemiyut"     , "Qumemiyut"   , "Kumemiut"   , "Qumemiut"  , "Quomemiyut", "Quomemiut"},
+  {"Kvutzat"   , "Kvutsat"    , "Kvutsat"     , "Qvutzat"     , "Qvutsat"       , "Qvutsat"                                                             },
+  {"Kvutzat"   , "Kvuzat"     , "Kvutsat"     , "Qvutzat"     , "Qvuzat"        , "Qvutsat"                                                             },
+  {"Kvutzot"   , "Kvuzot"     , "Kvutsot"     , "Qvutzot"     , "Qvuzot"        , "Qvutsot"                                                             },
   {"Lachish"   , "Lakhish"    , "Lahish"                                                                                                                },
   {"Lahav"     , "Laav"                                                                                                                                 },
   {"Lahavim"   , "Laavim"     , "Lehavim"     , "Leavim"                                                                                                },
@@ -1742,9 +1742,10 @@ const std::string AltNamesWords[][10] =
   {"Modiin"    , "Modiyin"                                                                                                                              },
   {"Monosson"  , "Monoson"                                                                                                                              },
   {"Motza"     , "Moza"       , "Motsa"                                                                                                                 },
-  {"Naqquba"   , "Neqquba"    , "Nakkuba"     , "Nekkuba"     , "Naccuba"      , "Neccuba"      , "Nacquba"    , "Necquba"   , "Nackuba"   , "Neckuba"  },
+  {"Motzkin"   , "Motskin"    , "Mozkin"      , "Motzqin"     , "Motsqin"       , "Mozqin"       , "Motzquin"   , "Motsquin"  , "Mozquin"               },
+  {"Naqquba"   , "Neqquba"    , "Nakkuba"     , "Nekkuba"     , "Naccuba"       , "Neccuba"      , "Nacquba"    , "Necquba"   , "Nackuba"   , "Neckuba" },
   {"Nekofa"    , "Neqofa"     , "Nequofa"                                                                                                               },
-  {"Nikra"     , "Niqra"      , "Nekra"       , "Neqra"       , "Nikrah"        , "Niqrah"      , "Nekrah"     , "Neqrah"                               },
+  {"Nikra"     , "Niqra"      , "Nekra"       , "Neqra"       , "Nikrah"        , "Niqrah"       , "Nekrah"     , "Neqrah"                              },
   {"Nitzan"    , "Nizan"      , "Nitsan"                                                                                                                },
   {"Ofakim"    , "Ofaqim"     , "Ofaquim"                                                                                                               },
   {"Ofek"      , "Ofaq"                                                                                                                                 },
@@ -1771,7 +1772,7 @@ const std::string AltNamesWords[][10] =
   {"Tquma"     , "Tequma"     , "Tkuma"       , "Tekuma"                                                                                                },
   {"Tserada"   , "Tzerada"    , "Zerada"                                                                                                                },
   {"Tslafon"   , "Tzlafon"    , "Zlafon"                                                                                                                },
-  {"Tsuran"    , "Tzuran"     , "Zuran"       , "Tsoran"      , "Tzoran"       ,"Zoran"                                                                 },
+  {"Tsuran"    , "Tzuran"     , "Zuran"       , "Tsoran"      , "Tzoran"        ,"Zoran"                                                                },
   {"Tzafria"   , "Tsafria"    , "Zafria"                                                                                                                },
   {"Tzafririm" , "Tsafririm"  , "Zafririm"                                                                                                              },
   {"Tzipori"   , "Zipori"     , "Tsipori"                                                                                                               },
@@ -1785,12 +1786,12 @@ const std::string AltNamesWords[][10] =
   {"Yarkon"    , "Yarqon"     , "Yarquon"                                                                                                               },
   {"Yarkona"   , "Yarqona"    , "Yarquona"                                                                                                              },
   {"Yarok"     , "Yaroq"                                                                                                                                },
-  {"Yehud"     , "Yeud"       , "Iehud"       , "Ieud"        , "Ihud"         , "Iud"                                                                  },
-  {"Yehuda"    , "Yeuda"      , "Iehuda"      , "Ieuda"       , "Ihuda"        , "Iuda"                                                                 },
+  {"Yehud"     , "Yeud"       , "Iehud"       , "Ieud"        , "Ihud"          , "Iud"                                                                 },
+  {"Yehuda"    , "Yeuda"      , "Iehuda"      , "Ieuda"       , "Ihuda"         , "Iuda"                                                                },
   {"Yericho"   , "Yeriho"                                                                                                                               },
   {"Yesodot"   , "Yessodot"                                                                                                                             },
   {"Yesud"     , "Yessud"     , "Yesod"       , "Yessod"                                                                                                },
-  {"Yitshak"   , "Yitzhak"    , "Yizhak"      , "Yitshaq"     , "Yitzhaq"      , "Yizhaq"                                                               },
+  {"Yitshak"   , "Yitzhak"    , "Yizhak"      , "Yitshaq"     , "Yitzhaq"       , "Yizhaq"                                                              },
   {"Yitshar"   , "Yitzhar"    , "Yizhar"                                                                                                                },
   {"Yohai"     , "Yuhai"                                                                                                                                },
   {"Yosef"     , "Yossef"     , "Josef"                                                                                                                 },
@@ -1808,7 +1809,6 @@ const std::string AltNamesWords[][10] =
   {"Zur"       , "Tzur"       , "Zur"                                                                                                                   },
   {"Zurim"     , "Tzurim"     , "Tsurim"                                                                                                                },
   {"Zvi"       , "Tzvi"       , "Tsvi"                                                                                                                  },
-  
 
 
  };

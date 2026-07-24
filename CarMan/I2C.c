@@ -119,16 +119,16 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
     //  } 
     // while (Result != INSIDE_E);
-    //  34.77555°, 32.07841°  
-    //  34.8227°, 32.0655°  - Ramat Gan
-    //  34.8798°, 32.0904°  - Petach Tiqua
- 
-    
-    
+    //  34.8402, 32.0903
+    const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402,  .Latitude = 32.0903 };     
+    const GPS_Cords_s TelAviv     = {.Longitude = 34.77555, .Latitude = 32.07841};     
+    const GPS_Cords_s Eilat       = {.Longitude = 34.9355 , .Latitude = 29.5434 };     
+    const GPS_Cords_s RamatGan    = {.Longitude = 34.8227 , .Latitude = 32.0655 };     
+    const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798 , .Latitude = 32.0904 };     
 
+    
+    CustomerData.Cords = BneyBraq;
 
-    CustomerData.Cords.Longitude  = 34.8798;  //34.8227;  //34.9355;  //34.77555;
-    CustomerData.Cords.Latitude   = 32.0904;  //32.0655;  //29.5434;  //32.07841;
 #endif
 
     printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
