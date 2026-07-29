@@ -19,7 +19,7 @@
 
 #include "Parking.hpp"
 
-
+#include "Configuration.hpp"
 
 
 #define NETW_PROC_NAME     (char *)"Network"     /* Network process name*/
@@ -200,7 +200,11 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   int opt = 1;
+  uint16_t DestinPort;
   timeval timeout;
+
+  DestinPort = GetDestinPort();
+  //DestinPort = DESTIN_PORT;  // For test only.
 
   timeout.tv_sec = 1;
   timeout.tv_usec = 0;
@@ -231,10 +235,9 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
     // Handle error or close socket
    }
 
-
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;
-  address.sin_port = htons(DESTIN_PORT);
+  address.sin_port = htons(DestinPort);
 
   /* Bind the socket */
   if (bind(serverSocket, (struct sockaddr *)&address, sizeof(address)) < 0) 
@@ -253,7 +256,7 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], P
     MakeExit();
     return;
    }
-  std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "Server listening on port " << DESTIN_PORT << "..." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+  std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "Server listening on port " << DestinPort << "..." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
  }
 
 void Network_c::OnRunProcess()

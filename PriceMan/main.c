@@ -9,6 +9,7 @@
 
 #include "CommonData.h"
 #include "PriceDataBase.h"
+#include "Configuration.h"
 
 /*======================================================================================================================*/
 
@@ -67,7 +68,11 @@ int main(int const argc, char const *argv[])
     // strcpy(pathfile, "./priceman");
     // ApplyDBPath(argc, &c);
     // pid = LoadParkManPID(argc, &c);
-    ApplyDBPath(argc, argv);
+
+    InitConf(argv[0]);
+
+    SetDBPathName(GetDataBaseFilePathName());
+    //ApplyDBPath(argc, argv);
     pid = LoadParkManPID(argc, argv);
     printf("%s\n\r", argv[0]);
     printf("Was loaded the parkman's pid: %d\n\r", pid);
@@ -196,7 +201,10 @@ int LoadParkManPID(int const argc, char const *argv[])
   FILE *f;
   int pid = -1;
   int r;
-  GetPIDFile(argc, argv, NamePath);
+  UNUSED(argc);
+  UNUSED(argv);
+  //GetPIDFile(argv[0], NamePath);
+  strcpy(NamePath, GetProgInfoPIDFilePathName());
   printf("%s\n\r", NamePath);
   f = fopen(NamePath, "r");
   if(f)

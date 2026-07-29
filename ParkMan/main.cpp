@@ -32,7 +32,7 @@
 #include "Errors.hpp"
 #include "Processes.hpp"
 
-
+#include "Configuration.hpp"
 
 
 
@@ -48,8 +48,6 @@ void WaitUntilFinised();
 void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
 void RemovePIDFile(char FileName[]);
 void EnableSignals();
-
-
 
 /*======================================================================================================================*/
 
@@ -73,6 +71,8 @@ int main(int const argc, char const *argv[])
  {
   char PIDFileName[PATH_LEN];
   TaskControl_ShSM_c TaskContSh;
+
+  InitConf(argv[0]);
 
   // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
   // std::cout << TestString << "\n\r";
@@ -99,12 +99,15 @@ int main(int const argc, char const *argv[])
 
   {
    char PathFileName[PATH_LEN] = {0};
-   GetDataBaseFile(argc, argv, PathFileName);
-   TaskContSh.SetDBFileName(PathFileName);
+  //  GetDataBaseFile(argv[0], PathFileName);
+  //  TaskContSh.SetDBFileName(PathFileName);
+   TaskContSh.SetDBFileName(GetDataBaseFilePathName());
+   
    std::cout << "Loaded DataBase File: " << PathFileName << "\n\r";
 
-   GetShapeFile(argc, argv, PathFileName);
-   TaskContSh.SetSHPFileName(PathFileName);
+  //  GetShapeFile(argv[0], PathFileName);
+  //  TaskContSh.SetSHPFileName(PathFileName);
+   TaskContSh.SetSHPFileName(GetGeoLocShapeFilePathName());
    std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }
   
@@ -208,9 +211,12 @@ void WaitUntilFinised()
 void CreatePIDFile(int const argc, char const *argv[], char FileName[])
  {
   int pid;
-  GetPIDFile(argc, argv, FileName);
+  UNUSED(argc);
+  UNUSED(argv);
+  //GetPIDFile(argv[0], FileName);
+  strcpy(FileName, GetProgInfoPIDFilePathName());
   pid = getpid();
-
+  
   std::ofstream outFile(FileName);
   if(outFile.is_open())
    {
@@ -282,7 +288,6 @@ void EnableSignals()
 // https://acte.ltd/utils/randomkeygen  
 // https://www.strongdm.com/tools/api-key-generator  
 // https://emvlab.org/keyshares/
-
 
 
 

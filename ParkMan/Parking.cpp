@@ -17,6 +17,7 @@
 #include <algorithm>
 #include "Vocobulary.hpp"
 
+#include "Configuration.hpp"
 
 /**
  * 
@@ -260,9 +261,12 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
   bool Result = true;
   const OGRFieldDefn *FieldRef;
   OGRFieldType FieldType;
-  
+  const char *PlaceName;
 
-  Index = poFeature->GetFieldIndex(SHP_FIELD_NAME);
+  PlaceName = GetColumnNameWithGeolocationName();
+  //PlaceName = SHP_FIELD_NAME;  // For test only.
+  //std::cout << "Detecting City name in the column named: " << "\"" << PlaceName << "\"" <<"\n\r";
+  Index = poFeature->GetFieldIndex(PlaceName);
 
   if(Index > 0)  /* The field with required name was found */
    {

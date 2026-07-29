@@ -17,6 +17,7 @@
 #include "Network.h"
 #include "I2C.h"
 
+#include "Configuration.h"
 
 bool FullExit = false;
 
@@ -26,7 +27,7 @@ void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
 void EnableSignals();
 
 
-int main(void)
+int main(int const argc, char const *argv[])
  {
   pid_t network_pid;
   pid_t i2c_pid;
@@ -37,9 +38,12 @@ int main(void)
 
   //code
   MasterShMem_s TskContShms;
-
+  UNUSED(argc);
+  
   own_pid = getpid();
   printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
+
+  InitConf(argv[0]);
 
   ActivateMasterShMem(&TskContShms, sizeof(TskContShmData_s));
 

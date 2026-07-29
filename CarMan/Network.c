@@ -20,6 +20,8 @@
 #include "CommonData.h"
 #include "Processes.h"
 
+#include "Configuration.h"
+
 
 #define QUEUE_NAME     "/network_queue"
 #define MAX_SIZE       1024
@@ -58,6 +60,14 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   static int last_errno = 0;
+  uint16_t DestinPort;
+  bool UseDHCP = false;
+  char const *DHCPName;
+  char const *DestIP;
+  // struct hostent *host = NULL;
+  // struct addrinfo hints, *res, *p;
+  
+
   /* Create the socket */
   NetPars->sock_fd = socket(AF_INET, SOCK_STREAM, 0);
   if (NetPars->sock_fd < 0) 
@@ -67,13 +77,39 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
     return false;
    }
 
+  UseDHCP = GetUseDHCPState();
+  DestIP = GetDestinAddr();
+  DHCPName = GetDestinDHCPName();
+  // host = gethostbyname(DHCPName);
+  
+  // if(UseDHCP)
+  //  {
+  //   DHCPName = GetDestinDHCPName();
+  //   //host = gethostbyname(DHCPName);
+  //   getaddrinfo(DHCPName, NULL, &hints, &res);
+  //  }
+  
+  // if((UseDHCP) && (host != NULL))
+  //  {
+  //   memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], host->h_length);
+  //  }
+  // else
+  //  {
+  //   DestIP = GetDestinAddr();
+  //  }
+
+  DestinPort = GetDestinPort();
+
+
+  printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
+
   /* Configure the server address structure */
   memset(&NetPars->server_addr, 0, sizeof(NetPars->server_addr));
   NetPars->server_addr.sin_family = AF_INET;
-  NetPars->server_addr.sin_port = htons(DESTIN_PORT);
+  NetPars->server_addr.sin_port = htons(DestinPort);  //  NetPars->server_addr.sin_port = htons(DESTIN_PORT);
 
   /* Convert IPv4 address from text to binary format */
-  if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
+  if (inet_pton(AF_INET, DestIP, &NetPars->server_addr.sin_addr) <= 0)   //  if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
    {
     if((AllwaysTermEnabled) || (last_errno != errno))
      {

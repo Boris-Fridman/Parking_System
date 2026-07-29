@@ -104,6 +104,8 @@ extern "C" {
 
 
 
+#define DEF_CLIENT_NAME           "Boris Fridman"
+#define DEF_VEHICLE_ID            13248551
 
 //#define DESTIN_IP               "127.0.0.1"    // For test only. In the future will be removed.
 #define DESTIN_IP                 "192.168.1.164"            /* Server IP address to which are sent the call messages. */
@@ -137,6 +139,9 @@ extern "C" {
 #if !defined(UNUSED)
 #define UNUSED(X)                 (void)X      /* To avoid gcc/g++ warnings */
 #endif /* UNUSED */
+
+#define STRINGIZE_DETAIL(x) #x
+#define TO_STRING(x) STRINGIZE_DETAIL(x)
 
 /*======================================================================================================================*/
 #ifndef __cplusplus
@@ -496,11 +501,17 @@ void FreeData(uint8_t **Data);
 
 /*======================================================================================================================*/
 
-bool GetDataBaseFile(int const argc, char const *argv[], char NamePath[]);
+void AdjustPath(char const *OwnProgName, char *PathToAdjust);
 
-bool GetPIDFile(int const argc, char const *argv[], char NamePath[]);
+void GetConfFileName(char const *OwnProgName, char *ConfFileName);
 
-bool GetShapeFile(int const argc, char const *argv[], char NamePath[]);
+bool GetConfigPath(char const *OwnProgName, char NamePath[]);
+
+bool GetDataBaseFile(char const *OwnProgName, char NamePath[]);
+
+bool GetPIDFile(char const *OwnProgName, char NamePath[]);
+
+bool GetShapeFile(char const *OwnProgName, char NamePath[]);
 
 /*======================================================================================================================*/
 

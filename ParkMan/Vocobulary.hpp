@@ -6,7 +6,7 @@
 #define VOC_PAIR_SIZE       2
 
 #define ALT_NAME_BLOCK_SIZE 10
-#define NUM_ALT_NAME_BLOCKS 165
+#define NUM_ALT_NAME_BLOCKS 166
 
 extern const std::string VocNames[NUM_VOC_PAIRS][VOC_PAIR_SIZE];
 extern const std::string AltNamesWords[NUM_ALT_NAME_BLOCKS][ALT_NAME_BLOCK_SIZE];

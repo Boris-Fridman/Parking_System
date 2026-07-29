@@ -626,7 +626,8 @@ void SetDBPathName(char const FileNameToSet[])
 /*  Applys the path to the database file.                                                                               */
 void ApplyDBPath(int const argc, char const *argv[])
  {
-  GetDataBaseFile(argc, argv, PathFileName);
+  UNUSED(argc);
+  GetDataBaseFile(argv[0], PathFileName);
   printf("%s\n\r", PathFileName);
  }
 

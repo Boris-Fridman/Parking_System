@@ -12,6 +12,8 @@
 
 #include "Network.h"
 
+#include "Configuration.h"
+
 #ifdef BEAGLE_BONE
 #include <linux/i2c-dev.h>
 #include <sys/ioctl.h>
@@ -91,8 +93,8 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
   
   ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
   
-  strcpy(CustomerData.Customer_Name, "Boris Fridman");
-  CustomerData.Vechicle_ID = 13248551;
+  strcpy(CustomerData.Customer_Name, GetClientName());  //strcpy(CustomerData.Customer_Name, "Boris Fridman");
+  CustomerData.Vechicle_ID = GetVechicleID();           //CustomerData.Vechicle_ID = 13248551;
 
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
@@ -119,7 +121,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
     //  } 
     // while (Result != INSIDE_E);
-    //  35.021712, 32.457740
+    //  35.10039, 33.01059
     const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
     const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
     const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402  , .Latitude = 32.0903  };     
@@ -127,9 +129,12 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     const GPS_Cords_s Eilat       = {.Longitude = 34.9355  , .Latitude = 29.5434  };     
     const GPS_Cords_s RamatGan    = {.Longitude = 34.8227  , .Latitude = 32.0655  };     
     const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798  , .Latitude = 32.0904  };     
+    const GPS_Cords_s Herzlya     = {.Longitude = 34.82398 , .Latitude = 32.16867 };     
+    const GPS_Cords_s Nahariyya   = {.Longitude = 35.10039 , .Latitude = 33.01059 };     
+
 
     
-    CustomerData.Cords = GivatHaviva;
+    CustomerData.Cords = Nahariyya;
 
 #endif
 
