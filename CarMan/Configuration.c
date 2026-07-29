@@ -130,7 +130,7 @@ char const *GetDataByName(char const DataName[])
 bool GetUseDHCPState()
  {
   char const *UseDHCPState = GetDataByName(DHCPENSTAT);
-  return (UseDHCPState[0] != '\0') || (UseDHCPState[0] != '0');
+  return (UseDHCPState[0] != '\0') && (UseDHCPState[0] != '0');
  }
 
 char const *GetDestinDHCPName()

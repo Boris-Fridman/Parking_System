@@ -64,8 +64,8 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
   bool UseDHCP = false;
   char const *DHCPName;
   char const *DestIP;
-  // struct hostent *host = NULL;
-  // struct addrinfo hints, *res, *p;
+  struct hostent *host = NULL;
+  //struct addrinfo hints, *res, *p;
   
 
   /* Create the socket */
@@ -78,49 +78,79 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
    }
 
   UseDHCP = GetUseDHCPState();
-  DestIP = GetDestinAddr();
-  DHCPName = GetDestinDHCPName();
+  //DestIP = GetDestinAddr();
+  // DHCPName = GetDestinDHCPName();
   // host = gethostbyname(DHCPName);
-  
-  // if(UseDHCP)
-  //  {
-  //   DHCPName = GetDestinDHCPName();
-  //   //host = gethostbyname(DHCPName);
-  //   getaddrinfo(DHCPName, NULL, &hints, &res);
-  //  }
-  
-  // if((UseDHCP) && (host != NULL))
-  //  {
-  //   memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], host->h_length);
-  //  }
-  // else
-  //  {
-  //   DestIP = GetDestinAddr();
-  //  }
 
-  DestinPort = GetDestinPort();
+  // memset(&hints, 0, sizeof(hints));
+  // hints.ai_family = AF_INET; // hints.ai_family = AF_UNSPEC;    // AF_UNSPEC allows both IPv4 and IPv6  
+  // hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
+
+  // getaddrinfo(DHCPName, NULL, &hints, &res);
+  // struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
+  // void *addr;
+  // char ip_str[INET6_ADDRSTRLEN];
+  // addr = &(ipv4->sin_addr);
+  // inet_ntop(p->ai_family, addr, ip_str, sizeof(ip_str));
+  // printf("Found IP: %s\n", ip_str);
+  // char IP_Addr[20];
+  // inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
 
 
-  printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
 
   /* Configure the server address structure */
   memset(&NetPars->server_addr, 0, sizeof(NetPars->server_addr));
   NetPars->server_addr.sin_family = AF_INET;
   NetPars->server_addr.sin_port = htons(DestinPort);  //  NetPars->server_addr.sin_port = htons(DESTIN_PORT);
 
-  /* Convert IPv4 address from text to binary format */
-  if (inet_pton(AF_INET, DestIP, &NetPars->server_addr.sin_addr) <= 0)   //  if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
+
+  if(UseDHCP)
    {
-    if((AllwaysTermEnabled) || (last_errno != errno))
+    DHCPName = GetDestinDHCPName();
+    host = gethostbyname(DHCPName);
+    if(host == NULL)
      {
       fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      perror("Invalid address or Address not supported");
+      fprintf(stderr, "Couldn't detect dynamic address from DHCP name %s.\n\r", DHCPName);
       fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
-      last_errno = errno;
      }
-    close(NetPars->sock_fd);
-    return false;
    }
+  
+  if((UseDHCP) && (host != NULL))
+   {
+    fprintf(stdout, "Loading DHCP address...\n\r");
+    memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], MIN(host->h_length, sizeof(NetPars->server_addr.sin_addr)));
+   }
+  else
+   {
+    DestIP = GetDestinAddr();
+    fprintf(stdout, "Loading Static IP address...\n\r");
+    /* Convert IPv4 address from text to binary format */
+    if (inet_pton(AF_INET, DestIP, &NetPars->server_addr.sin_addr) <= 0)   //  if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
+     {
+      if((AllwaysTermEnabled) || (last_errno != errno))
+       {
+        fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+        perror("Invalid address or Address not supported");
+        fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+        last_errno = errno;
+       }
+      close(NetPars->sock_fd);
+      return false;
+     }
+   }
+
+  DestinPort = GetDestinPort();
+
+
+   //inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
+
+
+  uint8_t ad[4];
+  memcpy(ad, &NetPars->server_addr.sin_addr, 4);
+  
+  printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3] ,DestinPort);
+  //printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
 
   /* Connect to the server */
   if (connect(NetPars->sock_fd, (struct sockaddr *)&NetPars->server_addr, sizeof(NetPars->server_addr)) < 0) 
