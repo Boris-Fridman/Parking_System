@@ -3,9 +3,9 @@
 
 #include "CommonData.h"
 
-void InitConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const *OwnProgName);
+void InitConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName);
 
-char const *GetDataByName(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const DataName[]);
+char const *GetDataByName(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const DataName[]);
 
 
 #endif  //  ____ConfMan_h__

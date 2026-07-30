@@ -8,16 +8,29 @@
 
 #define CONF_IT_DIVIDER  ':'
 
-static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], ssize_t NumConfIt,char const *OwnProgName)
+
+static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
+ {
+  size_t i;
+  for(i = 0; i < NumConfIt; i++)
+   {
+    char *p = strstr(ConfData[i][0], "PATH");
+    if(p != NULL)
+     AdjustPath(OwnProgName, ConfData[i][1]);
+   }
+ }
+
+
+static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
-  ssize_t i;
+  size_t i;
   char line[(PATH_LEN) * 2 + 1];
   FILE *ConfIniFile;
   char *StartConfInf;
   char StrToFind[PATH_LEN];
   char *lastc;
-  
+  size_t NumFoundOptions;
 
   GetConfFileName(OwnProgName, FileName);
   printf("%s\n\r", FileName);
@@ -26,6 +39,7 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], ssize_t NumConfIt,cha
 
   if(ConfIniFile)
    {
+    NumFoundOptions = 0;
     while(fgets(line, sizeof(line), ConfIniFile) != NULL)
      {
       lastc = &line[strlen(line) - 1];
@@ -40,23 +54,21 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], ssize_t NumConfIt,cha
         if((StartConfInf != NULL) && (strlen(StartConfInf) > 0))  /* Attention !!! Due to the shortcircuit characteristics the conditions MUSTN'T be changed places. */
          {
           strcpy(ConfData[i][1], &StartConfInf[strlen(StrToFind)]);
-          char *p = strstr(ConfData[i][0], "PATH");
-          if(p != NULL)
-           AdjustPath(OwnProgName, ConfData[i][1]);
+          NumFoundOptions++;
          }
        }
      }
     fclose(ConfIniFile);
-    return true;
+    return NumFoundOptions == NumConfIt;
    }
   else  
    return false;
  }
 
-static bool CreateDefConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const *OwnProgName)
+static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
-  ssize_t i;
+  size_t i;
   FILE *ConfIniFile;
 
   GetConfFileName(OwnProgName, FileName);
@@ -78,7 +90,7 @@ static bool CreateDefConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char 
 
 
 
-void InitConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const *OwnProgName)
+void InitConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
  {
   bool Result;
   
@@ -87,13 +99,14 @@ void InitConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const *OwnPr
    {
     CreateDefConf(ConfData, NumConfIt, OwnProgName);
    }
-  
+
+  CheckAdjustPaths(ConfData, NumConfIt, OwnProgName);
  }
 
 
-char const *GetDataByName(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const DataName[])
+char const *GetDataByName(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const DataName[])
  {
-  ssize_t i;
+  size_t i;
   for(i = 0; i < NumConfIt; i++)
    {
     if(!strcmp(ConfData[i][0], DataName))

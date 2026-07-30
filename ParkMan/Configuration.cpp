@@ -17,8 +17,6 @@
 #define SHAPECITYNAME  "SHAPECITYNAME"
 
 
-#define CONF_IT_DIVIDER  ':'
-
 #define NUM_CONF_IT   6
 char ConfData[NUM_CONF_IT][2][PATH_LEN] = 
  {
@@ -31,96 +29,11 @@ char ConfData[NUM_CONF_IT][2][PATH_LEN] =
  };
 
 
-
-
-// bool LoadConfigFromFile(char const *OwnProgName)
-//  {
-//   char FileName[PATH_LEN];
-//   ssize_t i;
-//   std::string line;
-//   size_t SymbPos;
-//   int len;
-  
-
-//   GetConfFileName(OwnProgName, FileName);
-//   std::cout << FileName << "\n\r";
-  
-//   std::ifstream ConfIniFile(FileName);
-  
-//   if(ConfIniFile.is_open())
-//    {
-//     while(std::getline(ConfIniFile, line))
-//      {
-//       std::cout << line << "\n\r";
-//       for(i = 0; i < NUM_CONF_IT; i++)
-//        {
-//         SymbPos = line.find(std::string(ConfData[i][0]) + CONF_IT_DIVIDER);
-//         if(SymbPos != std::string::npos)
-//          {
-//           len = strlen(ConfData[i][0]);
-//           strcpy(ConfData[i][1], &line[len + 1]);
-//           char *p = strstr(ConfData[i][0], "PATH");
-//           if(p != nullptr)
-//            AdjustPath(OwnProgName, ConfData[i][1]);
-//          }
-//        }
-//      }
-//     ConfIniFile.close();
-//     return true;
-//    }
-//   else  
-//    return false;
-//  }
-
-// bool CreateDefConf(char const *OwnProgName)
-//  {
-//   char FileName[PATH_LEN];
-//   ssize_t i;
-
-//   GetConfFileName(OwnProgName, FileName);
-//   std::cout << FileName << "\n\r";
-
-//   std::ofstream ConfIniFile(FileName);
-
-//   if(ConfIniFile.is_open())
-//    {
-//     for(i = 0; i < NUM_CONF_IT; i++)
-//      {
-//       ConfIniFile << ConfData[i][0] << CONF_IT_DIVIDER << ConfData[i][1] << "\n";
-//      }
-//     ConfIniFile << std::endl;
-//     ConfIniFile.close();
-//     return true;
-//    }
-//   else
-//    return false;
-//  }
-
-
 void InitConfiguration(char const *OwnProgName)
  {
-  // bool Result;
-  
-  // Result = LoadConfigFromFile(OwnProgName);
-  // if(!Result)
-  //  {
-  //   CreateDefConf(OwnProgName);
-  //  }
   InitConf(ConfData, NUM_CONF_IT, OwnProgName);  
  }
 
-// char const *GetDataByName(char const DataName[])
-//  {
-//   ssize_t i;
-//   for(i = 0; i < NUM_CONF_IT; i++)
-//    {
-//     if(!strcmp(ConfData[i][0], DataName))
-//      {
-//       return ConfData[i][1];
-//      }
-//    }
-//   return nullptr;
-//  }
 
 char const *GetDataBaseFilePathName()
  {
