@@ -31,6 +31,7 @@
                 //source file - use all top level .c files:
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
+                "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
                 //"${workspaceFolder}/DataBase.c",
 
 
@@ -42,6 +43,7 @@
                 "-I${workspaceFolder}",
                 "-I${workspaceFolder}/../Common_Libs",
                 "-I${workspaceFolder}/../Common_Libs/DataBase",
+                "-I${workspaceFolder}/../Common_Libs/Configuration",
 
                 
                 //link math lib:

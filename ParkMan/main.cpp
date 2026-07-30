@@ -72,7 +72,7 @@ int main(int const argc, char const *argv[])
   char PIDFileName[PATH_LEN];
   TaskControl_ShSM_c TaskContSh;
 
-  InitConf(argv[0]);
+  InitConfiguration(argv[0]);
 
   // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
   // std::cout << TestString << "\n\r";

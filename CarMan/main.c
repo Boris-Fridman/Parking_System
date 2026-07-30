@@ -43,7 +43,7 @@ int main(int const argc, char const *argv[])
   own_pid = getpid();
   printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
 
-  InitConf(argv[0]);
+  InitConfiguration(argv[0]);
 
   ActivateMasterShMem(&TskContShms, sizeof(TskContShmData_s));
 

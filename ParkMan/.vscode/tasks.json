@@ -30,6 +30,7 @@
 
                 //source file - use all top level .cpp files:
                 "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
+                "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
                 "*.cpp",
                 
                 //outputfile - always "program" at workspace directory:
@@ -42,6 +43,7 @@
                 "-I${workspaceFolder}/../Common_Libs",
                 "-I${workspaceFolder}/../Common_Libs/DataBase",
                 "-I${workspaceFolder}/../Common_Libs/CitiesRecognition",
+                "-I${workspaceFolder}/../Common_Libs/Configuration",
                 "-I/usr/include/gdal",
 
                 //implementing database:

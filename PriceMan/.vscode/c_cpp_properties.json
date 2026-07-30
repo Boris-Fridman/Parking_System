@@ -5,7 +5,8 @@
             "includePath": [
                 "${workspaceFolder}/**",
                 "${workspaceFolder}/../Common_Libs",
-                "${workspaceFolder}/../Common_Libs/DataBase"
+                "${workspaceFolder}/../Common_Libs/DataBase",
+                "${workspaceFolder}/../Common_Libs/Configuration"
             ],
             "defines": ["_GNU_SOURCE"],
             "compilerPath": "/usr/bin/clang",

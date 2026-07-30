@@ -77,6 +77,8 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
     return false;
    }
 
+  DestinPort = GetDestinPort();
+
   UseDHCP = GetUseDHCPState();
   //DestIP = GetDestinAddr();
   // DHCPName = GetDestinDHCPName();
@@ -119,7 +121,7 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
   if((UseDHCP) && (host != NULL))
    {
     fprintf(stdout, "Loading DHCP address...\n\r");
-    memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], MIN(host->h_length, sizeof(NetPars->server_addr.sin_addr)));
+    memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], MIN(host->h_length, (int)sizeof(NetPars->server_addr.sin_addr)));
    }
   else
    {
@@ -140,8 +142,7 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
      }
    }
 
-  DestinPort = GetDestinPort();
-
+  
 
    //inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
 

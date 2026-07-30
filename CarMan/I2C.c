@@ -121,7 +121,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
     //  } 
     // while (Result != INSIDE_E);
-    //  35.10039, 33.01059
+    //  34.86301, 32.30890
     const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
     const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
     const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402  , .Latitude = 32.0903  };     
@@ -131,10 +131,11 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798  , .Latitude = 32.0904  };     
     const GPS_Cords_s Herzlya     = {.Longitude = 34.82398 , .Latitude = 32.16867 };     
     const GPS_Cords_s Nahariyya   = {.Longitude = 35.10039 , .Latitude = 33.01059 };     
+    const GPS_Cords_s Netanya     = {.Longitude = 34.86301 , .Latitude = 32.30890 };     
 
 
     
-    CustomerData.Cords = Nahariyya;
+    CustomerData.Cords = Netanya;
 
 #endif
 

@@ -8,7 +8,7 @@
  * 
 */
 
-void InitConf(char const *OwnProgName);
+void InitConfiguration(char const *OwnProgName);
 
 char const *GetDataBaseFilePathName();
 

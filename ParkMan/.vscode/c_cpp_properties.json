@@ -7,6 +7,7 @@
                 "${workspaceFolder}/../Common_Libs",
                 "${workspaceFolder}/../Common_Libs/DataBase",
                 "${workspaceFolder}/../Common_Libs/CitiesRecognition",
+                "${workspaceFolder}/../Common_Libs/Configuration",
                 "/usr/include/gdal"
 
             ],

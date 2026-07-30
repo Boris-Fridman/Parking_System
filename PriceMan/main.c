@@ -69,7 +69,7 @@ int main(int const argc, char const *argv[])
     // ApplyDBPath(argc, &c);
     // pid = LoadParkManPID(argc, &c);
 
-    InitConf(argv[0]);
+    InitConfiguration(argv[0]);
 
     SetDBPathName(GetDataBaseFilePathName());
     //ApplyDBPath(argc, argv);

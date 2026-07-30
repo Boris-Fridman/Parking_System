@@ -4,7 +4,8 @@
             "name": "Host-PC-Local",  //"Linux",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../Common_Libs"
+                "${workspaceFolder}/../Common_Libs",
+                "${workspaceFolder}/../Common_Libs/Configuration"
             ],
             "defines": ["_GNU_SOURCE"],
             "compilerPath": "/usr/bin/clang",
@@ -17,7 +18,8 @@
             "name": "BeagleBone-ARM",
             "includePath": [
                 "${workspaceFolder}/**",
-                "${workspaceFolder}/../Common_Libs"
+                "${workspaceFolder}/../Common_Libs",
+                "${workspaceFolder}/../Common_Libs/Configuration"
             ],
             "defines": ["_GNU_SOURCE","BEAGLE_BONE"],
             //"compilerPath": "/usr/bin/clang",
