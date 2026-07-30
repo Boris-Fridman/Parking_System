@@ -113,41 +113,41 @@ void InitConfiguration(char const *OwnProgName)
   InitConf(ConfData, NUM_CONF_IT, OwnProgName);  
  }
 
-char const *GetDataByName(char const DataName[])
- {
-  ssize_t i;
-  for(i = 0; i < NUM_CONF_IT; i++)
-   {
-    if(!strcmp(ConfData[i][0], DataName))
-     {
-      return ConfData[i][1];
-     }
-   }
-  return NULL;
- }
+// char const *GetDataByName(char const DataName[])
+//  {
+//   ssize_t i;
+//   for(i = 0; i < NUM_CONF_IT; i++)
+//    {
+//     if(!strcmp(ConfData[i][0], DataName))
+//      {
+//       return ConfData[i][1];
+//      }
+//    }
+//   return NULL;
+//  }
 
 
 bool GetUseDHCPState()
  {
-  char const *UseDHCPState = GetDataByName(DHCPENSTAT);
+  char const *UseDHCPState = GetDataByName(ConfData, NUM_CONF_IT, DHCPENSTAT);
   return (UseDHCPState[0] != '\0') && (UseDHCPState[0] != '0');
  }
 
 char const *GetDestinDHCPName()
  {
-  return GetDataByName(DHCPNAME);
+  return GetDataByName(ConfData, NUM_CONF_IT, DHCPNAME);
  }
 
 char const *GetDestinAddr()
 {
- return GetDataByName(IPADDRESS);
+ return GetDataByName(ConfData, NUM_CONF_IT, IPADDRESS);
 }
 
 uint16_t GetDestinPort()
  {
   int Result;
   char *endptr;
-  char const *PortNumStr = GetDataByName(PORTNUMBER);
+  char const *PortNumStr = GetDataByName(ConfData, NUM_CONF_IT, PORTNUMBER);
   Result = strtol(PortNumStr, &endptr, 10);
   if(endptr == PortNumStr)
    return DESTIN_PORT;
@@ -157,14 +157,14 @@ uint16_t GetDestinPort()
 
 char const *GetClientName()
  {
-  return GetDataByName(CLIENTNAME);
+  return GetDataByName(ConfData, NUM_CONF_IT, CLIENTNAME);
  }
 
 uint32_t GetVechicleID()
  {
   uint32_t Result;
   char *endptr;
-  char const *VechIDAsStr = GetDataByName(VECHICLEID);
+  char const *VechIDAsStr = GetDataByName(ConfData, NUM_CONF_IT, VECHICLEID);
   Result = strtoll(VechIDAsStr, &endptr, 10);
   if(endptr == VechIDAsStr)
    return DEF_VEHICLE_ID;

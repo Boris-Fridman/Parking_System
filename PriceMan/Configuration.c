@@ -106,27 +106,27 @@ void InitConfiguration(char const *OwnProgName)
   InitConf(ConfData, NUM_CONF_IT, OwnProgName);  
  }
 
-char const *GetDataByName(char const DataName[])
- {
-  ssize_t i;
-  for(i = 0; i < NUM_CONF_IT; i++)
-   {
-    if(!strcmp(ConfData[i][0], DataName))
-     {
-      return ConfData[i][1];
-     }
-   }
-  return NULL;
- }
+// char const *GetDataByName(char const DataName[])
+//  {
+//   ssize_t i;
+//   for(i = 0; i < NUM_CONF_IT; i++)
+//    {
+//     if(!strcmp(ConfData[i][0], DataName))
+//      {
+//       return ConfData[i][1];
+//      }
+//    }
+//   return NULL;
+//  }
 
 char const *GetDataBaseFilePathName()
  {
-  return GetDataByName(DATABASEPATH);
+  return GetDataByName(ConfData, NUM_CONF_IT, DATABASEPATH);
  }
 
 char const *GetProgInfoPIDFilePathName()  // Path & Name of the file with the program PID.
  {
-  return GetDataByName(PROGINFOPATH);
+  return GetDataByName(ConfData, NUM_CONF_IT, PROGINFOPATH);
  }
 
 

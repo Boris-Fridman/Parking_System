@@ -89,3 +89,18 @@ void InitConf(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const *OwnPr
    }
   
  }
+
+
+char const *GetDataByName(char ConfData[][2][PATH_LEN], ssize_t NumConfIt, char const DataName[])
+ {
+  ssize_t i;
+  for(i = 0; i < NumConfIt; i++)
+   {
+    if(!strcmp(ConfData[i][0], DataName))
+     {
+      return ConfData[i][1];
+     }
+   }
+  return NULL;
+ }
+
