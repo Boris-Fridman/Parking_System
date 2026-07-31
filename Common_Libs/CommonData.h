@@ -127,6 +127,7 @@ extern "C" {
 
 #define SHP_FILENAME              "Regions/Regions.shp"         /* The name of the shape file having the information about the cities regions. In the same path must be included the files with extentions ".dbf" and ".shx" containing the same name */
 #define SHP_FIELD_NAME            "latin name"
+#define SHP_OSM_ID                "osm_id"
 
 #define I2C_ADDR                  0x55
 
@@ -272,6 +273,7 @@ typedef
 struct CustAcknowledge_s
  {
   uint32_t Vechicle_ID;
+  uint32_t OSM_ID;
   uint16_t City_ID;
   time_t   ParkingStartTime;
   time_t   ParkingEndTime;
@@ -293,6 +295,7 @@ struct ClientQueueMsg_s
  {
   GPS_Cords_s Cords;
   uint32_t    Vechicle_ID;
+  uint32_t    OSM_ID;
   uint16_t    City_ID;
   time_t      ParkingStartTime;
   time_t      ParkingEndTime;

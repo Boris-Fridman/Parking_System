@@ -15,9 +15,10 @@
 #define PROGINFOPATH   "PROGINFOPATH"
 #define PORTNUMBER     "PORTNUMBER"
 #define SHAPECITYNAME  "SHAPECITYNAME"
+#define SHAPEOSMID     "SHAPEOSMID"     
 
 
-#define NUM_CONF_IT   6
+#define NUM_CONF_IT   7
 char ConfData[NUM_CONF_IT][2][PATH_LEN] = 
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },
@@ -26,6 +27,7 @@ char ConfData[NUM_CONF_IT][2][PATH_LEN] =
   { PROGINFOPATH    , "../" CONF_DIR_NAME "/" DB_MAN_PID_FILENAME },
   { PORTNUMBER      , TO_STRING(DESTIN_PORT)                      },
   { SHAPECITYNAME   , SHP_FIELD_NAME                              },
+  { SHAPEOSMID      , SHP_OSM_ID                                  },
  };
 
 
@@ -67,4 +69,8 @@ char const *GetColumnNameWithGeolocationName()
   return GetDataByName(ConfData, NUM_CONF_IT, SHAPECITYNAME);
  }
 
+char const *GetColumnNameWithOSMID()
+ {
+  return GetDataByName(ConfData, NUM_CONF_IT, SHAPEOSMID);
+ }
 

@@ -50,8 +50,8 @@ int CreateLoadDatabase(sqlite3 **conn)
    {
     char *err_msg;
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_PRICES(city_id INT, city_name TEXT, price_per_hour_in_ag INT);", 0, 0, &err_msg);
-    result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_COORDINATES(city_id INT, city_name TEXT, shape_type NUMERIC, p0 BLOB, p1 BLOB, p2 BLOB, p3 BLOB, p4 BLOB, p5 BLOB, p6 BLOB, p7 BLOB, p8 BLOB, p9 BLOB, p10 BLOB, p11 BLOB, p12 BLOB, p13 BLOB, p14 BLOB, p15 BLOB, p16 BLOB, p17 BLOB, p18 BLOB, p20 BLOB);", 0, 0, &err_msg);
-    result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);", 0, 0, &err_msg);
+    result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);", 0, 0, &err_msg);
+    //result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_COORDINATES(city_id INT, city_name TEXT, shape_type NUMERIC, p0 BLOB, p1 BLOB, p2 BLOB, p3 BLOB, p4 BLOB, p5 BLOB, p6 BLOB, p7 BLOB, p8 BLOB, p9 BLOB, p10 BLOB, p11 BLOB, p12 BLOB, p13 BLOB, p14 BLOB, p15 BLOB, p16 BLOB, p17 BLOB, p18 BLOB, p20 BLOB);", 0, 0, &err_msg);
    
     if(result != SQLITE_OK)
      {
@@ -315,8 +315,7 @@ int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_ms
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
    {
-    //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
-    
+    //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
     //  end_time INT, duration INT, accumulated_price_in_ag INT
     result = sqlite3_prepare_v2(*conn, "UPDATE CUSTOMERS_PRICE_REPORTS SET end_time = ?, duration = ?, accumulated_price_in_ag = ? WHERE start_time = ? AND vehicle_id = ? AND customer_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
@@ -404,28 +403,34 @@ int WriteNewParkSessionToDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_
    {
     do
      {
-      //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, city_id INT, city_name TEXT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
-      valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CUSTOMERS_PRICE_REPORTS (start_time, end_time, duration, vehicle_id, customer_name, parking_cords, city_id, city_name, price_per_hour_in_ag, accumulated_price_in_ag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", -1, &stmt, 0);
+      //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"      
+      valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CUSTOMERS_PRICE_REPORTS (start_time, end_time, duration, vehicle_id, customer_name, parking_cords, longitude, latitude, city_id, city_name, region_code, price_per_hour_in_ag, accumulated_price_in_ag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", -1, &stmt, 0);
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  1,  client_queue_msg.ParkingStartTime                                        );
+      valtoret = sqlite3_bind_int   (stmt,  1,  client_queue_msg.ParkingStartTime                                        );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  2,  client_queue_msg.ParkingEndTime                                          );
+      valtoret = sqlite3_bind_int   (stmt,  2,  client_queue_msg.ParkingEndTime                                          );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  3,  client_queue_msg.ParkingDurationTime                                     );
+      valtoret = sqlite3_bind_int   (stmt,  3,  client_queue_msg.ParkingDurationTime                                     );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  4,  client_queue_msg.Vechicle_ID                                             );
+      valtoret = sqlite3_bind_int   (stmt,  4,  client_queue_msg.Vechicle_ID                                             );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_text(stmt,  5,  client_queue_msg.Customer_Name, -1, SQLITE_TRANSIENT                     );
+      valtoret = sqlite3_bind_text  (stmt,  5,  client_queue_msg.Customer_Name, -1, SQLITE_TRANSIENT                     );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_blob(stmt,  6, &client_queue_msg.Cords, sizeof(client_queue_msg.Cords), SQLITE_TRANSIENT );
+      valtoret = sqlite3_bind_blob  (stmt,  6, &client_queue_msg.Cords, sizeof(client_queue_msg.Cords), SQLITE_TRANSIENT );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  7,  client_queue_msg.City_ID                                                 );
+      valtoret = sqlite3_bind_double(stmt,  7, client_queue_msg.Cords.Longitude                                          );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_text(stmt,  8,  client_queue_msg.City_Name, -1, SQLITE_TRANSIENT                         );
+      valtoret = sqlite3_bind_double(stmt,  8, client_queue_msg.Cords.Latitude                                           );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt,  9,  client_queue_msg.PricePerHour                                            );
+      valtoret = sqlite3_bind_int   (stmt,  9,  client_queue_msg.City_ID                                                 );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
-      valtoret = sqlite3_bind_int (stmt, 10,  client_queue_msg.AccumulatedPrice                                        );
+      valtoret = sqlite3_bind_text  (stmt, 10,  client_queue_msg.City_Name, -1, SQLITE_TRANSIENT                         );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int   (stmt, 11,  client_queue_msg.OSM_ID                                                  );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int   (stmt, 12,  client_queue_msg.PricePerHour                                            );
+      if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
+      valtoret = sqlite3_bind_int   (stmt, 13,  client_queue_msg.AccumulatedPrice                                        );
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
       sqlite3_step(stmt);
       valtoret = sqlite3_finalize(stmt);

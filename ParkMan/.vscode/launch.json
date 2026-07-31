@@ -42,6 +42,11 @@
                     "text": "-gdb-set follow-fork-mode child",
                     "ignoreFailures": false
                 }
+                // {
+                //     "description": "Follow the all processes",
+                //     "text": "-gdb-set detach-on-fork off",
+                //     "ignoreFailures": false
+                // }
 
             ],
             "preLaunchTask": "build all",

@@ -20,6 +20,7 @@ uint16_t GetDestinPort();
 
 char const *GetColumnNameWithGeolocationName();
 
+char const *GetColumnNameWithOSMID();
 
 
 

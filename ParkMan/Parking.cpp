@@ -92,9 +92,11 @@ Parking_c::~Parking_c()
 
 
 bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName);
+bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t &EdRegCode);
+
 
 // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".
-bool DetectCity(GPS_Cords_s Cords, std::string &CityName,  std::string &ShapeFileName)
+bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, uint32_t &EdRegCode, std::string &ShapeFileName)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -221,29 +223,8 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName,  std::string &ShapeFil
   if((Result) && (FeatureNo < NumFeatures))
    {
     Result = GetFeatureLatinName(poFeature, CityName);
-    // int Index;
-    // const OGRFieldDefn *FieldRef;
-    // OGRFieldType FieldType;
-    // Index = poFeature->GetFieldIndex(SHP_FIELD_NAME);
-    // if(Index > 0)  /* The field with required name was found */
-    //  {
-
-    //   FieldRef = poFeature->GetFieldDefnRef(Index);
-    //   if(FieldRef != nullptr) /* The fild realy exists. */
-    //    {
-    //     FieldType = FieldRef->GetType();
-    //     if(FieldType == OFTString) /* The field is realy string. */
-    //      CityName = poFeature->GetFieldAsString(Index);      
-    //     else  /* The field isn't a string at all.*/
-    //      Result = false;
-    //    }
-    //   else  /* The fild doesn't exist at all. */
-    //    Result = false;
-    //  }
-    // else  /* The filed with required name wasn't found. */
-    //  {
-    //   Result = false;
-    //  }
+    if(Result)
+     Result = GetFeatureRegionCodes(poFeature, RegionCode, EdRegCode);
    }
   
   GDALClose(poDS);
@@ -268,7 +249,7 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
   //std::cout << "Detecting City name in the column named: " << "\"" << PlaceName << "\"" <<"\n\r";
   Index = poFeature->GetFieldIndex(PlaceName);
 
-  if(Index > 0)  /* The field with required name was found */
+  if(Index >= 0)  /* The field with required name was found */
    {
     FieldRef = poFeature->GetFieldDefnRef(Index);
     if(FieldRef != nullptr) /* The fild realy exists. */
@@ -293,6 +274,49 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
   return Result;
  }
 
+bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t &EdRegCode) // At this moment the function returns only the region code. The Editional Region code will be implemented later.
+ {
+  int Index;
+  bool Result = true;
+  const OGRFieldDefn *FieldRef;
+  OGRFieldType FieldType;
+  const char *OSMIDName;
+
+  OSMIDName = GetColumnNameWithOSMID();
+  //OSMIDName = SHP_OSM_ID;  // For test only.
+  std::cout << "Detecting OSM ID in the column named: " << "\"" << OSMIDName << "\"" <<"\n\r";
+  Index = poFeature->GetFieldIndex(OSMIDName);
+  std::cout << "Index = " << Index << "\n\r";
+  UNUSED(EdRegCode);
+  if(Index >= 0)  /* The field with required name was found */
+   {
+    FieldRef = poFeature->GetFieldDefnRef(Index);
+    std::cout << "FieldRef = " << FieldRef << "\n\r";
+    if(FieldRef != nullptr) /* The fild realy exists. */
+     {
+      FieldType = FieldRef->GetType();
+      std::cout << "FieldType = " << FieldType << "\n\r";
+      if(FieldType == OFTString) /* The field is realy string. */
+       RegionCode = std::stoul(poFeature->GetFieldAsString(Index));      
+      else  
+       if(FieldType == OFTInteger) /* The field isn't a string, but maybe an integer. */
+        RegionCode = poFeature->GetFieldAsInteger(Index);      
+       else /* The field is neither string nor an integer. */
+        Result = false;
+     }
+    else         /* The fild doesn't exist at all. */
+     Result = false;
+   }
+  else  /* The filed with required name wasn't found. */
+   {
+    Result = false;
+   }
+  if(Result == false)
+   {
+    RegionCode = 0;
+   }
+  return Result;
+ }
 
 
 

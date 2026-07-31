@@ -71,7 +71,7 @@
                 "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
                 "*.c",
                 "-o",
-                "${workspaceFolder}/carman",
+                "${workspaceFolder}/carman-arm",
                 "-I${workspaceFolder}",
                 "-I${workspaceFolder}/../Common_Libs",
                 "-I${workspaceFolder}/../Common_Libs/Configuration",

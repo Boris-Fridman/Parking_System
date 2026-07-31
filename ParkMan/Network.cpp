@@ -70,6 +70,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   //char timebuf[100];
   bool FirstInt = true; /* First repeat interration. */
   std::string DetectedCityName = "";
+  uint32_t RegionCode = 0, EdRegCode = 0;
+
   PriceTab_s CityPriceInfo = { 0, 0, 0, {0} };
   size_t i;
   uint16_t CityPPH = 0; /* City parking Price Per Hour. */
@@ -113,8 +115,10 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
         if((DBShmemPriceData != nullptr) && (*DBShmemPriceData != nullptr))  /* Attention !!! The condition cannot be changed places. The second condition can be and checked only if the first condition is true and only in this case the second condition will be checked due to shortcyrcuit method. */
          {
           std::cout << "Trying to detect the city..." << "\n\r";
-          // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".          
-          bool CityFound = DetectCity(CustomerInfo.Cords, DetectedCityName, ShapeFileName);
+          // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".    
+          
+          bool CityFound = DetectCity(CustomerInfo.Cords, DetectedCityName, RegionCode, EdRegCode,  ShapeFileName);
+          
           if(CityFound)
            {
             std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "City was detected: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdOutNoPiping ? TermColorsReset : "") <<"\n\r";
@@ -160,6 +164,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       strcpy(CustAckInfo.City_Name, CityPriceInfo.City_Name);
       time(&CurrentTime);
       CustAckInfo.City_ID = CityPriceInfo.City_ID;
+      CustAckInfo.OSM_ID = RegionCode;
       CustAckInfo.ParkingDurationTime = CurrentTime - CustAckInfo.ParkingStartTime;
       CustAckInfo.Vechicle_ID = CustomerInfo.Vechicle_ID;
       CustAckInfo.AccumulatedPrice = DIV_RND(CityPPH * CustAckInfo.ParkingDurationTime, 3600); /* Making diviation with rounding without using real (float or double) numbers. */

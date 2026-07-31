@@ -146,7 +146,6 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
   char timedurbuf[100], vehidbuf[50];
 
   CreateVehIDFormated(vehidbuf, sizeof(vehidbuf), ClientQueueMsg.Vechicle_ID, StdOutNoPiping);
-
   CreateLoadDatabase(conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
   result = UpdateParkSessionInDataBase(conn, ClientQueueMsg);
   if(result == 0)  /* The reqauired parking session allready exists in database. */
@@ -451,6 +450,7 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
   ClientMsg.ParkingStartTime    =  CustAckInfo->ParkingStartTime;
   ClientMsg.ParkingEndTime      =  CustAckInfo->ParkingEndTime;
   ClientMsg.ParkingDurationTime =  CustAckInfo->ParkingDurationTime;
+  ClientMsg.OSM_ID              =  CustAckInfo->OSM_ID;
   ClientMsg.City_ID             =  CustAckInfo->City_ID;
   strcpy(ClientMsg.City_Name    ,  CustAckInfo->City_Name);
   ClientMsg.AccumulatedPrice    =  CustAckInfo->AccumulatedPrice;

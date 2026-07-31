@@ -112,15 +112,17 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
 
 #else
     /* Generating random GPS coordingates. */
-    // PointState_e Result;
-    // do
-    //  {
-    //    /* code */
-    //   CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
-    //   CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
-    //   Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
-    //  } 
-    // while (Result != INSIDE_E);
+    PointState_e Result;
+    do
+     {
+       /* code */
+      CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
+      CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
+      Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
+     } 
+    while (Result != INSIDE_E);
+
+    
     //  34.86301, 32.30890
     const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
     const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
@@ -133,9 +135,11 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     const GPS_Cords_s Nahariyya   = {.Longitude = 35.10039 , .Latitude = 33.01059 };     
     const GPS_Cords_s Netanya     = {.Longitude = 34.86301 , .Latitude = 32.30890 };     
 
-
-    
-    CustomerData.Cords = Netanya;
+    const GPS_Cords_s Cities[] = { GivatHaviva, GivatHen, BneyBraq, TelAviv, Eilat, RamatGan, PetachTiqua, Herzlya, Nahariyya, Netanya };
+    const size_t NumCitiesConsts = sizeof(Cities)/sizeof(Cities[0]);
+    size_t CityToSelect = rand()%NumCitiesConsts;
+    CustomerData.Cords = Cities[CityToSelect];
+    // CustomerData.Cords = Netanya;
 
 #endif
 

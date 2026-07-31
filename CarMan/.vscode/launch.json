@@ -63,7 +63,7 @@
             "type": "cppdbg",
             "request": "launch",
             "program": "/bin/scp",  //  "program": "${workspaceFolder}/carman",
-            "args": ["${workspaceFolder}/carman", "debian@beaglebone.local:/home/debian"], // "args": [],
+            "args": ["${workspaceFolder}/carman-arm", "debian@beaglebone.local:/home/debian"], // "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
             "environment": [],
