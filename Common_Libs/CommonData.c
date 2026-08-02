@@ -126,9 +126,9 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
   AngDegMinSec_s LatConvAng, LongConvAng;
   AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
-#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
   snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d LONG %d˚%d'%d\".%08d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
-#else
+#else  // For ARM
   snprintf(Buf, MaxSize, "%d˚%d'%d\".%08ld LONG %d˚%d'%d\".%08ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
 #endif
 

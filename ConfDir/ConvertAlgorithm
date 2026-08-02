@@ -3,7 +3,7 @@ CREATE VIEW VIEW_CUSTOMERS_PRICE_REPORTS AS
 SELECT 
     datetime(start_time, 'unixepoch', 'localtime') AS start_time,
     datetime(end_time, 'unixepoch', 'localtime') AS end_time,
-    (duration / 86400) || '-' || 
+    (duration / 86400) || ' - ' || 
     ((duration % 86400) / 3600) || ':' || 
     ((duration % 3600) / 60) || ':' || 
     (duration % 60) AS duration,
@@ -11,9 +11,61 @@ SELECT
 	customer_name AS custtomer_name,
 	longitude AS longitude,
 	latitude AS latitude,
+	(longdeg || '˚' || longmin || '''' || longsec || '"' || substr(CAST(longdec AS STRING),2,3)) AS longdmsd,
+	(latdeg  || '˚' || latmin  || '''' || latsec  || '"' || substr(CAST(latdec  AS STRING),2,3)) AS latdmsd,
+	
 	city_id AS city_id,
 	city_name AS city_name,
 	region_code AS region_code,
 	price_per_hour_in_ag*0.01 AS price_per_hour,
 	accumulated_price_in_ag*0.01 AS accumulated_price
-FROM CUSTOMERS_PRICE_REPORTS;
+	
+	--longdeg AS longdeg,
+	--longmin AS longmin,
+	--longsec AS longsec,
+	--longdec AS longdec,
+	--latdeg AS latdeg,
+	--latmin AS latmin,
+	--latsec AS latsec,
+	--latdec AS latdec,
+	--substr(CAST(longdec AS STRING),2,9) AS strlgndec,
+	--substr(CAST(latdec  AS STRING),2,9) AS strltndec,
+	
+	
+	
+FROM 
+(
+    -- This inner layer runs first and creates h1 and h2
+    SELECT 
+        *, 
+        ((longitude - longdeg)*60 - longmin)*60 - longsec AS longdec,
+		((latitude - latdeg)*60 - latmin)*60 - latsec AS latdec,
+        substr(hex(parking_cords), 1, 16) AS h1,
+        substr(hex(parking_cords), 17, 16) AS h2
+    FROM 
+	(
+		SELECT
+			*,
+			CAST(((longitude - longdeg)*60 - longmin)*60 AS INTEGER) AS longsec,
+			CAST(((latitude - latdeg)*60 - latmin)*60 AS INTEGER) AS latsec
+		FROM
+		(
+			SELECT
+				*,
+				CAST((longitude - longdeg)*60 AS INTEGER) AS longmin,
+				CAST((latitude - latdeg)*60 AS INTEGER) AS latmin
+			FROM 
+			(
+				SELECT
+					*,
+					CAST(longitude AS INTEGER) AS longdeg,
+					CAST(latitude AS INTEGER) AS latdeg
+				FROM CUSTOMERS_PRICE_REPORTS
+			)
+			
+		)
+	 
+	)
+);
+
+
