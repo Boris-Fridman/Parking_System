@@ -81,9 +81,9 @@ extern "C" {
 
 #define PROC_NAME_COLOR         TermBrightCyan
 #define PROC_PID_COLOR          TermBrightMagenta
-#define PRICE_COLOR             TermMagenta
 #define CITYNAME_COLOR          TermYello
-#define PRICEUNITS_COLOR        TermBrightMagenta
+#define PRICE_COLOR             TermBlue  //  TermMagenta
+#define PRICEUNITS_COLOR        TermMagenta // TermBrightMagenta
 
 /*======================================================================================================================*/
 

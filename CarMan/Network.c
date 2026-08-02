@@ -249,7 +249,7 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
          ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
          printf("Parking started at: %s\n\r", timedurbuf);
          ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
-         printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? TermBlue : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? TermMagenta : ""), (StdOutNoPiping ? TermColorsReset : ""));
+         printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? PRICE_COLOR : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? PRICEUNITS_COLOR : ""), (StdOutNoPiping ? TermColorsReset : ""));
         }
        else
         {

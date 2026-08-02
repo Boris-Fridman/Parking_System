@@ -98,7 +98,7 @@ void DataBase_c::LoadDataBase()
   DBFileName = GetDBFileName();
   SetDBPathName(DBFileName.c_str()); /* Loading name of the file contains the database of prices with the parking systems. */
   result = GetCitiesList(&conn, &ListOfCities, &NumCities);
-  if((result == 0)&&(NumCities > 0))
+  if((result == 0) && (NumCities > 0))
    {
     DBShmemPriceData->LoadCitiesList(ListOfCities, NumCities);
     ((ControlDBPrice_s*)p_shm)->NumPriceDBCities = NumCities;
@@ -106,11 +106,13 @@ void DataBase_c::LoadDataBase()
     strncpy( ((ControlDBPrice_s*)p_shm)->CitiesSemName , DBShmemPriceData->SemName().c_str() , NAME_LEN - 1 );
     //((ControlDBPrice_s*)p_shm)->DBUpdated = true;
     ((ControlDBPrice_s*)p_shm)->DBUpdateRequired = false;
-
-    strncpy( ((ControlDBPrice_s*)p_shm)->ReportQueueName , DBShmemPriceData->ReportQueueName().c_str(), NAME_LEN - 1);
-    strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->ReprotQSemName().c_str(), NAME_LEN - 1);
-
    }
+
+  /* The shared queue and its semaphore must be loaded anyway independently if the shared memory exists or not due to no city exist in database. */
+  strncpy( ((ControlDBPrice_s*)p_shm)->ReportQueueName , DBShmemPriceData->ReportQueueName().c_str(), NAME_LEN - 1);
+  strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->ReprotQSemName().c_str(), NAME_LEN - 1);
+
+  /* Freeing temporary-loaded-list of cityes after it was received and loaded to shared memory. If it was received as empty it will be checked inside the function "FreeList()" before clearing. */
   FreeList(&ListOfCities);  /* No need to compare the list to nullptr because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
@@ -155,7 +157,7 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
     char old_fill = std::cout.fill();
 
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of "<< ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " was already existing. Were updated only time and price." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " ₪."<< (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " " << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪" << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
     // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
     // printf("The parking session of %s %s was already existing. Were updated only time and price.\n\r", ClientQueueMsg.Customer_Name, vehidbuf);

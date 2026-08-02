@@ -284,18 +284,17 @@ bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t
 
   OSMIDName = GetColumnNameWithOSMID();
   //OSMIDName = SHP_OSM_ID;  // For test only.
-  std::cout << "Detecting OSM ID in the column named: " << "\"" << OSMIDName << "\"" <<"\n\r";
+  //std::cout << "Detecting OSM ID in the column named: " << "\"" << OSMIDName << "\"" <<"\n\r";
   Index = poFeature->GetFieldIndex(OSMIDName);
-  std::cout << "Index = " << Index << "\n\r";
+  
   UNUSED(EdRegCode);
   if(Index >= 0)  /* The field with required name was found */
    {
     FieldRef = poFeature->GetFieldDefnRef(Index);
-    std::cout << "FieldRef = " << FieldRef << "\n\r";
+    
     if(FieldRef != nullptr) /* The fild realy exists. */
      {
       FieldType = FieldRef->GetType();
-      std::cout << "FieldType = " << FieldType << "\n\r";
       if(FieldType == OFTString) /* The field is realy string. */
        RegionCode = std::stoul(poFeature->GetFieldAsString(Index));      
       else  

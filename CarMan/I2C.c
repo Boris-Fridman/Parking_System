@@ -139,7 +139,8 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     const size_t NumCitiesConsts = sizeof(Cities)/sizeof(Cities[0]);
     size_t CityToSelect = rand()%NumCitiesConsts;
     CustomerData.Cords = Cities[CityToSelect];
-    // CustomerData.Cords = Netanya;
+
+    // CustomerData.Cords = TelAviv;
 
 #endif
 

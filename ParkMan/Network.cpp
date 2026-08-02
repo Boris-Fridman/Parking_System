@@ -26,7 +26,7 @@
 
 class Network_c: public Process_c
  {
-    key_t LastPriceShmKey = 0;
+    key_t LastPriceShmKey = -1;  // Setting to -1 instead of 0 to ensure that in the first time running when the PriceShmKey == 0.
     DBShmemPriceData_c *DBShmemPriceData = nullptr;
     int serverSocket = 0, newSocket = 0;  
     sockaddr_in address = {{0},0,{0},{0}};
@@ -69,6 +69,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   time_t CurrentTime;
   //char timebuf[100];
   bool FirstInt = true; /* First repeat interration. */
+  bool CityDetected = false;
+  bool DataBaseChecked = false;
   std::string DetectedCityName = "";
   uint32_t RegionCode = 0, EdRegCode = 0;
 
@@ -108,12 +110,11 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       PrintGPSCords(CustomerInfo.Cords);
       std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
-
       if(FirstInt)
        {
-        DetectedCityName = "Not Detected";
-        if((DBShmemPriceData != nullptr) && (*DBShmemPriceData != nullptr))  /* Attention !!! The condition cannot be changed places. The second condition can be and checked only if the first condition is true and only in this case the second condition will be checked due to shortcyrcuit method. */
+        if(!CityDetected)   // City is not checked.
          {
+          DetectedCityName = "Not Detected";
           std::cout << "Trying to detect the city..." << "\n\r";
           // The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".    
           
@@ -122,43 +123,80 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
           if(CityFound)
            {
             std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "City was detected: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdOutNoPiping ? TermColorsReset : "") <<"\n\r";
+            CityDetected = true;
            }
           else
            {
             std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "City wasn\'t detected" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+            FirstInt = false;
            }
-          
-          for(i = 0; i < NumPriceDBCities; ++i)
-           {
-            (*DBShmemPriceData)->GetCity(i, &CityPriceInfo);
-            
-            if(StringsAreEqual(DetectedCityName, CityPriceInfo.City_Name))  //  if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
-             {
-              std::ios old_state(nullptr);
-              old_state.copyfmt(std::cout); 
-              char old_fill = std::cout.fill();
-
-              CityPPH = CityPriceInfo.Price;
-              std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-              std::cout.copyfmt(old_state);
-              std::cout.fill(old_fill);
-              break;
-             }
-           }
-          if(i >= NumPriceDBCities) /* The city wasn't found. In database. */
-           {
-            std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "The City: " << (StdErrNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << " wasn't found in the database. Loading zero price." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
-            strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
-           }
-          FirstInt = false;
-         }
-        else
-         {
-          std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
           strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
          }
-       }
+        if(CityDetected)  // City is allready checked. Now it is possible to serach it in database.  Attention !!! This condition mustn't be written via else because the database checking must be done immediately.
+         {
+          if(!DataBaseChecked)  // DataBase isn't checked.
+           {
+            if(DBShmemPriceData != nullptr) // DataBase is given (Parameter of database eixists).
+             {
+              if(*DBShmemPriceData != nullptr) // The DataBase is loaded.
+               {
+                for(i = 0; i < NumPriceDBCities; ++i)
+                 {
+                  (*DBShmemPriceData)->GetCity(i, &CityPriceInfo);
+                  
+                  if(StringsAreEqual(DetectedCityName, CityPriceInfo.City_Name))  //  if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
+                   {
+                    std::ios old_state(nullptr);
+                    old_state.copyfmt(std::cout); 
+                    char old_fill = std::cout.fill();
       
+                    CityPPH = CityPriceInfo.Price;
+                    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+                    std::cout.copyfmt(old_state);
+                    std::cout.fill(old_fill);
+                    break;
+                   }
+                 }
+                if(i >= NumPriceDBCities) /* The city wasn't found. In database. */
+                 {
+                  std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "The City: " << (StdErrNoPiping ? CITYNAME_COLOR : "") << DetectedCityName << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << " wasn't found in the database." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
+                  strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+                 }
+                FirstInt = false;
+               }
+              else // The DataBase is still not loaded.
+               {
+                std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "  The database is not loaded." << "\n\r";
+                //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+                FirstInt = false;
+               }
+              if((i >= NumPriceDBCities) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist.
+               {
+                std::cout << "Loading zero price.\n\r";
+                //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+               }
+              DataBaseChecked = true; 
+              //FirstInt = false;
+             }
+            else  // The database is not given (Thea pointer to database is null).
+             {
+              std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "  The database is not given." << "\n\r";
+              //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+              FirstInt = false;
+             }
+           }
+         }
+        // std::cout << "i " << i << "    NumPriceDBCities " << NumPriceDBCities << "    DBShmemPriceData " << DBShmemPriceData << "    *DBShmemPriceData " << *DBShmemPriceData << "\n\r";
+        // if((i >= NumPriceDBCities) || (DBShmemPriceData == nullptr) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist. // Attention !!! The conditions cannot be swapped places due to short-circuit property.
+        //  {
+        //   strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+        //   std::cout << "Copied.\n\r";
+        //  }
+
+       }
+
+      //std::cout << "FirstInt = " << FirstInt << "  DetectedCityName = " << DetectedCityName << "  CityPriceInfo.City_Name = " << CityPriceInfo.City_Name << "\n\r";
+
       /* Loading info for response. */
       //strcpy(CustAckInfo.City_Name, DetectedCityName.c_str());
       strcpy(CustAckInfo.City_Name, CityPriceInfo.City_Name);
@@ -269,12 +307,17 @@ void Network_c::OnRunProcess()
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  if((LastPriceShmKey != ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) && (((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) != 0) /* Checking if the cities' prices' database memory was loaded or changed. */
+  if((DBShmemPriceData == nullptr) && (((ControlDBPrice_s*)p_shm)->ReportQueueName[0] != '\0') && (((ControlDBPrice_s*)p_shm)->ReportSemName[0] != '\0'))
+   {
+    DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName, ((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities);
+   }
+
+  if((LastPriceShmKey != ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) /*&& (((ControlDBPrice_s*)p_shm)->CitiesNewShmKey != 0)*/) /* Checking if the cities' prices' database memory was loaded or changed. */
    {
     if(DBShmemPriceData != nullptr)
      DBShmemPriceData->ReallocateShmem(((ControlDBPrice_s*)p_shm)->NumPriceDBCities, ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey);
-    else
-     DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName,((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities);
+    // else
+    //  DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName, ((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities);
     LastPriceShmKey = ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey;
    }
   
