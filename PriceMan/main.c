@@ -57,7 +57,7 @@ int main(int const argc, char const *argv[])
     printf("\033[2J\033[H");
     char Name[NAME_LEN] = "";
     char NewName[NAME_LEN] = "";
-    uint16_t Price;
+    uint16_t Price = 0;
     int Result;
     int pid;
     // char pathfile[PATH_LEN];
@@ -125,18 +125,26 @@ void ExtractName(char const *Strings[], int const NumStrings, char Name[])
  {
   int i;
   bool first = true;
-  size_t StringLen, RemLen;
+  //size_t StringLen, RemLen;
+  size_t l;
+  //size_t stl;
   Name[0] = '\0';
   for(i = 0; i < NumStrings; i++)
    {
     if(strlen(Name) < NAME_LEN - 2)
      {
       if(!first)
-       strcat(Name, " ");
+        strcat(Name, " ");
       first = false;
-      StringLen = strlen(Strings[i]);
-      RemLen = NAME_LEN - strlen(Name);
-      strncat(Name, Strings[i], MIN(RemLen, StringLen));
+      // StringLen = strlen(Strings[i]);
+      // RemLen = NAME_LEN - strlen(Name); //  NAME_LEN
+      l = MIN((NAME_LEN - 1 - strlen(Name)), (NAME_LEN - 1));
+      //stl = NAME_LEN - 1 - l;
+      //NAME_LEN - 1 - stl;
+      //l;
+      //strncat(Name, Strings[i], NAME_LEN - 1 - strlen(Name));
+      strncat(Name, Strings[i], l);
+      //strncat(Name, Strings[i], MIN(RemLen, StringLen));
      }
     else 
      break;
@@ -290,7 +298,7 @@ void AddOrUpdateNewCity(char CityName[], int CityPrice)
    {
     if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
     printf("The city \"%s\" was already existing. Was updated only price.\n\r", CityName);
-    printf("The price was updated to:%d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
+    printf("The price was updated to: %d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
     if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
    }
   else if(result < 0)  /* The update wasn't be possible because the city didn't exist. */

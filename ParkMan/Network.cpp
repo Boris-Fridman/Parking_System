@@ -71,6 +71,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   bool FirstInt = true; /* First repeat interration. */
   bool CityDetected = false;
   bool DataBaseChecked = false;
+  bool CityFoundInDataBase = false;
   std::string DetectedCityName = "";
   uint32_t RegionCode = 0, EdRegCode = 0;
 
@@ -154,6 +155,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
                     std::cout.copyfmt(old_state);
                     std::cout.fill(old_fill);
+                    CityFoundInDataBase = true;
                     break;
                    }
                  }
@@ -170,7 +172,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                 //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
                 FirstInt = false;
                }
-              if((i >= NumPriceDBCities) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist.
+              if((!CityFoundInDataBase) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist.
                {
                 std::cout << "Loading zero price.\n\r";
                 //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
@@ -222,10 +224,12 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CustAckInfo.Vechicle_ID = 0;
      }
 
-
+    ssize_t WriteResult;
     /* Sending Response. */
     AckDataSize = EncodeNetData((uint8_t*)&CustAckInfo, sizeof(CustAckInfo), &DataForSending);
-    write(clientSocket, DataForSending, AckDataSize);
+    WriteResult = write(clientSocket, DataForSending, AckDataSize);
+    if(WriteResult == -1)
+     std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Error in sending respose." << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
     FreeData(&DataForSending);
 
    }

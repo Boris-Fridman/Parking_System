@@ -619,9 +619,12 @@ void FreeList(PriceTab_s **list_to_free)
 /*  Sets DataBase file name exactly as in parameter. (Was defined for multiprocess variant.)                            */
 void SetDBPathName(char const FileNameToSet[])
  {
-  int len = MIN(strlen(FileNameToSet), PATH_LEN);
-  strncpy(PathFileName, FileNameToSet, len);
-  PathFileName[len] = '\0';
+  // size_t FileNameLen = strlen(FileNameToSet);
+  // size_t len = MIN(FileNameLen, (PATH_LEN-1));
+  //strncpy(PathFileName, FileNameToSet, len); // strncpy(PathFileName, FileNameToSet, len);
+  
+  strncpy(PathFileName, FileNameToSet, (PATH_LEN-1)); // strncpy(PathFileName, FileNameToSet, len);
+  //PathFileName[len] = '\0';
   printf("%s\n\r", PathFileName);
  }
 

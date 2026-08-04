@@ -10,12 +10,19 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                
+                //"-O3",
+
+                //treat warnings as errors:
+                //"-Werror",
+
                 //recommended warning flags for compilation:
                 "-Wall",
                 "-Wextra",
                 "-Weffc++",
+                 //enforce standard (no compiler specific features allowed):
                 "-pedantic",
+
+                //standard:
                 "-std=c++20",//"-std=c++17",
                 
                 //defines
@@ -27,16 +34,15 @@
                 //source file - use all top level .c files:
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
+                "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
 
                 //source file - use all top level .cpp files:
                 "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
-                "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
                 "*.cpp",
                 
                 //outputfile - always "program" at workspace directory:
                 "-o",
                 "parkman",
-                "-lrt",
 
                 // Include Directories
                 "-I${workspaceFolder}",
@@ -50,7 +56,8 @@
                 "-lsqlite3",  // Required for sqlite database library.
                 "-lgdal",     // Required for step files library.
                 "-licuuc",
-                "-licui18n"
+                "-licui18n",
+                "-lrt"
                 
 
             ],

@@ -404,7 +404,7 @@ bool GetConfigPath(char const *OwnProgName, char NamePath[])
   bool result = false;
 
   char PathDir[PATH_LEN] = {0};
-  strncpy(PathDir, OwnProgName, PATH_LEN);
+  strncpy(PathDir, OwnProgName, (PATH_LEN-1));
   // p = basename(PathDir);
   p = dirname(PathDir);
   if (!strcmp(p, "."))

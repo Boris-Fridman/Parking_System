@@ -1,0 +1,53 @@
+CXX = gcc
+
+COLORSENABLE = -fdiagnostics-color=always
+
+DEBUGEN = -g
+OPTLEVEL = -O2
+STANDARD = -std=c99
+ENFORCESTANDARD = -pedantic
+WARNINGFLAGS = -Wall -Wextra
+
+DEFINES = -D_GNU_SOURCE
+
+SOURCEFILES = \
+*.c                                      \
+../Common_Libs/CommonData.c              \
+../Common_Libs/DataBase/PriceDataBase.c  \
+../Common_Libs/Configuration/ConfMan.c
+
+TARGET = priceman.elf
+
+INCLUDES = -I.\
+-I./../Common_Libs                       \
+-I./../Common_Libs/DataBase              \
+-I./../Common_Libs/Configuration               
+
+LINKMATH = -lm
+USESQLITE = -lsqlite3
+
+CXXFLAGS = $(STANDARD) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS)
+
+# Automatically find all .cpp files and convert their names to .o files
+SRCS = $(wildcard *.c)
+OBJS = $(SRCS:.c=.o)
+
+all: $(TARGET)
+
+# $@ evaluates to the target (TARGET)
+# $^ evaluates to all prerequisites (OBJS)
+$(TARGET): $(OBJS)
+	$(CXX) $(COLORSENABLE) $(CXXFLAGS) $(DEFINES) $(SOURCEFILES) -o  $(TARGET) $(INCLUDES) $(LINKMATH) $(USESQLITE)    $@ $^	
+#$(CXX) $(COLORSENABLE) $(CXXFLAGS) $(DEFINES) $(SOURCEFILES) -o  $(TARGET) $(INCLUDES) $(LINKMATH) $(USESQLITE)    $@ $^	
+
+# Pattern rule: compiles any %.c into %.o
+# $< evaluates to the first prerequisite (the .c file)
+# %.o: %.c
+# 	$(CXX) $(CXXFLAGS) -c $< -o $@
+# 	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+clean:
+	rm -f $(TARGET) $(OBJS)
+
+# Prevents make from confusing these targets with files of the same name
+.PHONY: all clean

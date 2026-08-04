@@ -9,6 +9,8 @@
                 
                 //allow debugging:
                 "-g",
+
+                //"-O3",
                 
                 //standard:
                 "-std=c99",
