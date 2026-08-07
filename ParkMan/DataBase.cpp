@@ -24,7 +24,7 @@ class DataBase_c: public Process_c
     DBShmemPriceData_c *DBShmemPriceData = nullptr;
     sqlite3 *conn = nullptr;
   public:
-    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
     virtual ~DataBase_c();
     virtual void OnStartProcess();
     virtual void OnRunProcess();
@@ -36,9 +36,9 @@ class DataBase_c: public Process_c
  };
 
  //ProcParams_s Procparams
-void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)  //  void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+void DataBaseProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  {
-  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, sq_name, qsem_name, ProcType);
   DB_Process.RunProcess();
  }
 
@@ -72,8 +72,8 @@ void DataBase_c::OnFinishProcess()
  }
 
 
-DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
- :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, sq_name, qsem_name, ProcType)
  {
   
  }
@@ -333,12 +333,12 @@ void DBShmemPriceData_c::GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo)
  }
 
 
-std::string DBShmemPriceData_c::ReportQueueName()
+std::string &DBShmemPriceData_c::ReportQueueName()
  {
   return sq_name;
  }
 
-std::string DBShmemPriceData_c::ReprotQSemName()
+std::string &DBShmemPriceData_c::ReprotQSemName()
  {
   return qsem_name;
  }

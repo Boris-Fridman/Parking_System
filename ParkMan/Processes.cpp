@@ -71,7 +71,7 @@ key_t ShSemMem_c::ShMemKey()
   return sh_mem_key;
  }
 
-std::string ShSemMem_c::SemName()
+std::string &ShSemMem_c::SemName()
  {
   return sem_name;
  }
@@ -135,17 +135,169 @@ void ShSemMem_c::RemoveShs()
  }
 
 
+
+
+
+
+
+
+
+
 /*======================================================================================================================*/
 
 
+
+ShSemMemQue_c::ShSemMemQue_c(size_t size, QueueDirection_e queue_direction, std::string queu_basic_name)
+ :ShSemMem_c(size)
+ {
+  LoadShq(queue_direction, queu_basic_name);
+  LoadShqs();
+ }
+
+
+ShSemMemQue_c::ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t size, QueueDirection_e queue_direction)
+ :ShSemMem_c(sh_mem_key, sem_name, size)
+ {
+  this->sq_name = sq_name;
+  this->qsem_name = qsem_name;
+  LoadShq(queue_direction, "");
+  LoadShqs();
+ }
+
+
+ShSemMemQue_c::~ShSemMemQue_c()
+ {
+  RemoveShq();
+  RemoveShqs();
+ }
+
+
+
+
+
+void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basic_name)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  struct mq_attr attr;
+
+  /* Define queue attributes */
+  attr.mq_flags = 0;
+  attr.mq_maxmsg = 10;                         // Maximum messages in queue
+  attr.mq_msgsize = sizeof(ClientQueueMsg_s);  // Maximum size of any message
+  attr.mq_curmsgs = 0;
+
+  if(created)  /* "Master" Side */
+   {
+    GenShQueName(basic_name, sq_name);
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+  switch(SendReceive)
+   {
+    case QUEUE_SEND_E:
+      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_WRONLY, 0644, &attr);
+     break;
+    case QUEUE_RECEIVE_E:
+      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDONLY, 0644, &attr);
+     break;
+   }
+  if (p_sq == (mqd_t)(-1)) 
+   {
+    perr() << (StdErrNoPiping ? TermRed : "") << "mq_open failed" << (StdErrNoPiping ? TermColorsReset : "");
+    //exit(1);
+   }
+  else
+   {
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The queue was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_sq << " " << sq_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+   }
+ }
+
+
+void ShSemMemQue_c::LoadShqs()
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  if(created)  /* "Master" Side */
+   {
+    GenShSemKeyID(sh_qsem_key, qsem_name,  p_shqs);
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was generated and created successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+   }
+  else         /* "Slave" Side  */
+   {
+    p_shqs = sem_open(qsem_name.c_str(), 0, 0600);
+    if(p_shqs == SEM_FAILED)
+     {
+      perr() << (StdErrNoPiping ? TermRed : "") << "The semaphore wasn't created" << (StdErrNoPiping ? TermColorsReset : "");
+      //ShSnc = true; /* Shared Semaphore not created */
+      return;
+     }
+    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+   }
+  sem_post(p_shqs);
+ }
+
+
+void ShSemMemQue_c::RemoveShq()
+ {
+  if(created)  /* "Master" Side */
+   {
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+  mq_close(p_sq);
+  mq_unlink(sq_name.c_str()); /* Removes queue from system completely */
+ }
+
+
+void ShSemMemQue_c::RemoveShqs()
+ {
+  if(created)  /* "Master" Side */
+   {
+    sem_unlink(qsem_name.c_str());
+   }
+  else         /* "Slave" Side  */
+   {
+   }
+ }
+
+
+std::string &ShSemMemQue_c::QueueName()
+ {
+  return sq_name;
+ }
+
+std::string &ShSemMemQue_c::QSemName()
+ {
+  return qsem_name;
+ }
+
+
+
+
+
+
+
+
+
+
+
+
+/*======================================================================================================================*/
+#define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
+
 TaskControl_ShSM_c::TaskControl_ShSM_c()
- :ShSemMem_c(sizeof(TskContShmData_s))
+ :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_RECEIVE_E, LOG_QUEUE_NAME)
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
 
-TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[])
- :ShSemMem_c(sh_mem_key, sem_name, sizeof(TskContShmData_s))
+TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name)
+ :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, sizeof(TskContShmData_s), QUEUE_SEND_E)
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
@@ -177,7 +329,7 @@ void TaskControl_ShSM_c::SetDBFileName(std::string NameToSet)
   ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName = NameToSet;
  }
        
-std::string TaskControl_ShSM_c::GetDBFileName()
+std::string &TaskControl_ShSM_c::GetDBFileName()
  {
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName;
  }
@@ -187,7 +339,7 @@ void TaskControl_ShSM_c::SetSHPFileName(std::string NameToSet)
   ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName = NameToSet;
  }
        
-std::string TaskControl_ShSM_c::GetSHPFileName()
+std::string &TaskControl_ShSM_c::GetSHPFileName()
  {
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName;
  }
@@ -220,7 +372,7 @@ bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
      } 
     else 
      {
-      perr()<<"sem_timedwait failed";
+      perr() << "sem_timedwait failed";
      }
     return false;
    }
@@ -266,7 +418,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
     case 0:  /* Child */
       proc_pid = getpid();
       printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
-      ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.ProcType);
+      ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.sq_name, Procparams.qsem_name, Procparams.ProcType);
       printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);
      break;
@@ -280,8 +432,8 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
 
 /*======================================================================================================================*/
 
-Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
-    : TaskControl_ShSM_c(sh_mem_key, sem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)//, p_shs(nullptr), p_shm(nullptr), proc_name(ProcName), sh_mem_id(-1), exit_required(false), error_in_creation(false)
+Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+    : TaskControl_ShSM_c(sh_mem_key, sem_name, sq_name, qsem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)
  {
   //proc_name = ProcName;
   std::cout << "Entering to " << proc_name << " process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";

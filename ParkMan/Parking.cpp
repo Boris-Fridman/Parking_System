@@ -54,15 +54,15 @@ City_c::~City_c()
 class Parking_c: public Process_c
  {
   public:
-    Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
     virtual ~Parking_c();
     virtual void OnRunProcess();
  };
 
 
-void ParkingProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+void ParkingProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  {
-  Parking_c Park_Process(PARK_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  Parking_c Park_Process(PARK_PROC_NAME, sh_mem_key, sem_name, sq_name, qsem_name, ProcType);
   Park_Process.RunProcess();
  }
 
@@ -74,8 +74,8 @@ void Parking_c::OnRunProcess()
 
 
 
-Parking_c::Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
- :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+Parking_c::Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, sq_name, qsem_name, ProcType)
  {
 
  }

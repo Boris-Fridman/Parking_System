@@ -69,6 +69,19 @@ bool UpdateDataBase = false;
 /*  Main function from which the program starts running.                                                                */
 int main(int const argc, char const *argv[])
  {
+  // {
+  //  const char *t_, *t1;
+  //  char test[100];
+  //  ShSemMemQue_c ShsemMemQueue_Test(10, QUEUE_SEND_E, "/TestQueue");
+  //  std::cout << ShsemMemQueue_Test.QueueName() << "\n\r";
+  //  TaskControl_ShSM_c TskCont_Test;
+  //  std::cout << TskCont_Test.QueueName() << "\n\r";
+  //  std::cout << (t1 = t_ = ShsemMemQueue_Test.QueueName().c_str()) << "\n\r";
+  //  std::cout << (t_ = ShsemMemQueue_Test.QueueName().c_str()) << "\n\r";
+  //  strcpy(test, ShsemMemQueue_Test.QueueName().c_str());
+  //  //t = ShsemMemQueue_Test.QueueName().c_str();
+  // }
+
   char PIDFileName[PATH_LEN];
   TaskControl_ShSM_c TaskContSh;
 
@@ -111,11 +124,27 @@ int main(int const argc, char const *argv[])
    std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }
   
+  
+
+
 
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  ProcParams_s Procparams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .ProcType = PROC_DATABASE_E};
+  // char const *t = TaskContSh.QueueName().c_str(); // For test only.
+  // char const *t1 = TaskContSh.QSemName().c_str(); // For test only.
+
+  // std::cout << TaskContSh.QueueName() << "\n\r";
+  // std::cout << TaskContSh.QSemName() << "\n\r";
+
+  // std::cout << TaskContSh.QueueName().c_str() << "\n\r";
+  // std::cout << TaskContSh.QSemName().c_str() << "\n\r";
+
+  // std::cout << t << "\n\r";
+  // std::cout << t1 << "\n\r";
+
+
+  ProcParams_s Procparams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
 
   Procparams.ProcType = PROC_DATABASE_E;
   database_pid = OpenProcess(DataBaseProc, Procparams, (char*)"DataBase");

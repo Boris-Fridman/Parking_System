@@ -32,7 +32,7 @@ class Network_c: public Process_c
     sockaddr_in address = {{0},0,{0},{0}};
     int addrlen = 0;
   public:
-    Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+    Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
     virtual ~Network_c();
     virtual void OnRunProcess();
     Network_c& operator = (const Network_c &other) = delete;
@@ -42,9 +42,9 @@ class Network_c: public Process_c
 
 
 
-void NetworkProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
+void NetworkProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  {
-  Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, ProcType);
+  Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, sq_name, qsem_name, ProcType);
   Netw_Process.RunProcess();
  }
 
@@ -240,8 +240,8 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
 
 
 
-Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType)
- :Process_c(ProcName, sh_mem_key, sem_name, ProcType)
+Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+ :Process_c(ProcName, sh_mem_key, sem_name, sq_name, qsem_name, ProcType)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */

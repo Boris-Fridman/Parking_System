@@ -63,8 +63,8 @@ class DBShmemPriceData_c:public ShSemMem_c
     void ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key = 0);
     void LoadCitiesList(PriceTab_s ListOfCities[], int ListSize);
     void GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo);
-    std::string ReportQueueName();
-    std::string ReprotQSemName();
+    std::string &ReportQueueName();
+    std::string &ReprotQSemName();
     DBShmemPriceData_c& operator = (const DBShmemPriceData_c &other) = delete;
     DBShmemPriceData_c(const DBShmemPriceData_c &other) = delete;
     void SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo);
@@ -81,7 +81,7 @@ class DBShmemPriceData_c:public ShSemMem_c
 
 
 
-void DataBaseProc(key_t sh_mem_key, const char sem_name[], ProcTypeID_e ProcType);
+void DataBaseProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
 
 
 
