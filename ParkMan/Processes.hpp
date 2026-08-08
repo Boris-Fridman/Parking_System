@@ -2,7 +2,7 @@
 
 #include "CommonData.h"
 #include "main.hpp"
-//#include "Processes.hpp"
+#include "Logging.hpp"
 
 #include <sys/sem.h>
 #include <sys/shm.h>
@@ -10,6 +10,7 @@
 #include <mqueue.h>
 #include <semaphore.h>
 #include <string>
+
 
 
 void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size);
@@ -114,14 +115,10 @@ typedef void(*subprocess_t)(key_t sh_mem_key, const char sem_name[], std::string
 
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[]);
 
-
 class Process_c: public TaskControl_ShSM_c
  {
      ProcTypeID_e proc_type;
-    //  sem_t *p_shs;
-    //  TskContShmData_s *p_shm;
      std::string proc_name;
-    //  int sh_mem_id;
      bool exit_required;
      bool error_in_creation;           /* Is set to true in case of constructor couldn't initialize required variables. */
   public:
@@ -133,12 +130,26 @@ class Process_c: public TaskControl_ShSM_c
      virtual void OnRunProcess();      /* This procedure contains the 1 second sleep and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
      virtual void OnFinishProcess();   /* This procedure is empty and runs after finishing running the process for any deinitializations. */
      virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
+     void LogEvent(LogMessType_s MessageToLog);
      Process_c& operator = (const Process_c &other) = delete;
      Process_c(const Process_c &other) = delete;
  };
 
 
-
+class ProcMan_c: public TaskControl_ShSM_c
+ {
+    pthread_t LogTHread = 0;
+    bool Exit = false;
+    void *LogThread(void *Args);
+    void static *StatLogThread(void *Args);
+    LogParams_s LogParams;
+  public:
+    ProcMan_c();
+    virtual ~ProcMan_c();
+    void CheckLogMessageExistance();
+    void LoadLogThread();
+    void CloseLogThread();
+ };
  
 
  

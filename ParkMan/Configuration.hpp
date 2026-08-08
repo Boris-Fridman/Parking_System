@@ -16,6 +16,8 @@ char const *GetGeoLocShapeFilePathName();  // GeoLocation Shape Path & Name of t
 
 char const *GetProgInfoPIDFilePathName();  // Path & Name of the file with the program PID.
 
+char const *GetLogFilePathName();          // Path & Name of the file with the program log.
+
 uint16_t GetDestinPort();
 
 char const *GetColumnNameWithGeolocationName();

@@ -13,18 +13,20 @@
 #define DATABASEPATH   "DATABASEPATH"
 #define SHAPEFILESPATH "SHAPEFILESPATH"
 #define PROGINFOPATH   "PROGINFOPATH"
+#define LOGFILEPATH    "LOGFILEPATH"
 #define PORTNUMBER     "PORTNUMBER"
 #define SHAPECITYNAME  "SHAPECITYNAME"
 #define SHAPEOSMID     "SHAPEOSMID"     
 
 
-#define NUM_CONF_IT   7
+#define NUM_CONF_IT   8
 char ConfData[NUM_CONF_IT][2][PATH_LEN] = 
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },
   { DATABASEPATH    , "../" CONF_DIR_NAME "/" DB_FILENAME         },
   { SHAPEFILESPATH  , "../" CONF_DIR_NAME "/" SHP_FILENAME        },
   { PROGINFOPATH    , "../" CONF_DIR_NAME "/" DB_MAN_PID_FILENAME },
+  { LOGFILEPATH     , "../" CONF_DIR_NAME "/" LOG_FILENAME        },
   { PORTNUMBER      , TO_STRING(DESTIN_PORT)                      },
   { SHAPECITYNAME   , SHP_FIELD_NAME                              },
   { SHAPEOSMID      , SHP_OSM_ID                                  },
@@ -50,6 +52,11 @@ char const *GetGeoLocShapeFilePathName()  // GeoLocation Shape Path & Name of th
 char const *GetProgInfoPIDFilePathName()  // Path & Name of the file with the program PID.
  {
   return GetDataByName(ConfData, NUM_CONF_IT, PROGINFOPATH);
+ }
+
+char const *GetLogFilePathName()          // Path & Name of the file with the program log.
+ {
+  return GetDataByName(ConfData, NUM_CONF_IT, LOGFILEPATH);
  }
 
 uint16_t GetDestinPort()

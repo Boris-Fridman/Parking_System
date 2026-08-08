@@ -115,16 +115,16 @@ int main(int const argc, char const *argv[])
   CreatePIDFile(argc, argv, PIDFileName);
   EnableSignals();
 
-  ProcParams_s Procparams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
+  ProcParams_s ProcParams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
 
-  Procparams.ProcType = PROC_DATABASE_E;
-  database_pid = OpenProcess(DataBaseProc, Procparams, (char*)"DataBase");
+  ProcParams.ProcType = PROC_DATABASE_E;
+  database_pid = OpenProcess(DataBaseProc, ProcParams, (char*)"DataBase");
    
-  Procparams.ProcType = PROC_PARKING_E;
-  parking_pid = OpenProcess(ParkingProc, Procparams, (char*)"Parking");
+  ProcParams.ProcType = PROC_PARKING_E;
+  parking_pid = OpenProcess(ParkingProc, ProcParams, (char*)"Parking");
 
-  Procparams.ProcType = PROC_NETWORK_E;
-  network_pid = OpenProcess(NetworkProc, Procparams, (char*)"Network");
+  ProcParams.ProcType = PROC_NETWORK_E;
+  network_pid = OpenProcess(NetworkProc, ProcParams, (char*)"Network");
   
 
 

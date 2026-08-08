@@ -12,6 +12,9 @@
 #include <mqueue.h>
 #include <fcntl.h>
 
+#include "Configuration.hpp"
+#include "Logging.hpp"
+
 
 #define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
@@ -432,6 +435,24 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
 
 /*======================================================================================================================*/
 
+void *Thread(void *attr)
+ {
+  UNUSED(attr);
+  return nullptr;
+ }
+void OpenThread()
+ {
+  pthread_t ThreadID;
+  TaskControl_ShSM_c ThreadParams;
+  //pthread_attr_t Attr;
+  pthread_create(&ThreadID, nullptr, Thread, (void*)&ThreadParams);
+ }
+
+
+
+
+/*======================================================================================================================*/
+
 Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
     : TaskControl_ShSM_c(sh_mem_key, sem_name, sq_name, qsem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)
  {
@@ -509,6 +530,25 @@ void Process_c::CheckExitStatus()
   exit_required |= (getppid() == 1);            // Checking if the parent process is running. If not enables exit.
  }   
 
+
+void Process_c::LogEvent(LogMessType_s MessageToLog)
+ {
+  size_t Len;
+  Len = sizeof(LogMessType_s);
+  sem_wait(p_shqs);
+  if (mq_send(p_sq, (char*)&MessageToLog, Len, 0) == -1)
+   {
+    perror("mq_send failed");
+   } 
+  else 
+   {
+    printf("Message sent successfully. %ld bytes sent.\n\r", Len);
+   }
+  sem_post(p_shqs);
+ }
+
+
+
 /*======================================================================================================================*/
 
 
@@ -555,3 +595,83 @@ void GenShQueName(std::string const &basic_name, std::string &que_name)
   while (stat(("/dev/mqueue" + que_name).c_str(), &st) == 0);
  }
 
+
+
+/*======================================================================================================================*/
+
+ProcMan_c::ProcMan_c()
+  :TaskControl_ShSM_c(), LogParams({false, nullptr, {0}, '\t'})
+ {
+  memset((void*)&LogParams, 0, sizeof(LogParams));
+  LoadLogThread();
+ }
+
+
+ProcMan_c::~ProcMan_c()
+ {
+  CloseLogThread();
+  pthread_join(LogTHread, nullptr);
+ }
+
+
+
+
+void ProcMan_c::LoadLogThread()
+ {
+  pthread_create(&LogTHread, NULL, ProcMan_c::StatLogThread, this);
+ }
+
+
+void ProcMan_c::CloseLogThread()
+ {
+  Exit = true;
+ }
+
+
+void *ProcMan_c::StatLogThread(void *Args)
+ {
+  ProcMan_c *instance = static_cast<ProcMan_c *>(Args);
+  return instance->LogThread(Args);
+ }
+
+void *ProcMan_c::LogThread(void *Args)
+ {
+  UNUSED(Args);
+  
+  InitLog(&LogParams, GetLogFilePathName());
+  while(!Exit)
+   {
+    CheckLogMessageExistance();
+   }
+  
+  return nullptr;
+ }
+
+
+void ProcMan_c::CheckLogMessageExistance()
+ {
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  unsigned int prio;
+  LogMessType_s ClientQueueMsg;
+  struct timespec ts;
+
+  if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
+   {
+    ++ts.tv_sec;
+   }
+  size_t bytes_read = mq_timedreceive(p_sq, (char*)&ClientQueueMsg, sizeof(ClientQueueMsg_s), &prio, &ts);
+  //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
+  if(bytes_read > 0)
+   {
+    if(sizeof(ClientQueueMsg) <= bytes_read )
+     {
+      OpenLog(&LogParams);  /* The procedure checks inside if the file is open or not. */
+      AddToLog(&LogParams, ClientQueueMsg);
+     }
+    else
+     if(bytes_read <= 0)
+      CloseLog(&LogParams);
+   }  
+ }
+ 
