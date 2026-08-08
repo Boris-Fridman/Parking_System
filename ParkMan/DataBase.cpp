@@ -109,8 +109,8 @@ void DataBase_c::LoadDataBase()
    }
 
   /* The shared queue and its semaphore must be loaded anyway independently if the shared memory exists or not due to no city exist in database. */
-  strncpy( ((ControlDBPrice_s*)p_shm)->ReportQueueName , DBShmemPriceData->ReportQueueName().c_str(), NAME_LEN - 1);
-  strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->ReprotQSemName().c_str(), NAME_LEN - 1);
+  strncpy( ((ControlDBPrice_s*)p_shm)->ReportQueueName , DBShmemPriceData->QueueName().c_str(), NAME_LEN - 1);
+  strncpy( ((ControlDBPrice_s*)p_shm)->ReportSemName   , DBShmemPriceData->QSemName().c_str(), NAME_LEN - 1);
 
   /* Freeing temporary-loaded-list of cityes after it was received and loaded to shared memory. If it was received as empty it will be checked inside the function "FreeList()" before clearing. */
   FreeList(&ListOfCities);  /* No need to compare the list to nullptr because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
@@ -283,25 +283,25 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
 
 
 DBShmemPriceData_c::DBShmemPriceData_c(int NCities)
- :ShSemMem_c(NCities*sizeof(PriceTab_s))
+ :ShSemMemQue_c(NCities*sizeof(PriceTab_s), QUEUE_RECEIVE_E, QUEUE_NAME)
  {
-  LoadShq(QUEUE_RECEIVE_E);
-  LoadShqs();
+  // LoadShq(QUEUE_RECEIVE_E);
+  // LoadShqs();
  }
   
 DBShmemPriceData_c::DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities)
- :ShSemMem_c(sh_mem_key, sem_name, NCities * sizeof(PriceTab_s))
+ :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, NCities * sizeof(PriceTab_s), QUEUE_SEND_E)
  {
-  this->sq_name = sq_name;
-  this->qsem_name = qsem_name;
-  LoadShq(QUEUE_SEND_E);
-  LoadShqs();
+  // this->sq_name = sq_name;
+  // this->qsem_name = qsem_name;
+  // LoadShq(QUEUE_SEND_E);
+  // LoadShqs();
  }
   
 DBShmemPriceData_c::~DBShmemPriceData_c()
  {
-  RemoveShq();
-  RemoveShqs();
+  // RemoveShq();
+  // RemoveShqs();
  }
 
 void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key)
@@ -333,111 +333,111 @@ void DBShmemPriceData_c::GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo)
  }
 
 
-std::string &DBShmemPriceData_c::ReportQueueName()
- {
-  return sq_name;
- }
+// std::string &DBShmemPriceData_c::ReportQueueName()
+//  {
+//   return sq_name;
+//  }
 
-std::string &DBShmemPriceData_c::ReprotQSemName()
- {
-  return qsem_name;
- }
-
-
+// std::string &DBShmemPriceData_c::ReprotQSemName()
+//  {
+//   return qsem_name;
+//  }
 
 
 
 
 
 
-void DBShmemPriceData_c::LoadShq(QueueDirection_e SendReceive)
- {
-  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  struct mq_attr attr;
 
-  /* Define queue attributes */
-  attr.mq_flags = 0;
-  attr.mq_maxmsg = 10;                         // Maximum messages in queue
-  attr.mq_msgsize = sizeof(ClientQueueMsg_s);  // Maximum size of any message
-  attr.mq_curmsgs = 0;
+// void DBShmemPriceData_c::LoadShq(QueueDirection_e SendReceive)
+//  {
+//   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+//   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-  std::string const basic_name = QUEUE_NAME;
-  if(created)  /* "Master" Side */
-   {
-    GenShQueName(basic_name, sq_name);
-   }
-  else         /* "Slave" Side  */
-   {
-   }
-  switch(SendReceive)
-   {
-    case QUEUE_SEND_E:
-      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_WRONLY, 0644, &attr);
-     break;
-    case QUEUE_RECEIVE_E:
-      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDONLY, 0644, &attr);
-     break;
-   }
-  if (p_sq == (mqd_t)(-1)) 
-   {
-    perr() << (StdErrNoPiping ? TermRed : "") << "mq_open failed" << (StdErrNoPiping ? TermColorsReset : "");
-    //exit(1);
-   }
-  else
-   {
-    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The queue was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_sq << " " << sq_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-   }
+//   struct mq_attr attr;
 
- }
+//   /* Define queue attributes */
+//   attr.mq_flags = 0;
+//   attr.mq_maxmsg = 10;                         // Maximum messages in queue
+//   attr.mq_msgsize = sizeof(ClientQueueMsg_s);  // Maximum size of any message
+//   attr.mq_curmsgs = 0;
 
-void DBShmemPriceData_c::LoadShqs()
- {
-  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+//   std::string const basic_name = QUEUE_NAME;
+//   if(created)  /* "Master" Side */
+//    {
+//     GenShQueName(basic_name, sq_name);
+//    }
+//   else         /* "Slave" Side  */
+//    {
+//    }
+//   switch(SendReceive)
+//    {
+//     case QUEUE_SEND_E:
+//       p_sq = mq_open(sq_name.c_str(), O_CREAT | O_WRONLY, 0644, &attr);
+//      break;
+//     case QUEUE_RECEIVE_E:
+//       p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDONLY, 0644, &attr);
+//      break;
+//    }
+//   if (p_sq == (mqd_t)(-1)) 
+//    {
+//     perr() << (StdErrNoPiping ? TermRed : "") << "mq_open failed" << (StdErrNoPiping ? TermColorsReset : "");
+//     //exit(1);
+//    }
+//   else
+//    {
+//     std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The queue was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_sq << " " << sq_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+//    }
 
-  if(created)  /* "Master" Side */
-   {
-    GenShSemKeyID(sh_qsem_key, qsem_name,  p_shqs);
-    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was generated and created successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-   }
-  else         /* "Slave" Side  */
-   {
-    p_shqs = sem_open(qsem_name.c_str(), 0, 0600);
-    if(p_shqs == SEM_FAILED)
-     {
-      perr() << (StdErrNoPiping ? TermRed : "") << "The semaphore wasn't created" << (StdErrNoPiping ? TermColorsReset : "");
-      //ShSnc = true; /* Shared Semaphore not created */
-      return;
-     }
-    std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-   }
-  sem_post(p_shqs);
- }
+//  }
 
-void DBShmemPriceData_c::RemoveShq()
- {
-  if(created)  /* "Master" Side */
-   {
-   }
-  else         /* "Slave" Side  */
-   {
-   }
-  mq_close(p_sq);
-  mq_unlink(sq_name.c_str()); /* Removes queue from system completely */
- }
+// void DBShmemPriceData_c::LoadShqs()
+//  {
+//   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+//   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
-void DBShmemPriceData_c::RemoveShqs()
- {
-  if(created)  /* "Master" Side */
-   {
-    sem_unlink(qsem_name.c_str());
-   }
-  else         /* "Slave" Side  */
-   {
-   }
- }
+//   if(created)  /* "Master" Side */
+//    {
+//     GenShSemKeyID(sh_qsem_key, qsem_name,  p_shqs);
+//     std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was generated and created successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+//    }
+//   else         /* "Slave" Side  */
+//    {
+//     p_shqs = sem_open(qsem_name.c_str(), 0, 0600);
+//     if(p_shqs == SEM_FAILED)
+//      {
+//       perr() << (StdErrNoPiping ? TermRed : "") << "The semaphore wasn't created" << (StdErrNoPiping ? TermColorsReset : "");
+//       //ShSnc = true; /* Shared Semaphore not created */
+//       return;
+//      }
+//     std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+//    }
+//   sem_post(p_shqs);
+//  }
+
+// void DBShmemPriceData_c::RemoveShq()
+//  {
+//   if(created)  /* "Master" Side */
+//    {
+//    }
+//   else         /* "Slave" Side  */
+//    {
+//    }
+//   mq_close(p_sq);
+//   mq_unlink(sq_name.c_str()); /* Removes queue from system completely */
+//  }
+
+// void DBShmemPriceData_c::RemoveShqs()
+//  {
+//   if(created)  /* "Master" Side */
+//    {
+//     sem_unlink(qsem_name.c_str());
+//    }
+//   else         /* "Slave" Side  */
+//    {
+//    }
+//  }
 
 
 void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo)

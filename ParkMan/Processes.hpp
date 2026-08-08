@@ -51,6 +51,7 @@ class ShSemMem_c
 
 class ShSemMemQue_c:public ShSemMem_c
  {
+  protected:
     /* Logging shared queue variables */
     std::string sq_name = "";   /* Shared Queue name */
     mqd_t p_sq = 0;             /* Shared Queue variable */
@@ -72,6 +73,7 @@ class ShSemMemQue_c:public ShSemMem_c
     ShSemMemQue_c(const ShSemMemQue_c &other) = delete;
     std::string &QueueName();
     std::string &QSemName();
+    
  };
 
 

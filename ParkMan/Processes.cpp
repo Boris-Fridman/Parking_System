@@ -13,6 +13,7 @@
 #include <fcntl.h>
 
 
+#define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
 /*======================================================================================================================*/
 
@@ -288,7 +289,6 @@ std::string &ShSemMemQue_c::QSemName()
 
 
 /*======================================================================================================================*/
-#define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
 TaskControl_ShSM_c::TaskControl_ShSM_c()
  :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_RECEIVE_E, LOG_QUEUE_NAME)
