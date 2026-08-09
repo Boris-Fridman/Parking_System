@@ -2,7 +2,7 @@
 
 #include "CommonData.h"
 #include "main.hpp"
-#include "Logging.hpp"
+#include "Logging.h"
 
 #include <sys/sem.h>
 #include <sys/shm.h>

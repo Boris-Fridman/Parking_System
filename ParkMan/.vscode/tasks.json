@@ -35,6 +35,7 @@
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
                 "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
+                "${workspaceFolder}/../Common_Libs/Logging/Logging.c",
 
                 //source file - use all top level .cpp files:
                 "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
@@ -50,6 +51,7 @@
                 "-I${workspaceFolder}/../Common_Libs/DataBase",
                 "-I${workspaceFolder}/../Common_Libs/CitiesRecognition",
                 "-I${workspaceFolder}/../Common_Libs/Configuration",
+                "-I${workspaceFolder}/../Common_Libs/Logging",
                 "-I/usr/include/gdal",
 
                 //implementing database:

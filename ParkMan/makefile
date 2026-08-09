@@ -76,6 +76,7 @@ SRCS = \
 ../Common_Libs/CommonData.c                      \
 ../Common_Libs/DataBase/PriceDataBase.c          \
 ../Common_Libs/Configuration/ConfMan.c           \
+../Common_Libs/Logging/Logging.c                 \
 ../Common_Libs/CitiesRecognition/CitiesInfo.cpp  \
 *.cpp
 
@@ -84,6 +85,7 @@ TARGET = $(OUT_DIR)/parkman.elf
 #Includes:
 INCLUDES = -I.\
 -I./../Common_Libs                       \
+-I./../Common_Libs/Logging               \
 -I./../Common_Libs/DataBase              \
 -I./../Common_Libs/Configuration         \
 -I./../Common_Libs/CitiesRecognition     \

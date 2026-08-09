@@ -1,6 +1,5 @@
 #include "Processes.hpp"
 
-
 #include <iostream>
 #include <unistd.h>
 #include "Errors.hpp"
@@ -13,7 +12,7 @@
 #include <fcntl.h>
 
 #include "Configuration.hpp"
-#include "Logging.hpp"
+#include "Logging.h"
 
 
 #define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
@@ -460,7 +459,7 @@ Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
 
   std::cout << "Entering to " << proc_name << " process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";
 
-  MessageToLog = MakeLogMessage(LOG_MESSAGE, proc_type, proc_name.c_str(), "The process started running.");
+  MessageToLog = MakeLogMessage(LOG_MESSAGE,proc_name.c_str(), "The process started running.");
   LogEvent(MessageToLog);
  }
 
@@ -470,7 +469,7 @@ Process_c::~Process_c()
 
   std::cout << "Exitting from " << proc_name << " process... \n\r";
 
-  MessageToLog = MakeLogMessage(LOG_MESSAGE, proc_type, proc_name.c_str(), "The process Finished running.");
+  MessageToLog = MakeLogMessage(LOG_MESSAGE,  proc_name.c_str(), "The process Finished running.");
   LogEvent(MessageToLog);
  }
 

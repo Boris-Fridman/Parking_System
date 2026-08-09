@@ -1,7 +1,7 @@
-#include "Logging.hpp"
+#include "Logging.h"
 #include <unistd.h>
 #include <time.h>
-#include <cstring>
+#include <string.h>
 
 
 char const *LogLevelName(LogLevel_e LogLevel)
@@ -73,9 +73,9 @@ void CloseLog(LogParams_s *LogParams)
 
 void CreateStringLineToLog(char LogString[], size_t MaxSize, LogMessType_s LogMessage, char Divider)
  {
-  char TimeBuf[100];
+  char TimeBuf[40];
   ConvertTime(&LogMessage.TimeOfHappening, TimeBuf, sizeof(TimeBuf), E_DBS_FORMAT);
-  snprintf(LogString, MaxSize, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, Divider, LogMessage.ProcessID, Divider, LogMessage.ThreadID, Divider, LogLevelName(LogMessage.LogLevel), Divider, LogMessage.ProcName, Divider, LogMessage.LogMessage);
+  snprintf(LogString, MaxSize - 2, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, Divider, LogMessage.ProcessID, Divider, LogMessage.ThreadID, Divider, LogLevelName(LogMessage.LogLevel), Divider, LogMessage.ProcName, Divider, LogMessage.LogMessage);
  }
 
 
@@ -89,16 +89,15 @@ void AddToLog(LogParams_s *LogParams, LogMessType_s LogMessage)
 
 
 
-LogMessType_s MakeLogMessage(LogLevel_e LogLevel, ProcTypeID_e ProcType, char const ProcName[], char const Message[])
+LogMessType_s MakeLogMessage(LogLevel_e LogLevel, char const ProcName[], char const Message[])
  {
   LogMessType_s Result;
   memset(&Result, 0, sizeof(LogMessType_s));
   Result.LogLevel = LogLevel;
-  Result.ProcType = ProcType;
   Result.ProcessID = getpid();
   Result.ThreadID = gettid();
   time(&Result.TimeOfHappening);
-  strncpy(Result.ProcName, ProcName, sizeof(Result.ProcName));
+  strncpy(Result.ProcName, ProcName, sizeof(Result.ProcName)-1);
   strncpy(Result.LogMessage, Message, sizeof(Result.LogMessage) - 1);
   return Result;
  }
