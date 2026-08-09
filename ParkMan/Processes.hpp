@@ -62,13 +62,13 @@ class ShSemMemQue_c:public ShSemMem_c
     sem_t *p_shqs = nullptr;    /* Pointer to Queue shared semaphore */
     std::string qsem_name = ""; /* Queue shared semaphore name       */
 
-    void LoadShq(QueueDirection_e SendReceive, std::string const basic_name); /* In case of master it generates Memory key and creates the shared memory. In case of slave it connects to allready created shared memory according to given key. */
-    void LoadShqs();                                                          /* In case of master it generates semaphore name and creates the semaphore itself. In case of slave it connects to allready created semaphore according to the given semaphore name. */
-    void RemoveShq();                                                         /* In case of master it disconnects from shared memory and distroys it. In case of slave it only disconnects from the shared memory. */
-    void RemoveShqs();                                                        /* In case of master it unlinkes the semaphore. In case of slave it doesn't nothing. */
+    void LoadShq(QueueDirection_e SendReceive, std::string const basic_name, size_t size); /* In case of master it generates Memory key and creates the shared memory. In case of slave it connects to allready created shared memory according to given key. */
+    void LoadShqs();                                                                       /* In case of master it generates semaphore name and creates the semaphore itself. In case of slave it connects to allready created semaphore according to the given semaphore name. */
+    void RemoveShq();                                                                      /* In case of master it disconnects from shared memory and distroys it. In case of slave it only disconnects from the shared memory. */
+    void RemoveShqs();                                                                     /* In case of master it unlinkes the semaphore. In case of slave it doesn't nothing. */
   public:
-    ShSemMemQue_c(size_t size, QueueDirection_e queue_direction, std::string queu_basic_name);
-    ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t size, QueueDirection_e queue_direction);
+    ShSemMemQue_c(size_t shmem_size, QueueDirection_e queue_direction, std::string queu_basic_name, size_t shque_size);
+    ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t shmem_size, QueueDirection_e queue_direction, size_t shque_size);
     ~ShSemMemQue_c();
     ShSemMemQue_c& operator = (const ShSemMemQue_c &other) = delete;
     ShSemMemQue_c(const ShSemMemQue_c &other) = delete;

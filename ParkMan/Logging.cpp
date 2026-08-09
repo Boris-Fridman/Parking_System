@@ -41,7 +41,7 @@ void LoadDefParams(LogParams_s *DefParams)
 void InitLog(LogParams_s *LogParams, char const FileName[])
  {
   LoadDefParams(LogParams);
-  strncpy(LogParams->FileName, FileName, sizeof(LogParams) - 1);
+  strncpy(LogParams->FileName, FileName, sizeof(LogParams->FileName) - 1);
  }
 
 
@@ -89,7 +89,7 @@ void AddToLog(LogParams_s *LogParams, LogMessType_s LogMessage)
 
 
 
-LogMessType_s MakeLogMessage(LogLevel_e LogLevel, ProcTypeID_e ProcType, char ProcName[], char Message[])
+LogMessType_s MakeLogMessage(LogLevel_e LogLevel, ProcTypeID_e ProcType, char const ProcName[], char const Message[])
  {
   LogMessType_s Result;
   memset(&Result, 0, sizeof(LogMessType_s));

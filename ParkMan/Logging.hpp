@@ -47,4 +47,4 @@ void OpenLog(LogParams_s *LogParams);
 
 void CloseLog(LogParams_s *LogParams);
 
-
+LogMessType_s MakeLogMessage(LogLevel_e LogLevel, ProcTypeID_e ProcType, char const ProcName[], char const Message[]);

@@ -71,9 +71,12 @@ int main(int const argc, char const *argv[])
  {
 
   char PIDFileName[PATH_LEN];
-  TaskControl_ShSM_c TaskContSh;
+  
+  //TaskControl_ShSM_c TaskContSh;
 
   InitConfiguration(argv[0]);
+
+  ProcMan_c TaskContSh;  /* Attention !!! The class must be defined when configuration was allready loaded. */
 
   // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
   // std::cout << TestString << "\n\r";

@@ -151,20 +151,20 @@ void ShSemMem_c::RemoveShs()
 
 
 
-ShSemMemQue_c::ShSemMemQue_c(size_t size, QueueDirection_e queue_direction, std::string queu_basic_name)
- :ShSemMem_c(size)
+ShSemMemQue_c::ShSemMemQue_c(size_t shmem_size, QueueDirection_e queue_direction, std::string queu_basic_name, size_t shque_size)
+ :ShSemMem_c(shmem_size)
  {
-  LoadShq(queue_direction, queu_basic_name);
+  LoadShq(queue_direction, queu_basic_name, shque_size);
   LoadShqs();
  }
 
 
-ShSemMemQue_c::ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t size, QueueDirection_e queue_direction)
- :ShSemMem_c(sh_mem_key, sem_name, size)
+ShSemMemQue_c::ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t shmem_size, QueueDirection_e queue_direction, size_t shque_size)
+ :ShSemMem_c(sh_mem_key, sem_name, shmem_size)
  {
   this->sq_name = sq_name;
   this->qsem_name = qsem_name;
-  LoadShq(queue_direction, "");
+  LoadShq(queue_direction, "", shque_size);
   LoadShqs();
  }
 
@@ -179,7 +179,7 @@ ShSemMemQue_c::~ShSemMemQue_c()
 
 
 
-void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basic_name)
+void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basic_name, size_t size)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -188,8 +188,8 @@ void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basi
 
   /* Define queue attributes */
   attr.mq_flags = 0;
-  attr.mq_maxmsg = 10;                         // Maximum messages in queue
-  attr.mq_msgsize = sizeof(ClientQueueMsg_s);  // Maximum size of any message
+  attr.mq_maxmsg = 10;     // Maximum messages in queue
+  attr.mq_msgsize = size;  // Maximum size of any message
   attr.mq_curmsgs = 0;
 
   if(created)  /* "Master" Side */
@@ -294,13 +294,13 @@ std::string &ShSemMemQue_c::QSemName()
 /*======================================================================================================================*/
 
 TaskControl_ShSM_c::TaskControl_ShSM_c()
- :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_RECEIVE_E, LOG_QUEUE_NAME)
+ :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
 
 TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name)
- :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, sizeof(TskContShmData_s), QUEUE_SEND_E)
+ :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, sizeof(TskContShmData_s), QUEUE_SEND_E,  sizeof(LogMessType_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
@@ -456,30 +456,22 @@ void OpenThread()
 Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
     : TaskControl_ShSM_c(sh_mem_key, sem_name, sq_name, qsem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)
  {
-  //proc_name = ProcName;
+  LogMessType_s MessageToLog;
+
   std::cout << "Entering to " << proc_name << " process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";
-  // sh_mem_id = shmget(sh_mem_key, TSK_CONT_SH_MEM_SIZE, 0666);
-  // if(sh_mem_id == -1)
-  //  {
-  //   perr() << ProcName << " process: Error in shared memory.\n\r";
-  //   error_in_creation = true;
-  //   return;
-  //  }
-  // p_shs = sem_open(sem_name, 0, 0600);
-  // if(p_shs == SEM_FAILED)
-  //  {
-  //   perr() << proc_name << " process: Error in shared memory semaphore.\n\r";
-  //   error_in_creation = true;
-  //   return;
-  //  }
-  // p_shm = (TskContShmData_s *)shmat(sh_mem_id, nullptr, 0);
+
+  MessageToLog = MakeLogMessage(LOG_MESSAGE, proc_type, proc_name.c_str(), "The process started running.");
+  LogEvent(MessageToLog);
  }
 
 Process_c::~Process_c()
  {
-  // if(p_shm != nullptr)
-  //  shmdt(p_shm);
+  LogMessType_s MessageToLog;
+
   std::cout << "Exitting from " << proc_name << " process... \n\r";
+
+  MessageToLog = MakeLogMessage(LOG_MESSAGE, proc_type, proc_name.c_str(), "The process Finished running.");
+  LogEvent(MessageToLog);
  }
 
 
@@ -660,11 +652,12 @@ void ProcMan_c::CheckLogMessageExistance()
    {
     ++ts.tv_sec;
    }
-  size_t bytes_read = mq_timedreceive(p_sq, (char*)&ClientQueueMsg, sizeof(ClientQueueMsg_s), &prio, &ts);
+  ssize_t bytes_read = mq_timedreceive(p_sq, (char*)&ClientQueueMsg, sizeof(LogMessType_s), &prio, &ts);
   //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
   if(bytes_read > 0)
    {
-    if(sizeof(ClientQueueMsg) <= bytes_read )
+    //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
+    if( bytes_read >= (ssize_t)sizeof(ClientQueueMsg) )
      {
       OpenLog(&LogParams);  /* The procedure checks inside if the file is open or not. */
       AddToLog(&LogParams, ClientQueueMsg);

@@ -283,14 +283,14 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
 
 
 DBShmemPriceData_c::DBShmemPriceData_c(int NCities)
- :ShSemMemQue_c(NCities*sizeof(PriceTab_s), QUEUE_RECEIVE_E, QUEUE_NAME)
+ :ShSemMemQue_c(NCities*sizeof(PriceTab_s), QUEUE_RECEIVE_E, QUEUE_NAME, sizeof(ClientQueueMsg_s))
  {
   // LoadShq(QUEUE_RECEIVE_E);
   // LoadShqs();
  }
   
 DBShmemPriceData_c::DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities)
- :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, NCities * sizeof(PriceTab_s), QUEUE_SEND_E)
+ :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, NCities * sizeof(PriceTab_s), QUEUE_SEND_E, sizeof(ClientQueueMsg_s))
  {
   // this->sq_name = sq_name;
   // this->qsem_name = qsem_name;
