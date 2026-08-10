@@ -22,7 +22,6 @@
 #include "Configuration.hpp"
 
 
-#define NETW_PROC_NAME     (char *)"Network"     /* Network process name*/
 
 class Network_c: public Process_c
  {
@@ -55,7 +54,7 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, s
 
 //  }
 
-void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = nullptr, std::string ShapeFileName = "") 
+void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = nullptr, std::string ShapeFileName = "", Network_c *NetCl = nullptr) 
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -74,6 +73,7 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   bool CityFoundInDataBase = false;
   std::string DetectedCityName = "";
   uint32_t RegionCode = 0, EdRegCode = 0;
+  LogMessType_s MessageToLog;
 
   PriceTab_s CityPriceInfo = { 0, 0, 0, {0} };
   size_t i;
@@ -93,7 +93,11 @@ void HandleClient(int clientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
     if (BytesRead <= 0) 
      {
       std::cout << (StdOutNoPiping ? TermRed : "") << "Client disconnected or error." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-
+      if(NetCl != nullptr)
+       {
+        MessageToLog = MakeLogMessage(E_LOG_ATTENTION, NetCl->GetProcName().c_str(), "The cliet disconnected.");
+        NetCl->LogEvent(MessageToLog);
+       }
       break;
      }
 
@@ -249,6 +253,10 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   int opt = 1;
   uint16_t DestinPort;
   timeval timeout;
+  std::string BufForMess;
+  std::ostringstream stream;
+  LogMessType_s MessageToLog;
+
 
   DestinPort = GetDestinPort();
   //DestinPort = DESTIN_PORT;  // For test only.
@@ -263,6 +271,8 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
    {
     //std::cerr << "Socket creation failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Socket creation failed" << (StdErrNoPiping ? TermColorsReset : "");
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+    LogEvent(MessageToLog);      
     return;
    }
 
@@ -271,6 +281,8 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
    {
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "setsockopt failed" << (StdErrNoPiping ? TermColorsReset : "");
     MakeExit();
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+    LogEvent(MessageToLog);      
     return;
    }
 
@@ -279,6 +291,8 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
    {
     //std::cerr << "Setting SO_RCVTIMEO failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+    LogEvent(MessageToLog);      
     // Handle error or close socket
    }
 
@@ -291,6 +305,8 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
    {
     //std::cerr << "Bind failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Bind failed" << (StdErrNoPiping ? TermColorsReset : "");
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+    LogEvent(MessageToLog);      
     MakeExit();
     return;
    }
@@ -300,16 +316,28 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
    {
     //std::cerr << "Listen failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Listen failed" << (StdErrNoPiping ? TermColorsReset : "");
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+    LogEvent(MessageToLog);      
     MakeExit();
     return;
    }
-  std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "Server listening on port " << DestinPort << "..." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+  stream << "Server listening on port " << DestinPort << "...";
+  BufForMess = stream.str();
+  std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << BufForMess << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+  MessageToLog = MakeLogMessage(E_LOG_MESSAGE, GetProcName().c_str(), BufForMess.c_str());
+  LogEvent(MessageToLog);      
  }
 
 void Network_c::OnRunProcess()
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  std::string BufForMess;
+  std::ostringstream stream;
+  char ip_string[INET_ADDRSTRLEN];
+  LogMessType_s MessageToLog;
+
 
   if((DBShmemPriceData == nullptr) && (((ControlDBPrice_s*)p_shm)->ReportQueueName[0] != '\0') && (((ControlDBPrice_s*)p_shm)->ReportSemName[0] != '\0'))
    {
@@ -336,25 +364,43 @@ void Network_c::OnRunProcess()
 
     if (setsockopt(newSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) 
      {
-      perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");      
-     }
+      perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");    
 
-    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New connection accepted." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-    /* Spawn a new thread to handle the client */
-    
-    std::thread t(HandleClient, newSocket, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, &DBShmemPriceData, GetSHPFileName());
-    t.detach(); /* Detach the thread so it runs independently */
+      MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
+      LogEvent(MessageToLog);      
+     }
+    else
+     {
+
+      std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New connection accepted." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+      /* Spawn a new thread to handle the client */
+
+      inet_ntop(AF_INET, &address.sin_addr, ip_string, sizeof(ip_string));
+      stream << "The new client was connected: " << "Socket: " << newSocket << "  Address: " << ip_string << " port: " << address.sin_port;
+      BufForMess = stream.str();
+      
+      std::cout << BufForMess << "\n\r";
+      MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), BufForMess.c_str());
+      LogEvent(MessageToLog);      
+      
+      std::thread t(HandleClient, newSocket, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, &DBShmemPriceData, GetSHPFileName(), this);
+      t.detach(); /* Detach the thread so it runs independently */
+     }
    }
   //std::cout << "Test Delay\n\r";
  }
  
 Network_c::~Network_c()
  {
+  LogMessType_s MessageToLog;
   if(serverSocket != 0)
    {
     close(serverSocket);
     serverSocket = 0;
     std::cout << "The socket was closed. \n\r";
+    MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), "The sockt was closed.");
+    LogEvent(MessageToLog);      
+
    }
   if(DBShmemPriceData == nullptr)
    delete DBShmemPriceData;

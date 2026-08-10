@@ -12,7 +12,6 @@
 #include <sys/shm.h>
 #include <sqlite3.h>
 
-#define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
 
 #define QUEUE_NAME     "/park_pr_db_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 

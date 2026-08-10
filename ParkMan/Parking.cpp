@@ -31,7 +31,6 @@
 
 
 
-#define PARK_PROC_NAME     (char *)"Parking"     /* Parking process name*/
 
 
 Customer_c::Customer_c()

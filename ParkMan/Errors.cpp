@@ -13,7 +13,7 @@ ErrorStreamWrapper_c::ErrorStreamWrapper_c()
 ErrorStreamWrapper_c::~ErrorStreamWrapper_c()
   {
    /* Formats exactrly like: std::cerr<<message<<": "<<strerror(errno)<<"\n\r"; */
-   std::cerr<<buffer.str()<<": "<< std::strerror(saved_errno)<<"\n\r";
+   std::cerr<<buffer.str()<<": "<< std::strerror(saved_errno) <<"\n\r";
   }
 
 

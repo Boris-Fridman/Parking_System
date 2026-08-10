@@ -8,26 +8,26 @@ char const *LogLevelName(LogLevel_e LogLevel)
  {
   switch(LogLevel)
    {
-    case LOG_EVENT:     /* Logging Event   */
-      return "Event";
+    case E_LOG_EVENT:     /* Logging Event   */
+      return "Event    ";
      break;
-    case LOG_MESSAGE:   /* Logging Message */
-      return "Message";
+    case E_LOG_MESSAGE:   /* Logging Message */
+      return "Message  ";
      break;
-    case LOG_ATTENGION: /* Logging Attention */
+    case E_LOG_ATTENTION: /* Logging Attention */
       return "Attention";
      break;
-    case LOG_WARNING:   /* Logging Warning */
-      return "Warning";
+    case E_LOG_WARNING:   /* Logging Warning */
+      return "Warning  ";
      break;
-    case LOG_ERROR:     /* Logging Error   */
-      return "Error";
+    case E_LOG_ERROR:     /* Logging Error   */
+      return "Error    ";
      break;
-    case LOG_FAIL:      /* Logging Fail    */    
-      return "Fail";
+    case E_LOG_FAIL:      /* Logging Fail    */    
+      return "Fail     ";
      break;
     default:
-     return "Unknown";
+     return "Unknown  ";
      break;
    }
  }
@@ -42,6 +42,10 @@ void InitLog(LogParams_s *LogParams, char const FileName[])
  {
   LoadDefParams(LogParams);
   strncpy(LogParams->FileName, FileName, sizeof(LogParams->FileName) - 1);
+
+  OpenLog(LogParams);
+  PrintHeader(LogParams);
+  CloseLog(LogParams);
  }
 
 
@@ -70,12 +74,16 @@ void CloseLog(LogParams_s *LogParams)
     LogParams->FileIsOpen = false;
    }
  }
+void PrintHeader(LogParams_s *LogParams)
+ {
+  fprintf(LogParams->fp, "     Date          Time  %c PID  %c TID  %cProc Name%cLog Level%c     Message\n", LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv);
+ }
 
 void CreateStringLineToLog(char LogString[], size_t MaxSize, LogMessType_s LogMessage, char Divider)
  {
   char TimeBuf[40];
   ConvertTime(&LogMessage.TimeOfHappening, TimeBuf, sizeof(TimeBuf), E_DBS_FORMAT);
-  snprintf(LogString, MaxSize - 2, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, Divider, LogMessage.ProcessID, Divider, LogMessage.ThreadID, Divider, LogLevelName(LogMessage.LogLevel), Divider, LogMessage.ProcName, Divider, LogMessage.LogMessage);
+  snprintf(LogString, MaxSize - 2, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, Divider, LogMessage.ProcessID, Divider, LogMessage.ThreadID, Divider, LogMessage.ProcName, Divider, LogLevelName(LogMessage.LogLevel), Divider, LogMessage.LogMessage);
  }
 
 

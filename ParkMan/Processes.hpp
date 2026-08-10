@@ -133,6 +133,7 @@ class Process_c: public TaskControl_ShSM_c
      void LogEvent(LogMessType_s MessageToLog);
      Process_c& operator = (const Process_c &other) = delete;
      Process_c(const Process_c &other) = delete;
+     std::string &GetProcName();
  };
 
 

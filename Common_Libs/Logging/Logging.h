@@ -17,12 +17,12 @@ typedef
 #endif
 enum LogLevel_e
  {
-  LOG_EVENT,     /* Logging Event     */
-  LOG_MESSAGE,   /* Logging Message   */
-  LOG_ATTENGION, /* Logging Attention */
-  LOG_WARNING,   /* Logging Warning   */
-  LOG_ERROR,     /* Logging Error     */
-  LOG_FAIL,      /* Logging Fail      */
+  E_LOG_EVENT,     /* Logging Event     */
+  E_LOG_MESSAGE,   /* Logging Message   */
+  E_LOG_ATTENTION, /* Logging Attention */
+  E_LOG_WARNING,   /* Logging Warning   */
+  E_LOG_ERROR,     /* Logging Error     */
+  E_LOG_FAIL,      /* Logging Fail      */
  }
 #ifndef __cplusplus
  LogLevel_e
@@ -67,6 +67,8 @@ LogMessType_s
 void LoadDefParams(LogParams_s *DefParams);
 
 void InitLog(LogParams_s *LogParams, char const FileName[]);
+
+void PrintHeader(LogParams_s *LogParams);
 
 void AddToLog(LogParams_s *LogParams, LogMessType_s LogMessage);
 

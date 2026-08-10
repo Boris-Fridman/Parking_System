@@ -11,6 +11,12 @@
 
 #include <sys/types.h>
 
+
+#define DB_PROC_NAME     (char *)"DataBase"     /* Database process name*/
+
+
+
+
 struct CustomerTab_s
  {
   GPS_Cords_s Cords;

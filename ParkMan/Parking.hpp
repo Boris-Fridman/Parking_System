@@ -5,6 +5,11 @@
 
 #include <sys/types.h>
 
+
+#define PARK_PROC_NAME     (char *)"Parking "     /* Parking process name*/
+
+
+
 class Customer_c
  {
   public:

@@ -459,7 +459,7 @@ Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
 
   std::cout << "Entering to " << proc_name << " process...\n\rThe given sh_mem_key is: " << sh_mem_key << " and sem_name: " << sem_name << "\n\r";
 
-  MessageToLog = MakeLogMessage(LOG_MESSAGE,proc_name.c_str(), "The process started running.");
+  MessageToLog = MakeLogMessage(E_LOG_MESSAGE,proc_name.c_str(), "The process started running.");
   LogEvent(MessageToLog);
  }
 
@@ -469,7 +469,7 @@ Process_c::~Process_c()
 
   std::cout << "Exitting from " << proc_name << " process... \n\r";
 
-  MessageToLog = MakeLogMessage(LOG_MESSAGE,  proc_name.c_str(), "The process Finished running.");
+  MessageToLog = MakeLogMessage(E_LOG_MESSAGE,  proc_name.c_str(), "The process Finished running.");
   LogEvent(MessageToLog);
  }
 
@@ -538,7 +538,10 @@ void Process_c::LogEvent(LogMessType_s MessageToLog)
   sem_post(p_shqs);
  }
 
-
+std::string &Process_c::GetProcName()
+ {
+  return proc_name;
+ }
 
 /*======================================================================================================================*/
 

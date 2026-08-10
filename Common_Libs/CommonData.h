@@ -118,7 +118,7 @@ extern "C" {
 
 #define NAME_LEN                  30
 #define PATH_LEN                  300
-#define LOGMSG_LEN                100
+#define LOGMSG_LEN                200
 
 #define DB_FILENAME               "ParkingInfo.sqlite3"
 #define CONF_DIR_NAME             "ConfDir"
