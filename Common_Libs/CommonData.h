@@ -118,7 +118,7 @@ extern "C" {
 
 #define NAME_LEN                  30
 #define PATH_LEN                  300
-#define LOGMSG_LEN                200
+#define LOGMSG_LEN                350
 
 #define DB_FILENAME               "ParkingInfo.sqlite3"
 #define CONF_DIR_NAME             "ConfDir"
@@ -153,6 +153,7 @@ enum Error_Results_e
  {
   E_FAIL,
   E_CORRECT,
+  E_ATTENTION,
   E_WARNING,
   E_SUCCESS,
   E_PROBLEM
