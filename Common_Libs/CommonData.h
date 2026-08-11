@@ -358,6 +358,23 @@ TimeForm_e
 ;
 
 
+#ifndef __cplusplus
+typedef 
+#endif
+enum PriceFormat_e
+ {
+  E_PPH_FULL_FORMAT,   /* Price Per Hour format     - ₪/hour */
+  E_PPH_FORMAT,        /* Price Per Hour format     - ₪/h    */
+  E_ACC_FORMAT,        /* Accumulated price format  - ₪      */
+
+  NUM_PRICE_VARIANTS
+ }
+#ifndef __cplusplus
+PriceFormat_e
+#endif
+;
+
+
 
 /*======================================================================================================================*/
 
@@ -395,6 +412,11 @@ void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colore
 
 void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat);
 
+
+
+/*======================================================================================================================*/
+
+void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated);
 
 
 /*======================================================================================================================*/

@@ -241,6 +241,24 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Price Functions/Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/*  Converts price to string format.                                                                                     */
+void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated)
+ {
+  char const * const units[] = {" ₪ / hour", "₪/h","₪"};
+  snprintf(PriceAsString, PriceStrgSize - 1, "%s%d.%02d%s%s%s", (Formated ? PRICE_COLOR : ""), PriceToConvert / 100, PriceToConvert % 100, (Formated ? PRICEUNITS_COLOR : ""), units[PriceFormat % NUM_PRICE_VARIANTS], (Formated ? TermColorsReset : ""));
+ }
+
+/*======================================================================================================================*/
+
+
+
 #define DEF_INIT_VAL 0xEF45AB12
 
 #define POLYNOM 0x04C11DB7

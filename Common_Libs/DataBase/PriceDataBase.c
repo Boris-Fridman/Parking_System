@@ -258,7 +258,7 @@ int FindParkSessionInDataBase(sqlite3 **conn, uint32_t vehicle_id, const char cl
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Updates existing city in the database.                                                                              */
-int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price)
+int UpdateCityPriceInDataBase(sqlite3 **conn, char const city_name[], int const city_price)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   int result, valtoret = SQLITE_OK;
@@ -363,7 +363,7 @@ int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_ms
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Writes new city to the database.                                                                                    */
-int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price)
+int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char const city_name[], int const city_price)
  {
   int valtoret = SQLITE_OK;
   sqlite3_stmt* stmt = NULL;

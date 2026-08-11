@@ -181,12 +181,16 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                     char old_fill = std::cout.fill();
       
                     CityPPH = CityPriceInfo.Price;
-                    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+                    ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, StdOutNoPiping);
+                    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << buffer << "\n\r";
+                    //std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPPH / 100 << "." << std::setfill('0') << std::setw(2) << CityPPH % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
                     std::cout.copyfmt(old_state);
                     std::cout.fill(old_fill);
 
                     stream << AddrStamp << ": The city " << DetectedCityName << " was found in the database and detected as " << CityPriceInfo.City_Name << "."; 
-                    stream <<" The price will be " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
+                    ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
+                    stream <<" The price will be " << buffer << ".";
+                    //stream <<" The price will be " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
                     BufForMess = stream.str();
                     MessageToLog = MakeLogMessage(E_LOG_MESSAGE, NetCl->GetProcName().c_str(), BufForMess.c_str());
                     NetCl->LogEvent(MessageToLog);
@@ -245,7 +249,9 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
           stream << AddrStamp << ": The start parking of the customer " << CustomerInfo.Customer_Name << " on vehicle " << buffer << " was registered.";
           CordsToString(buffer, sizeof(buffer), CustomerInfo.Cords);
           stream << " Coordinates: " << buffer << " City: " << CityPriceInfo.City_Name; 
-          stream << " price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
+          ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
+          stream << " price: " << buffer;
+          //stream << " price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
           ConvertTime(&CustAckInfo.ParkingStartTime, buffer, sizeof(buffer), E_CAL_FORMAT);
           stream << " Registered parking time: " << buffer;
           BufForMess = stream.str();
@@ -298,14 +304,18 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   stream << AddrStamp << ": The parking was ended. Customer name: " << CustomerInfo.Customer_Name << " on vehicle " << buffer << ".";
   CordsToString(buffer, sizeof(buffer), CustomerInfo.Cords);
   stream << " Coordinates: " << buffer << ". City: " << CityPriceInfo.City_Name << "."; 
-  stream << " Price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
+  ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
+  stream << " Price: " << buffer << ".";
+  //stream << " Price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
   ConvertTime(&CustAckInfo.ParkingStartTime, buffer, sizeof(buffer), E_CAL_FORMAT);
   stream << " Start parking time: " << buffer;
   ConvertTime(&CurrentTime, buffer, sizeof(buffer), E_CAL_FORMAT);
   stream << " End parking time: " << buffer;
   ConvertTime(&CustAckInfo.ParkingDurationTime, buffer, sizeof(buffer), E_DUR_FORMAT);
   stream << " Parking duration: " << buffer;
-  stream << " Final price: " << CustAckInfo.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << CustAckInfo.AccumulatedPrice % 100 << "₪.";
+  ConvertPrice(CustAckInfo.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, false);
+  stream << " Final price: " << buffer << ".";
+//  stream << " Final price: " << CustAckInfo.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << CustAckInfo.AccumulatedPrice % 100 << "₪.";
   BufForMess = stream.str();
   MessageToLog = MakeLogMessage(E_LOG_MESSAGE, NetCl->GetProcName().c_str(), BufForMess.c_str());
   NetCl->LogEvent(MessageToLog);

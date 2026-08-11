@@ -99,7 +99,7 @@ int FindParkSessionInDataBase(sqlite3 **conn, uint32_t vehicle_id, const char cl
  * 
  * @return "0" if success, "-1" if error or "-3" if the city wasn't found.
  */
-int UpdateCityPriceInDataBase(sqlite3 **conn, char city_name[], int city_price);
+int UpdateCityPriceInDataBase(sqlite3 **conn, char const city_name[], int const city_price);
 
 /**
  * @brief Updates existing parking session in the database.
@@ -134,7 +134,7 @@ int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_ms
  * 
  * @return One of the database CAPI3REF Result Codes. (See lines 434 - 476 in the "sqlite3.h"-file).
  */
-int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char city_name[], int city_price);
+int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char const city_name[], int const city_price);
 
 
 /** 

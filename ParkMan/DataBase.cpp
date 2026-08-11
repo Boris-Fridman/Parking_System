@@ -122,6 +122,7 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
   unsigned int prio;
   ClientQueueMsg_s ClientQueueMsg;  /* Customer Acknowledge Information. */
   struct timespec ts;
+  char buffer[30];
 
   if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
    {
@@ -132,7 +133,9 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
   //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
   if(bytes_read >= 0)
    {
-    std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << " ag"<< (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+    ConvertPrice(ClientQueueMsg.AccumulatedPrice, buffer, sizeof(ClientQueueMsg.AccumulatedPrice), E_ACC_FORMAT, StdOutNoPiping);
+    std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+    //std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << " ag" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     AddOrUpdateParkingSession(conn, ClientQueueMsg);
    }
  }
@@ -144,7 +147,7 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   int result = 0;
-  char timedurbuf[100], vehidbuf[50];
+  char timedurbuf[50], vehidbuf[50], pricebuf[30];
 
   CreateVehIDFormated(vehidbuf, sizeof(vehidbuf), ClientQueueMsg.Vechicle_ID, StdOutNoPiping);
   CreateLoadDatabase(conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
@@ -155,13 +158,12 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
     old_state.copyfmt(std::cout); 
     char old_fill = std::cout.fill();
 
+    
+    //ConvertPrice(ClientQueueMsg.AccumulatedPrice, pricebuf, sizeof(pricebuf), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of "<< ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " was already existing. Were updated only time and price." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " " << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪" << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-
-    // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-    // printf("The parking session of %s %s was already existing. Were updated only time and price.\n\r", ClientQueueMsg.Customer_Name, vehidbuf);
-    // printf("The parking price was updated to:%d.%02d ₪.\n\r", ClientQueueMsg.AccumulatedPrice / 100, ClientQueueMsg.AccumulatedPrice % 100);
-    // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+    ConvertPrice(ClientQueueMsg.AccumulatedPrice, pricebuf, sizeof(pricebuf), E_ACC_FORMAT, StdOutNoPiping);
+    std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << pricebuf << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+    //std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " " << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪" << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
     std::cout.copyfmt(old_state);
     std::cout.fill(old_fill);
@@ -175,10 +177,6 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
       ConvertTime(&ClientQueueMsg.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
 
       std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of " << ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " starting at " << timedurbuf << " was added successfully. "<< (StdOutNoPiping ? TermColorsReset : "") <<"\n\r";
-
-      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-      // printf("The parking session of %s %s starting at %s was added successfully. \n\r", ClientQueueMsg.Customer_Name, vehidbuf, timedurbuf);
-      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
 
      }
    }

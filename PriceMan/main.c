@@ -36,7 +36,7 @@ int LoadParkManPID(int const argc, char const *argv[]);
 void SendSignal(pid_t const pid);
 
 
-void AddOrUpdateNewCity(char CityName[], int CityPrice);
+void AddOrUpdateNewCity(char const CityName[], int const CityPrice);
 void RemoveCity(char CityName[]);
 void RenameCity(char OldName[], char NewName[]);
 
@@ -284,21 +284,26 @@ void PrintErrorMessage(int const argc, char const *argv[])
 
 static sqlite3 *conn;
 
-void AddOrUpdateNewCity(char CityName[], int CityPrice)
+void AddOrUpdateNewCity(char const CityName[], int const CityPrice)
  {
   int CityID;
   int result = 0;
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  char buffer[50];
 
-  printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice / 100, CityPrice % 100);
+  ConvertPrice(CityPrice, buffer, sizeof(buffer), E_PPH_FULL_FORMAT, StdOutNoPiping);
+
+  printf("Adding the city: %s%s%s and with the price %s to the database\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ?  TermColorsReset : ""), buffer);
+  //printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice / 100, CityPrice % 100);
   CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
   result = UpdateCityPriceInDataBase(&conn, CityName, CityPrice);
   if(result == 0)  /* The reqauired city allready exists in database. */
    {
     if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-    printf("The city \"%s\" was already existing. Was updated only price.\n\r", CityName);
-    printf("The price was updated to: %d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
+    printf("The city \"%s%s%s\" was already existing. Was updated only price.\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ?  TermColorsReset : ""));
+    printf("The price was updated to: %s.\n\r", buffer);
+    //printf("The price was updated to: %d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
     if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
    }
   else if(result < 0)  /* The update wasn't be possible because the city didn't exist. */
@@ -307,9 +312,10 @@ void AddOrUpdateNewCity(char CityName[], int CityPrice)
     result = WriteNewCityToDataBase(&conn, CityID, CityName, CityPrice);
     if(result == 0)
      {
-      if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-      printf("The city \"%s\" with the price %d.%02d ₪ / hour was added successrully. \n\r", CityName,  CityPrice / 100, CityPrice % 100);
-      if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
+      printf("%sThe city \"%s%s%s\" with the price %s%s was added successrully.%s \n\r", (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName,  (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), buffer, (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), (StdOutNoPiping ?  TermColorsReset : ""));
+      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+      // printf("The city \"%s\" with the price %d.%02d ₪ / hour was added successrully. \n\r", CityName,  CityPrice / 100, CityPrice % 100);
+      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
      }
    }
   if(result == -1)
@@ -330,15 +336,17 @@ void RemoveCity(char CityName[])
   result = RemoveCityFromDataBase(&conn, CityName);
   switch (result)
    {
-    case 0:
-      if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-      printf("The city \"%s\" was removed successfully\n\r", CityName);
-      if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);
+    case 0: // CITYNAME_COLOR
+      printf("%sThe city \"%s%s%s\" was removed successfully%s\n\r", (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? TermColorsReset : ""));
+      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
+      // printf("The city \"%s\" was removed successfully\n\r", CityName);
+      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);
      break;
     case -3: 
-      if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_WARNING]);
-      printf("The city \"%s\" was not found\n\r", CityName);
-      if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
+      printf("%sThe city \"%s%s%s\" was not found%s\n\r", (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? CITYNAME_COLOR : ""), CityName, (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? TermColorsReset : ""));     
+      // if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_WARNING]);
+      // printf("The city \"%s\" was not found\n\r", CityName);
+      // if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
      break;
     default: 
       if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
