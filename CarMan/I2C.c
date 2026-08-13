@@ -19,6 +19,7 @@
 #include <sys/ioctl.h>
 #include <fcntl.h>
 #else
+#include <time.h>
 #include "Israel_Shape.h"
 #endif
 
@@ -66,6 +67,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
   SlaveShMem_s SlaveShMem;
+
 #ifdef BEAGLE_BONE
   /* Specify the I2C slave address  */
   int addr = I2C_ADDR; /* Device address */
@@ -88,6 +90,7 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
       exit(1);
   }
 #else
+  srand(time(NULL));
 #endif
 
   
@@ -136,9 +139,14 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     const GPS_Cords_s Netanya     = {.Longitude = 34.86301 , .Latitude = 32.30890 };     
 
     const GPS_Cords_s Cities[] = { GivatHaviva, GivatHen, BneyBraq, TelAviv, Eilat, RamatGan, PetachTiqua, Herzlya, Nahariyya, Netanya };
-    const size_t NumCitiesConsts = sizeof(Cities)/sizeof(Cities[0]);
-    size_t CityToSelect = rand()%NumCitiesConsts;
+    const size_t NumCitiesConsts = sizeof(Cities) / sizeof(Cities[0]);
+    int r;
+    r = rand();
+    size_t CityToSelect = r % NumCitiesConsts;
     CustomerData.Cords = Cities[CityToSelect];
+    // printf("The number of cities is: %ld\n\r", NumCitiesConsts);
+    // printf("Generated number is: %ld\n\r", CityToSelect);
+    // printf("%d mod %ld = %ld\n\r", r, NumCitiesConsts, CityToSelect);
 
     // CustomerData.Cords = TelAviv;
 

@@ -345,6 +345,10 @@ void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive)
     case QUEUE_RECEIVE_E:
       *mq = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
      break;
+    case QUEUE_SEND_RECEIVE_E:
+      *mq = mq_open(QUEUE_NAME, O_CREAT | O_RDWR  , 0644, &attr);
+     break;
+
    }
    
   if (*mq == (mqd_t)(-1)) 
