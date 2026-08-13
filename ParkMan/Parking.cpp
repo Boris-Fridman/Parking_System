@@ -55,6 +55,7 @@ class Parking_c: public Process_c
   public:
     Parking_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
     virtual ~Parking_c();
+  protected:
     virtual void OnRunProcess();
  };
 

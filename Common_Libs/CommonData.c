@@ -231,9 +231,9 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
      break;
     case E_DUR_FORMAT: /* Duration format  d-h:m:s               */
 #if (defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)) && (!defined(__arm__))
-      snprintf(TimeAsStr, TimeStrSize, "%ldd %02ld:%02ld:%02ld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
+      snprintf(TimeAsStr, TimeStrSize, "%ldd - %02ld:%02ld:%02ld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
 #else
-      snprintf(TimeAsStr, TimeStrSize, "%lldd %02lld:%02lld:%02lld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
+      snprintf(TimeAsStr, TimeStrSize, "%lldd - %02lld:%02lld:%02lld", *TimeToConvert / (24 * 60 * 60), (*TimeToConvert / (60 * 60)) % 24, (*TimeToConvert / 60) % 60, *TimeToConvert % 60);
 #endif
      break;
    }

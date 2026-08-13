@@ -46,10 +46,10 @@ class DBShmemPriceData_c:public ShSemMemQue_c
  {
   protected:
     uint16_t OldNumCities = 0;
-
+    Process_c *DbsCl = nullptr;
   public:
-    DBShmemPriceData_c(int NCities);
-    DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities);
+    DBShmemPriceData_c(int NCities, Process_c *DbsCl_ToSet);
+    DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities, Process_c *DbsCl_ToSet);
     ~DBShmemPriceData_c();
     void ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key = 0);
     void LoadCitiesList(PriceTab_s ListOfCities[], int ListSize);

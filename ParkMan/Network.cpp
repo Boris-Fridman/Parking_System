@@ -33,7 +33,9 @@ class Network_c: public Process_c
   public:
     Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
     virtual ~Network_c();
+  protected:
     virtual void OnRunProcess();
+  public:
     Network_c& operator = (const Network_c &other) = delete;
     Network_c(const Network_c &other) = delete;
  };
@@ -433,7 +435,7 @@ void Network_c::OnRunProcess()
 
   if((DBShmemPriceData == nullptr) && (((ControlDBPrice_s*)p_shm)->ReportQueueName[0] != '\0') && (((ControlDBPrice_s*)p_shm)->ReportSemName[0] != '\0'))
    {
-    DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName, ((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities);
+    DBShmemPriceData = new DBShmemPriceData_c(((ControlDBPrice_s*)p_shm)->CitiesNewShmKey, ((ControlDBPrice_s*)p_shm)->CitiesSemName, ((ControlDBPrice_s*)p_shm)->ReportQueueName, ((ControlDBPrice_s*)p_shm)->ReportSemName, ((ControlDBPrice_s*)p_shm)->NumPriceDBCities, this);
    }
 
   if((LastPriceShmKey != ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey) /*&& (((ControlDBPrice_s*)p_shm)->CitiesNewShmKey != 0)*/) /* Checking if the cities' prices' database memory was loaded or changed. */

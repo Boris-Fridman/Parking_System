@@ -126,10 +126,12 @@ class Process_c: public TaskControl_ShSM_c
      virtual ~Process_c();
      void MakeExit();                  /* Breaks the default loop existing in the RunProcess. */
      virtual void RunProcess();        /* This procedure contains main loop with exit condition where is running the "OnRunProcess()" procedure, but can be overwritten according to requirements. */
+  protected:
      virtual void OnStartProcess();    /* This procedure is empty and runs before starting running the process for any initializations. */
      virtual void OnRunProcess();      /* This procedure contains the 1 second sleep and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
      virtual void OnFinishProcess();   /* This procedure is empty and runs after finishing running the process for any deinitializations. */
      virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
+  public:
      void LogEvent(LogMessType_s MessageToLog);
      Process_c& operator = (const Process_c &other) = delete;
      Process_c(const Process_c &other) = delete;

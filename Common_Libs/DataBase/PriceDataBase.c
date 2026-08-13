@@ -349,7 +349,7 @@ int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_ms
       if(StdErrNoPiping)fprintf(stderr, TermColorsReset);
      }
     affected_rows = sqlite3_changes(*conn);
-    if(affected_rows == 0) // No value was found.
+    if(affected_rows == 0) /*  No value was found. */
      {
       valtoret = -3; 
      }
