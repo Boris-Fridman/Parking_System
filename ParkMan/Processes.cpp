@@ -25,10 +25,6 @@ ShSemMem_c::ShSemMem_c(size_t size)
  {
   LoadShm(size);
   LoadShs();
-
-  // GenShSemKeyID(sh_sem_key, sem_name,  p_shs);
-  // sem_post(p_shs);
-  // GenShMemKeyID(sh_mem_key, sh_mem_id, p_shm, size);
  }
 
 ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
@@ -38,34 +34,12 @@ ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
   this->sem_name = sem_name;
   LoadShm(size);
   LoadShs();
-
-  // p_shs = sem_open(sem_name, 0, 0600);
-  // if(p_shs == SEM_FAILED)
-  //  {
-  //   ShSnc = true; 
-  //   return;
-  //  }
-  // sh_mem_id = shmget(sh_mem_key, size, 0666);
-  // if(sh_mem_id == -1)
-  //  {
-  //   ShMnc = true;
-  //   return;
-  //  }
-  // p_shm = shmat(sh_mem_id, nullptr, 0);
  }
 
 ShSemMem_c::~ShSemMem_c()
  {
-  // if(p_shm != nullptr)
-  //  shmdt(p_shm);  // Detach
-  // if(created)
-  //  {
-  //   shmctl(sh_mem_id, IPC_RMID, nullptr); /* Shared memory control */
-  //   sem_unlink(sem_name.c_str());
-  //  }
   RemoveShm();
   RemoveShs();
-
  }
 
 
@@ -206,6 +180,9 @@ void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basi
     case QUEUE_RECEIVE_E:
       p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDONLY, 0644, &attr);
      break;
+    case QUEUE_SEND_RECEIVE_E:
+      p_sq = mq_open(sq_name.c_str(), O_CREAT | O_RDWR  , 0644, &attr);
+     break;
    }
   if (p_sq == (mqd_t)(-1)) 
    {
@@ -235,7 +212,6 @@ void ShSemMemQue_c::LoadShqs()
     if(p_shqs == SEM_FAILED)
      {
       perr() << (StdErrNoPiping ? TermRed : "") << "The semaphore wasn't created" << (StdErrNoPiping ? TermColorsReset : "");
-      //ShSnc = true; /* Shared Semaphore not created */
       return;
      }
     std::cout << (StdOutNoPiping ? TermBrightBlue : "") << "The semaphore was opened successfully: "<< (StdOutNoPiping ? TermBrightCyan : "") << p_shqs << " " << qsem_name << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
@@ -293,7 +269,7 @@ std::string &ShSemMemQue_c::QSemName()
 /*======================================================================================================================*/
 
 TaskControl_ShSM_c::TaskControl_ShSM_c()
- :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s))
+ :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_SEND_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
@@ -385,14 +361,27 @@ bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
     ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
     sem_post(p_shs);
     return Result;
-
    }
   return false;
-  // sem_wait(p_shs);
-  // Result = ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired;
-  // ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBUpdateRequired = false;
-  // sem_post(p_shs);
-  // return Result;
+ }
+
+void TaskControl_ShSM_c::LogEvent(LogMessType_s MessageToLog)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  //bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  size_t Len;
+  Len = sizeof(LogMessType_s);
+  sem_wait(p_shqs);
+  if (mq_send(p_sq, (char*)&MessageToLog, Len, 0) == -1)
+   {
+    perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "mq_send failed" << (StdErrNoPiping ? TermColorsReset : "");
+   } 
+  else 
+   {
+    //std::cout << "Message sent successfully. " << Len << " bytes sent." << "\n\r";
+   }
+  sem_post(p_shqs);
  }
 
 
@@ -402,10 +391,17 @@ bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
 /*======================================================================================================================*/
 
 
-pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[])
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  if(TaskControl != nullptr)
+   {
+    std::ostringstream stream;    stream.str("");    stream.clear();
+    stream << "Starting the " << ProcName << " process...";
+    TaskControl->LogEvent(MakeLogMessage(E_LOG_EVENT, "Main    ", stream.str().c_str()));      
+   }
 
   pid_t proc_pid;
   proc_pid = fork();
@@ -521,22 +517,6 @@ void Process_c::CheckExitStatus()
   exit_required |= (getppid() == 1);            // Checking if the parent process is running. If not enables exit.
  }   
 
-
-void Process_c::LogEvent(LogMessType_s MessageToLog)
- {
-  size_t Len;
-  Len = sizeof(LogMessType_s);
-  sem_wait(p_shqs);
-  if (mq_send(p_sq, (char*)&MessageToLog, Len, 0) == -1)
-   {
-    perror("mq_send failed");
-   } 
-  else 
-   {
-    printf("Message sent successfully. %ld bytes sent.\n\r", Len);
-   }
-  sem_post(p_shqs);
- }
 
 std::string &Process_c::GetProcName()
  {

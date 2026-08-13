@@ -42,7 +42,7 @@
 
 
 
-void CatchChildZombie();
+void CatchChildZombie(ProcMan_c *TaskControl = nullptr);
 void WaitUntilFinised();
 
 void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
@@ -77,6 +77,7 @@ int main(int const argc, char const *argv[])
   InitConfiguration(argv[0]);
 
   ProcMan_c TaskContSh;  /* Attention !!! The class must be defined when configuration was allready loaded. */
+  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, "Main    ", "Starting ParkMan Program..."));
 
   // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
   // std::cout << TestString << "\n\r";
@@ -88,13 +89,13 @@ int main(int const argc, char const *argv[])
   // std::cout << TestString << "\n\r";
 
 
-  GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
-  double d;
-  d = GetDistance(TelAviv, Jerusalem);
+  // GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
+  // double d;
+  // d = GetDistance(TelAviv, Jerusalem);
 
-  std::cout << std::fixed << std::setprecision(6);
+  // std::cout << std::fixed << std::setprecision(6);
   
-  std::cout << d << "\n\r";
+  // std::cout << d << "\n\r";
  
   own_pid = getpid();
 
@@ -120,16 +121,17 @@ int main(int const argc, char const *argv[])
 
   ProcParams_s ProcParams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
 
+
   ProcParams.ProcType = PROC_DATABASE_E;
-  database_pid = OpenProcess(DataBaseProc, ProcParams, (char*)DB_PROC_NAME);
+  database_pid = OpenProcess(DataBaseProc, ProcParams, (char*)DB_PROC_NAME, &TaskContSh);
    
   ProcParams.ProcType = PROC_PARKING_E;
-  parking_pid = OpenProcess(ParkingProc, ProcParams, (char*)PARK_PROC_NAME);
+  parking_pid = OpenProcess(ParkingProc, ProcParams, (char*)PARK_PROC_NAME, &TaskContSh);
   
   ProcParams.ProcType = PROC_NETWORK_E;
-  network_pid = OpenProcess(NetworkProc, ProcParams, (char*)NETW_PROC_NAME);
+  network_pid = OpenProcess(NetworkProc, ProcParams, (char*)NETW_PROC_NAME, &TaskContSh);
 
-
+ 
 
 //  sleep(10);
 //  TaskContSh.ExitProcess(PROC_DATABASE_E);
@@ -148,7 +150,7 @@ int main(int const argc, char const *argv[])
       TaskContSh.ReloadDatabase();
       UpdateDataBase = false;
      }
-    CatchChildZombie();
+    CatchChildZombie(&TaskContSh);
     sleep(1);
    } while (!FullExist);
 
@@ -157,6 +159,8 @@ int main(int const argc, char const *argv[])
   WaitUntilFinised();
 
   RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
+
+  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, "Main    ", "The ParkMan Program finished running."));
 
   std::cout << "The program finished running.\n\r";
   return 0;
@@ -169,7 +173,7 @@ int main(int const argc, char const *argv[])
 
 
 /* Catching Zombie-Child-Processes and removing them. */ 
-void CatchChildZombie()
+void CatchChildZombie(ProcMan_c *TaskControl)
  {
   //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -181,6 +185,12 @@ void CatchChildZombie()
    if(w > 0)
     {
      std::cout << "The process with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << w  << (StdOutNoPiping ? TermColorsReset : "") << " finished running.\n\r";
+     if(TaskControl)
+      {
+       std::ostringstream stream;    stream.str("");    stream.clear();
+       stream << "The process with PID: " << w << " finished running emergencely.";
+       TaskControl->LogEvent(MakeLogMessage(E_LOG_FAIL, "Main    ", stream.str().c_str()));      
+      }
     }
   } while (w > 0);
  }
@@ -224,10 +234,10 @@ void CreatePIDFile(int const argc, char const *argv[], char FileName[])
   std::ofstream outFile(FileName);
   if(outFile.is_open())
    {
-    outFile<<pid;
+    outFile << pid;
     outFile.close();
    }
-  std::cout<<FileName<<"\n\r";
+  std::cout << FileName << "\n\r";
 
  }
 
@@ -281,8 +291,6 @@ void EnableSignals()
   /* Bind Ctrl-\ signal to our handler function */
   sigaction(SIGQUIT, &sa, nullptr);
   
-  
-
   std::cout << "The signals were created successfully.\n\r";
  }
 

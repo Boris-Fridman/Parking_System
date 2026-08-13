@@ -169,7 +169,8 @@ typedef
 enum QueueDirection_e
  {
   QUEUE_SEND_E,
-  QUEUE_RECEIVE_E
+  QUEUE_RECEIVE_E,
+  QUEUE_SEND_RECEIVE_E
  }
 #ifndef __cplusplus
 QueueDirection_e

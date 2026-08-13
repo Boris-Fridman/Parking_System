@@ -94,6 +94,7 @@ class TaskControl_ShSM_c:public ShSemMemQue_c
     std::string &GetSHPFileName();    
     void ReloadDatabase();
     bool DataBaseMustBeReloaded();  /* Is used from the slave side. Attention After reading the "DBUpdateRequired" flag it resets it immediately. So the result must be read at least and not more than one time. In case of multiusage the result must be saved in an emporary variable.*/    
+    void LogEvent(LogMessType_s MessageToLog);
  };
 
 
@@ -113,7 +114,6 @@ struct ProcParams_s
 
 typedef void(*subprocess_t)(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
 
-pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[]);
 
 class Process_c: public TaskControl_ShSM_c
  {
@@ -132,7 +132,6 @@ class Process_c: public TaskControl_ShSM_c
      virtual void OnFinishProcess();   /* This procedure is empty and runs after finishing running the process for any deinitializations. */
      virtual void CheckExitStatus();   /* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
   public:
-     void LogEvent(LogMessType_s MessageToLog);
      Process_c& operator = (const Process_c &other) = delete;
      Process_c(const Process_c &other) = delete;
      std::string &GetProcName();
@@ -156,5 +155,6 @@ class ProcMan_c: public TaskControl_ShSM_c
  
 
  
+pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl = nullptr);
 
 
