@@ -35,7 +35,7 @@ bool get_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno)
 
 
 
-pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, char sem_name[])
+pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, char sem_name[], char sh_que_name[], char qsem_name[])
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -53,7 +53,16 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
     case 0:  /* Child*/
       proc_pid = getpid();
       printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
-      ProcToOpen(sh_mem_key, sem_name);
+      {
+       SlaveShMem_s TskContShms;
+       SlaveShQue_s TskContShqs;
+       InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
+       LogSQBriefParams_s LogSQBriefParams = LgSlToLgPars(&TskContShqs);
+       LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Stargint Process..."));
+       ProcToOpen(&TskContShms, &TskContShqs);
+       LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Finishing Process..."));
+       DeinitProcessing(&TskContShms, &TskContShqs);
+      }
       printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);
      break;
@@ -171,8 +180,10 @@ void DeactivateMasterShQue(MasterShQue_s *MasterShQue)
  }
 
 
-void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, QueueDirection_e const SendReceive, long int const msg_size)
+void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, char sh_que_name[], char qsem_name[], QueueDirection_e const SendReceive, long int const msg_size)
  {
+  strncpy(SlaveShQue->sq_name, sh_que_name, sizeof(SlaveShQue->sq_name));
+  strncpy(SlaveShQue->sem_name, qsem_name, sizeof(SlaveShQue->sem_name));
   InitQueue(&SlaveShQue->mq, SendReceive, SlaveShQue->sq_name, msg_size);
   SlaveShQue->p_shs = sem_open(SlaveShQue->sem_name, 0, 0600);
   if(SlaveShQue->p_shs == SEM_FAILED)
@@ -264,6 +275,19 @@ void *LogThread(void *Args)
   return NULL;
  }
 
+void InitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs, key_t sh_mem_key, const char sem_name[], char sh_que_name[], char qsem_name[])
+ {
+  ActivateSlaveShMem(TskContShms, sh_mem_key, sem_name, sizeof(TskContShmData_s));
+  ActivateSlaveShQue(TskContShqs, sh_que_name, qsem_name, QUEUE_SEND_E, sizeof(LogMessType_s));
+ }
+
+void DeinitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs)
+ {
+  DeactivateSlaveShMem(TskContShms);
+  DeactivateSlaveShQue(TskContShqs);
+ }
+
+
 void CheckLogMessageExistance(LogData_s *LogData)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -292,3 +316,42 @@ void CheckLogMessageExistance(LogData_s *LogData)
    }  
  }
 
+
+LogSQBriefParams_s LgSlToLgPars(SlaveShQue_s *LogQueueParams)  /* Log Slave queue&semaphore params to breaf Log params. */
+ {
+  LogSQBriefParams_s Result;
+  Result.mq = LogQueueParams->mq;
+  Result.p_shs = LogQueueParams->p_shs;
+  return Result;
+ }
+
+LogSQBriefParams_s LgMsToLgPars(MasterShQue_s *LogQueueParams)  /* Log Master queue&semaphore params to breaf Log params. */
+ {
+  LogSQBriefParams_s Result;
+  Result.mq = LogQueueParams->mq;
+  Result.p_shs = LogQueueParams->p_shs;
+  return Result;
+ }
+
+
+void LogEvent(LogSQBriefParams_s *LogQueueParams, LogMessType_s MessageToLog)
+ {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  //bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
+  size_t Len;
+  char buf[50];
+  Len = sizeof(LogMessType_s);
+  sem_wait(LogQueueParams->p_shs);
+  if (mq_send(LogQueueParams->mq, (char*)&MessageToLog, Len, 0) == -1)
+   {
+    snprintf(buf, sizeof(buf), "%smq_send failed%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+    perror(buf);
+   } 
+  else 
+   {
+    //std::cout << "Message sent successfully. " << Len << " bytes sent." << "\n\r";
+   }
+  sem_post(LogQueueParams->p_shs);
+
+ }

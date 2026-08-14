@@ -21,7 +21,7 @@
 char ConfData[NUM_CONF_IT][2][PATH_LEN] = 
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },
-  { LOGFILEPATH     , "../" CONF_DIR_NAME "/" LOG_FILENAME        },
+  { LOGFILEPATH     , "../" CONF_DIR_NAME "/" LOG_CAR_FILENAME    },
   { DHCPENSTAT      , TO_STRING(0)                                },
   { DHCPNAME        , ""                                          },
   { IPADDRESS       , DESTIN_IP                                   },

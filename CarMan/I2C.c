@@ -62,11 +62,10 @@ void read_i2c(int file, unsigned char buffer[], size_t size)
 
 
 
-void I2CProc(key_t sh_mem_key, char sem_name[])
+void I2CProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs)
  {
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
-  SlaveShMem_s SlaveShMem;
 
 #ifdef BEAGLE_BONE
   /* Specify the I2C slave address  */
@@ -94,14 +93,13 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
 #endif
 
   
-  ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
   
   strcpy(CustomerData.Customer_Name, GetClientName());  //strcpy(CustomerData.Customer_Name, "Boris Fridman");
   CustomerData.Vechicle_ID = GetVechicleID();           //CustomerData.Vechicle_ID = 13248551;
 
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
-  while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem.p_shm, PROC_I2C_E) != true))
+  while((getppid() != 1) && (get_flag((TskContShmData_s*)TskContShms->p_shm, PROC_I2C_E) != true))
    {
 #ifdef BEAGLE_BONE
     // /* Generating random GPS coordingates. */
@@ -163,7 +161,6 @@ void I2CProc(key_t sh_mem_key, char sem_name[])
     sleep(10);
    }
   CloseNetQueue(&NetQueue.mq);
-  DeactivateSlaveShMem(&SlaveShMem);
 
 #ifdef BEAGLE_BONE
   close(file);

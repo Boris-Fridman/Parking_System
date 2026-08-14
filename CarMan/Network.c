@@ -22,7 +22,6 @@
 
 #include "Configuration.h"
 
-
 #define QUEUE_NAME     "/network_queue"
 #define MAX_SIZE       1024
 
@@ -36,20 +35,16 @@ void CloseNetwork(NetworkParams_s *NetPars);
 
 
 
-void NetworkProc(key_t sh_mem_key, char sem_name[])
+void NetworkProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs)
  {
   NetworkParams_s NetworkParams = {0};
   NetQueue_s NetQueue = {0};
-  SlaveShMem_s SlaveShMem;
-
-  ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
 
   InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E);
 
-  DoNetwork(&SlaveShMem, &NetworkParams, &NetQueue);
+  DoNetwork(TskContShms, &NetworkParams, &NetQueue);
 
   CloseNetQueue(&NetQueue.mq);
-  DeactivateSlaveShMem(&SlaveShMem);
  }
 
 

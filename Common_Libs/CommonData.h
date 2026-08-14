@@ -123,6 +123,7 @@ extern "C" {
 #define DB_FILENAME               "ParkingInfo.sqlite3"
 #define CONF_DIR_NAME             "ConfDir"
 #define LOG_FILENAME              "ParkingInfo.log"
+#define LOG_CAR_FILENAME          "CarParkingInfo.log"
 #define DB_MAN_PID_FILENAME       "DB_MAN_PID"
 #define DB_UPADATE_SIGNAL         SIGUSR1
 

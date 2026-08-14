@@ -6,10 +6,11 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+#include "Processes.h"
 
 
 
-void I2CProc(key_t sh_mem_key, char sem_name[]);
+void I2CProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
 
 
 #endif  //  ____I2C_h__

@@ -4,6 +4,8 @@
 #include <mqueue.h>
 #include <arpa/inet.h>
 #include "CommonData.h"
+#include "Processes.h"
+
 
 typedef struct NetQueue_s
  {
@@ -19,7 +21,7 @@ NetworkParams_s;
 
 
 
-void NetworkProc(key_t sh_mem_key, char sem_name[]);
+void NetworkProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 
