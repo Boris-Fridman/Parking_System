@@ -9,6 +9,8 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <semaphore.h>
+#include <mqueue.h>
+#include "Logging.h"
 
 
 
@@ -35,6 +37,33 @@ typedef struct SlaveShMem_s
  }SlaveShMem_s;
 
 
+typedef struct MasterShQue_s
+ {
+  char sq_name[PATH_LEN];    /* Shared Queue name                        */
+  key_t sh_sem_key;          /* Task Control shared semaphore key        */
+  mqd_t mq;                  /* Shared Queue variable                    */
+  char sem_name[NAME_LEN];   /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+  sem_t *p_shs;              /* Pointer to Task Control shared semaphore */                                                                               // Is used as reference for accessing.
+ }MasterShQue_s;
+
+typedef struct SlaveShQue_s
+ {
+  char sq_name[PATH_LEN];    /* Shared Queue name                        */
+  mqd_t mq;                  /* Shared Queue variable                    */
+  char sem_name[NAME_LEN];   /* Task Control shared semaphore name       */  // Is used for unlinking.   // Is used for sharing by other side process.
+  sem_t *p_shs;
+ }SlaveShQue_s;
+
+
+typedef struct LogData_s
+ {
+  pthread_t LogTHread;
+  LogParams_s LogParams;
+  mqd_t *p_sq;
+  bool Exit;
+ }LogData_s;
+
+
 typedef void(*subprocess_t)(key_t sh_mem_key, char sem_name[]);
 
 
@@ -55,6 +84,23 @@ void DeactivateSlaveShMem(SlaveShMem_s *SlaveShMem);
 
 
 
+void ActivateMasterShQue(MasterShQue_s *MasterShQue, QueueDirection_e const SendReceive, char const basic_name[], long int msg_size);
+void DeactivateMasterShQue(MasterShQue_s *MasterShQue);
+
+void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, QueueDirection_e const SendReceive, long int const msg_size);
+void DeactivateSlaveShQue(SlaveShQue_s *SlaveShQue);
+
+
+
+
+
+void InitQueue(mqd_t *mq, QueueDirection_e SendReceive, char const que_name[], long int const msg_size);
+void CloseQueue(mqd_t *mq, char const que_name[]);
+
+
+
+void InitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData);
+void DeinitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData);
 
 #endif  // ____Processes_h__
 

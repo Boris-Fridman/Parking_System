@@ -44,7 +44,7 @@ void NetworkProc(key_t sh_mem_key, char sem_name[])
 
   ActivateSlaveShMem(&SlaveShMem, sh_mem_key, sem_name, sizeof(TskContShmData_s));
 
-  InitNetQueue(&NetQueue.mq, true);
+  InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E);
 
   DoNetwork(&SlaveShMem, &NetworkParams, &NetQueue);
 

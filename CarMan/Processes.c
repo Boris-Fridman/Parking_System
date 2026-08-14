@@ -3,6 +3,20 @@
 #include <unistd.h>
 #include <stdarg.h> /* Required header for variadic processing. */
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <time.h>
+#include <fcntl.h>
+#include <pthread.h>
+
+#include "Configuration.h"
+
+#define LOG_QUEUE_NAME     "/car_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
+
+
+void *LogThread(void *Args);
+void CheckLogMessageExistance(LogData_s *LogData);
+
+/*======================================================================================================================*/
 
 
 void set_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno, bool state)
@@ -80,6 +94,25 @@ void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
   while (*p_shs == SEM_FAILED);
  }
 
+void GenShQueName(char const basic_name[], char que_name[])
+ {
+  char tempstrg[PATH_LEN];
+  struct stat st;
+  do
+   {
+    /* code */
+    sprintf(que_name, "%s_%d", basic_name, rand());
+    if(que_name[0] != '/')
+     {
+      sprintf(tempstrg, "/%s", que_name);
+      strcpy(que_name, tempstrg);
+     }
+    sprintf(tempstrg, "/dev/mqueue%s", que_name);
+   } 
+  while (stat(tempstrg, &st) == 0);
+ }
+
+
 
 void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size)
  {
@@ -95,15 +128,13 @@ void DeactivateMasterShMem(MasterShMem_s *MasterShMem)
   sem_unlink(MasterShMem->sem_name);
  }
 
-
-
 void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char sem_name[], int size)
  {
   
   SlaveShMem->sh_mem_id = shmget(sh_mem_key, size, 0666);
   if(SlaveShMem->sh_mem_id == -1)
    {
-    // perror(" process: Error in shared memory.\n\r");
+    perror(" process: Error in shared memory.\n\r");
     // error_in_creation = true;
     return;
    }
@@ -111,7 +142,7 @@ void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char s
   SlaveShMem->p_shs = sem_open(sem_name, 0, 0600);
   if(SlaveShMem->p_shs == SEM_FAILED)
    {
-    // perror(" process: Error in shared memory semaphore.\n\r");
+    perror(" process: Error in shared memory semaphore.\n\r");
     // error_in_creation = true;
     return;
    }
@@ -122,5 +153,142 @@ void DeactivateSlaveShMem(SlaveShMem_s *SlaveShMem)
  {
   if(SlaveShMem->p_shm != NULL)
    shmdt(SlaveShMem->p_shm);
+ }
+
+
+void ActivateMasterShQue(MasterShQue_s *MasterShQue, QueueDirection_e const SendReceive, char const basic_name[], long int msg_size)
+ {
+  GenShQueName(basic_name, MasterShQue->sq_name);
+  InitQueue(&MasterShQue->mq, SendReceive, MasterShQue->sq_name, msg_size);
+  GenShSemKeyID(&MasterShQue->sh_sem_key,  MasterShQue->sem_name,  &MasterShQue->p_shs);
+  sem_post(MasterShQue->p_shs);
+ }
+
+void DeactivateMasterShQue(MasterShQue_s *MasterShQue)
+ {
+  CloseQueue(&MasterShQue->mq, MasterShQue->sq_name);
+  sem_unlink(MasterShQue->sem_name);
+ }
+
+
+void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, QueueDirection_e const SendReceive, long int const msg_size)
+ {
+  InitQueue(&SlaveShQue->mq, SendReceive, SlaveShQue->sq_name, msg_size);
+  SlaveShQue->p_shs = sem_open(SlaveShQue->sem_name, 0, 0600);
+  if(SlaveShQue->p_shs == SEM_FAILED)
+   {
+    perror(" process: Error in shared memory semaphore.\n\r");
+    // error_in_creation = true;
+    return;
+   }
+ }
+
+void DeactivateSlaveShQue(SlaveShQue_s *SlaveShQue)
+ {
+  CloseQueue(&SlaveShQue->mq, SlaveShQue->sq_name);
+ }
+
+
+
+
+void InitQueue(mqd_t *mq, QueueDirection_e const SendReceive, char const que_name[], long int const msg_size)
+ {
+  struct mq_attr attr;
+
+  /* Define queue attributes */
+  attr.mq_flags = 0;
+  attr.mq_maxmsg = 10;        // Maximum messages in queue
+  attr.mq_msgsize = msg_size; // Maximum size of any message
+  attr.mq_curmsgs = 0;
+  /* Create and open the queue for writing */
+  switch(SendReceive)
+   {
+    case QUEUE_SEND_E:
+      *mq = mq_open(que_name, O_CREAT | O_WRONLY, 0644, &attr);
+     break;
+    case QUEUE_RECEIVE_E:
+      *mq = mq_open(que_name, O_CREAT | O_RDONLY, 0644, &attr);
+     break;
+    case QUEUE_SEND_RECEIVE_E:
+      *mq = mq_open(que_name, O_CREAT | O_RDWR  , 0644, &attr);
+     break;
+
+   }
+   
+  if (*mq == (mqd_t)(-1)) 
+   {
+    perror("mq_open failed");
+    exit(1);
+   }
+
+ }
+
+void CloseQueue(mqd_t *mq, char const que_name[])
+ {
+  mq_close(*mq);
+  mq_unlink(que_name); /* Removes queue from system completely */
+ }
+
+
+void InitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData)
+ {
+  ActivateMasterShMem(TskContShms, sizeof(TskContShmData_s));
+  ActivateMasterShQue(TskContShqs, QUEUE_SEND_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s));
+
+  memset((void*)&LogData->LogParams, 0, sizeof(LogData->LogParams));
+  LogData->p_sq = &TskContShqs->mq;
+  LogData->Exit = false;
+  pthread_create(&LogData->LogTHread, NULL, LogThread, LogData);
+ }
+
+void DeinitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData)
+ {
+  LogData->Exit = true;
+  pthread_join(LogData->LogTHread, NULL);
+
+  DeactivateMasterShQue(TskContShqs);
+  DeactivateMasterShMem(TskContShms);
+ }
+
+void *LogThread(void *Args)
+ {
+  if(Args != NULL)
+   {
+    LogData_s *LogData = Args;
+    InitLog(&LogData->LogParams, GetLogFilePathName());
+    while(!LogData->Exit)
+     {
+      CheckLogMessageExistance(LogData);
+     }
+   }
+  return NULL;
+ }
+
+void CheckLogMessageExistance(LogData_s *LogData)
+ {
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  unsigned int prio;
+  LogMessType_s ClientQueueMsg;
+  struct timespec ts;
+
+  if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
+   {
+    ++ts.tv_sec;
+   }
+  ssize_t bytes_read = mq_timedreceive(*LogData->p_sq, (char*)&ClientQueueMsg, sizeof(LogMessType_s), &prio, &ts);
+  //printf("Num queue received bytes %ld\n\r", bytes_read);
+  if(bytes_read > 0)
+   {
+    //printf("Num queue received bytes %ld\n\r", bytes_read);
+    if( bytes_read >= (ssize_t)sizeof(ClientQueueMsg) )
+     {
+      OpenLog(&LogData->LogParams);  /* The procedure checks inside if the file is open or not. */
+      AddToLog(&LogData->LogParams, ClientQueueMsg);
+     }
+    else
+     if(bytes_read <= 0)
+      CloseLog(&LogData->LogParams);
+   }  
  }
 

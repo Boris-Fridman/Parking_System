@@ -562,7 +562,6 @@ void GenShQueName(std::string const &basic_name, std::string &que_name)
     /* code */
     RandSoufix = std::to_string(rand());
     que_name = basic_name + "_" + RandSoufix;
-    //que_name = basic_name;
     if(que_name.c_str()[0] != '/')
      que_name = "/" + que_name;
    } 
@@ -592,7 +591,7 @@ ProcMan_c::~ProcMan_c()
 
 void ProcMan_c::LoadLogThread()
  {
-  pthread_create(&LogTHread, NULL, ProcMan_c::StatLogThread, this);
+  pthread_create(&LogTHread, nullptr, ProcMan_c::StatLogThread, this);
  }
 
 
@@ -617,7 +616,7 @@ void *ProcMan_c::LogThread(void *Args)
    {
     CheckLogMessageExistance();
    }
-  
+   
   return nullptr;
  }
 

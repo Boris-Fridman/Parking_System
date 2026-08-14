@@ -38,6 +38,10 @@ int main(int const argc, char const *argv[])
 
   //code
   MasterShMem_s TskContShms;
+  MasterShQue_s TskContShqs;
+  LogData_s TskContLogData;
+
+
   UNUSED(argc);
   
   own_pid = getpid();
@@ -45,7 +49,8 @@ int main(int const argc, char const *argv[])
 
   InitConfiguration(argv[0]);
 
-  ActivateMasterShMem(&TskContShms, sizeof(TskContShmData_s));
+  InitManaging(&TskContShms, &TskContShqs, &TskContLogData);
+
 
   EnableSignals();
 
@@ -68,7 +73,8 @@ int main(int const argc, char const *argv[])
   WaitUntilFinised(network_pid, i2c_pid);
 
 
-  DeactivateMasterShMem(&TskContShms);
+
+  DeinitManaging(&TskContShms, &TskContShqs, &TskContLogData);
 
   printf("Exitting...\n\r");
   return 0;

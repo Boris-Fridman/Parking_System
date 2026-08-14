@@ -34,7 +34,7 @@ char const *LogLevelName(LogLevel_e LogLevel)
 
 void LoadDefParams(LogParams_s *DefParams)
  {
-  memset(DefParams, 0, sizeof(LogMessType_s));
+  memset(DefParams, 0, sizeof(LogParams_s));
   DefParams->DatDiv = '\t';
  }
 

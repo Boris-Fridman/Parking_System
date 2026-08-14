@@ -11,6 +11,8 @@
 
 void InitConfiguration(char const *OwnProgName);
 
+char const *GetLogFilePathName();          // Path & Name of the file with the program log.
+
 bool GetUseDHCPState();
 
 char const *GetDestinDHCPName();

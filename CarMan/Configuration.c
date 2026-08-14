@@ -8,6 +8,7 @@
 
 
 #define CONFIGPATH     "CONFIGPATH"
+#define LOGFILEPATH    "LOGFILEPATH"
 #define DHCPENSTAT     "DHCPENSTAT"
 #define DHCPNAME       "DHCPNAME"
 #define IPADDRESS      "IPADDRESS"
@@ -16,10 +17,11 @@
 #define VECHICLEID     "VECHICLEID"
 
 
-#define NUM_CONF_IT   7
+#define NUM_CONF_IT   8
 char ConfData[NUM_CONF_IT][2][PATH_LEN] = 
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },
+  { LOGFILEPATH     , "../" CONF_DIR_NAME "/" LOG_FILENAME        },
   { DHCPENSTAT      , TO_STRING(0)                                },
   { DHCPNAME        , ""                                          },
   { IPADDRESS       , DESTIN_IP                                   },
@@ -35,6 +37,10 @@ void InitConfiguration(char const *OwnProgName)
  }
 
 
+char const *GetLogFilePathName()          // Path & Name of the file with the program log.
+ {
+  return GetDataByName(ConfData, NUM_CONF_IT, LOGFILEPATH);
+ }
 
 bool GetUseDHCPState()
  {
