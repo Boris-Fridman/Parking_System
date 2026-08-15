@@ -439,7 +439,7 @@ void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStr
  * @return Calculated CRC.
  *
  */
-uint32_t FindCRC(uint8_t * Data, uint8_t Length, uint32_t InitVal);
+uint32_t FindCRC(uint8_t const *Data, uint8_t Length, uint32_t InitVal);
 
 /**
  * @brief Appends to the end of the data array the calculated CRC from it. The length must include the place of the CRC.
@@ -469,7 +469,7 @@ void Add_CRC(uint8_t buf[], size_t len);
  *              and the result will be compared to the last 4 bytes.
  *
  */
-bool CRC_Correct(uint8_t buf[], size_t len);
+bool CRC_Correct(uint8_t const buf[], size_t len);
 
 /**
  * @brief
@@ -510,7 +510,7 @@ ssize_t EncodeNetData(uint8_t const * const CustomData, uint8_t Len, uint8_t **N
  * 
  * @return            "true" if the data was decoded successfully. "false" otherwise.
  */
-bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData);
+bool DecodeNetData(uint8_t const NetRecData[], size_t Len, uint8_t *CustomData);
 
 
 /**

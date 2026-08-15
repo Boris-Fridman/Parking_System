@@ -67,6 +67,8 @@ void I2CProc(ProcParams_s *ProcParams)
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
   size_t skipno;
+  bool Exit = false;
+  char buf[100];
 
 
 #ifdef BEAGLE_BONE
@@ -84,11 +86,13 @@ void I2CProc(ProcParams_s *ProcParams)
   /* Open the I2C bus device file (e.g., "/dev/i2c-2")  */
   if ((file = open("/dev/i2c-2", O_RDWR)) < 0) {
       perror("Failed to open the i2c bus");
-      exit(1);
+      Exit = true;
+      //exit(1);
   }
   if (ioctl(file, I2C_SLAVE, addr) < 0) {
       perror("Failed to acquire bus access and/or talk to slave");
-      exit(1);
+      Exit = true;
+      //exit(1);
   }
 #else
   srand(time(NULL));
@@ -101,7 +105,7 @@ void I2CProc(ProcParams_s *ProcParams)
 
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
-  while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_I2C_E) != true))
+  while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_I2C_E) != true) && (Exit != true))
    {
     if(skipno++ >= 10)
      {
@@ -155,10 +159,13 @@ void I2CProc(ProcParams_s *ProcParams)
 
 #endif
 
-      printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
-      printf("The generated cordinates are: ");
-      PrintGPSCords(CustomerData.Cords);
-      printf("\n\r");
+      CordsToString(buf, sizeof(buf), CustomerData.Cords);
+      printf("Customer name: %s Vehicle: %d\n\rThe generated cordinates are: %s\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID, buf);
+
+      // printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
+      // printf("The generated cordinates are: ");
+      // PrintGPSCords(CustomerData.Cords);
+      // printf("\n\r");
 
       /* Senging coordingates to the network process. */
       SendMessageToNetwork(&NetQueue, &CustomerData, sizeof(CustomerData));

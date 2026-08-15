@@ -127,9 +127,9 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
   AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08d LONG %d˚%d'%d\".%08d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #else  // For ARM
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%08ld LONG %d˚%d'%d\".%08ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)(LongConvAng.Dec * 100000000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)(LatConvAng.Dec * 100000000));
+  snprintf(Buf, MaxSize, "%d˚%d'%d\".%03ld LONG %d˚%d'%d\".%03ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #endif
 
   // snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
@@ -272,7 +272,7 @@ void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStr
  */
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*   Calculates CRC from given block of data.                                                                           */
-uint32_t FindCRC(uint8_t *Data, uint8_t Length, uint32_t InitVal)
+uint32_t FindCRC(uint8_t const *Data, uint8_t Length, uint32_t InitVal)
  {
   uint32_t Result;
   uint32_t vl;
@@ -305,7 +305,7 @@ void Add_CRC(uint8_t buf[], size_t len)
 /*  Checks if the CRC is correct.                                                                                       */
 /*  For example if the given length is 12 the CRC checking will be made from the first 8 bytes                          */
 /*  and the result will be compared to the last 4 bytes.                                                                */
-bool CRC_Correct(uint8_t buf[], size_t len)
+bool CRC_Correct(uint8_t const buf[], size_t len)
  {
   uint32_t CalcCRC, RecvCRC;
   CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
@@ -343,7 +343,7 @@ ssize_t EncodeNetData(uint8_t const *const CustomData, uint8_t Len, uint8_t **Ne
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* This function decodes the packet received from network.                                                              */
-bool DecodeNetData(uint8_t NetRecData[], size_t Len, uint8_t *CustomData)
+bool DecodeNetData(uint8_t const NetRecData[], size_t Len, uint8_t *CustomData)
  {
   if (CRC_Correct(NetRecData, Len))
    {

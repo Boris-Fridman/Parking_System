@@ -28,11 +28,13 @@
 
 
 
-bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled);
-void DoNetwork(TaskSMBriefParams_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ);
-bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len);
-void CloseNetwork(NetworkParams_s *NetPars);
+bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool AllwaysTermEnabled);
+void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *NetQ);
+bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Data, size_t Len, CustAcknowledge_s *CustAckInfo_p);
+void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars);
 
+void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, GPS_Cords_s *Cords);
+void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, CustAcknowledge_s *LastCustAckInfo, GPS_Cords_s *Cords);
 
 
 void NetworkProc(ProcParams_s *ProcParams)
@@ -42,7 +44,7 @@ void NetworkProc(ProcParams_s *ProcParams)
 
   InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E);
 
-  DoNetwork(&ProcParams->TskContShms, &NetworkParams, &NetQueue);
+  DoNetwork(ProcParams, &NetworkParams, &NetQueue);
 
   CloseNetQueue(&NetQueue.mq);
  }
@@ -50,7 +52,7 @@ void NetworkProc(ProcParams_s *ProcParams)
 
 
 
-bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
+bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool AllwaysTermEnabled)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -118,14 +120,14 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
      }
    }
   
-  if((UseDHCP) && (host != NULL))
+  if((UseDHCP) && (host != NULL))  /* DHCP configuration was enaled and IP address was detected successfully from DHCP name. */
    {
     fprintf(stdout, "Loading DHCP address...\n\r");
     memcpy(&NetPars->server_addr.sin_addr, host->h_addr_list[0], MIN(host->h_length, (int)sizeof(NetPars->server_addr.sin_addr)));
    }
-  else
+  else  /* Was set the manual IP or IP address wasn't detected from DHCP server. */
    {
-    DestIP = GetDestinAddr();
+    DestIP = GetDestinAddr();  /* Loading IP address from configuration ".ini" file   */
     if(AllwaysTermEnabled)
      {
       fprintf(stdout, "Loading Static IP address...\n\r");
@@ -150,11 +152,11 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
 
    //inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
 
+  uint8_t ad[4];
+  memcpy(ad, &NetPars->server_addr.sin_addr, 4);
   if(AllwaysTermEnabled)
    {
-    uint8_t ad[4];
-    memcpy(ad, &NetPars->server_addr.sin_addr, 4);
-    printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3] ,DestinPort);
+    printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3], DestinPort);
    }
   //printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
 
@@ -168,21 +170,19 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
       perror(buf);
       fprintf(stderr, "%sRecheck server%s\n\r", (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? TermColorsReset : ""));
 
-      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      // perror("Connection Failed");
-      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_WARNING] : ""));
-      // fprintf(stderr, "Recheck server\n\r");
-      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       last_errno = errno;
      }
     close(NetPars->sock_fd);
     return false;
    }
   printf("%sConnected successfully to the server.%s\n\r", (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? TermColorsReset : ""));  /* Must be printed anyway */
+  char buf[100];
+  snprintf(buf, sizeof(buf), "Connected successfully to the server %d.%d.%d.%d:%d.", ad[0], ad[1], ad[2], ad[3], DestinPort);
+  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buf));
   return true;
  }
 
-bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
+bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Data, size_t Len, CustAcknowledge_s *CustAckInfo_p)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -209,22 +209,23 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
     perror(buf);
     fprintf(stderr, "%serrno %d%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), errno, (StdErrNoPiping ? TermColorsReset : ""));
     //EPIPE;
-
-    // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-    // perror("Send failed");
-    // printf("errno %d\n\r", errno);
-    // //EPIPE;
-    // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+    LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_FAIL, ProcParams->ProcName, "Send failed."));
    }
   else
    {
-    fprintf(stdout, "%s", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""));   
 #if !defined(__arm__)
-    printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
+    fprintf(stdout, "%sWere sent %ld bytes to the network.%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), SentDataSize, (StdOutNoPiping ? TermColorsReset : ""));
 #else
-    printf("Were sent %d bytes to the network.\n\r", SentDataSize);
+    fprintf(stdout, "%sWere sent %d bytes to the network.%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), SentDataSize, (StdOutNoPiping ? TermColorsReset : ""));
 #endif
-    fprintf(stdout, "%s", (StdOutNoPiping ? TermColorsReset : ""));
+
+//     fprintf(stdout, "%s", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""));   
+// #if !defined(__arm__)
+//     printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
+// #else
+//     printf("Were sent %d bytes to the network.\n\r", SentDataSize);
+// #endif
+//     fprintf(stdout, "%s", (StdOutNoPiping ? TermColorsReset : ""));
   
     FreeData(&DataForSending);
   
@@ -262,42 +263,43 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
          printf("The vehicle is parked in: %s%s%s   (ID: %d)\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CustAckInfo.City_Name, (StdOutNoPiping ?  TermColorsReset : ""), CustAckInfo.City_ID);
          CreateVehIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, StdOutNoPiping);
          printf("Vehicle ID: %s%s\n\r", buffer, (StdErrNoPiping ? TermColorsReset : ""));
-  
          ConvertTime(&CustAckInfo.ParkingStartTime, timedurbuf, sizeof(timedurbuf), E_CAL_FORMAT);
          printf("Parking started at: %s\n\r", timedurbuf);
          ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
          ConvertPrice(CustAckInfo.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, StdOutNoPiping);
          printf("Parking duration: %s   price: %s\n\r", timedurbuf, buffer);
+         if(CustAckInfo_p != NULL)
+         *CustAckInfo_p = CustAckInfo;
         }
        else
         {
          printf("%sError in response.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+         LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_ERROR, ProcParams->ProcName, "Error in response."));
         }
       }
    }
   return Result;
  }
 
-void DoNetwork(TaskSMBriefParams_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
+void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  bool Connected = false;
+  bool Connected = false, LastConnected = false;
   bool PrintTermOnConnection = true;
   unsigned int prio;
   char buffer[BUFFER_SIZE] = {0};
   struct timespec ts;
+  GPS_Cords_s Cords;
+  CustAcknowledge_s CustAckInfo = {0}, LastCustAckInfo = {0};
 
 
-  get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E);
-
-
-  while((getppid() != 1) && (get_flag((TskContShmData_s*)SlaveShMem->p_shm, PROC_NETWORK_E) != true))
+  while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_NETWORK_E) != true))
    {
 
     if(!Connected)
      {
-      Connected = StartNetwork(NetPars, PrintTermOnConnection);
+      Connected = StartNetwork(ProcParams, NetPars, PrintTermOnConnection);
       PrintTermOnConnection = false;
      }
 
@@ -319,29 +321,79 @@ void DoNetwork(TaskSMBriefParams_s *SlaveShMem, NetworkParams_s *NetPars, NetQue
       PrintTermOnConnection = true;
       if(Connected)
        {
-        Connected = SendToNetwork(NetPars, buffer, bytes_read);
+        Connected = SendToNetwork(ProcParams, NetPars, buffer, bytes_read, &CustAckInfo);
        }
       if(!Connected)
        {
-        CloseNetwork(NetPars);
+        CloseNetwork(ProcParams, NetPars);
        }
+    
+      if(Connected != LastConnected)
+       {
+        if(Connected)
+         {
+          Cords = ((Customer_s*)buffer)->Cords;
+          LastCustAckInfo = CustAckInfo;
+          LogStartOfParking(ProcParams, &CustAckInfo, &Cords);
+         }
+        else
+         {
+          LogEnfOfParking(ProcParams, &CustAckInfo, &LastCustAckInfo, &Cords);          
+         }
+        LastConnected = Connected;
+       }
+
      } 
     
    }
 
-  CloseNetwork(NetPars);
+  CloseNetwork(ProcParams, NetPars);
+  LogEnfOfParking(ProcParams, &CustAckInfo, &LastCustAckInfo, &Cords);          
 
  }
 
-void CloseNetwork(NetworkParams_s *NetPars)
+void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars)
  {
+  // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   /* Close the socket connection */
   close(NetPars->sock_fd);
+  printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[E_PROBLEM] : ""), (StdOutNoPiping ? TermColorsReset : ""));  /* Must be printed anyway */
+  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
  }
 
 
+void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, GPS_Cords_s *Cords)
+ {
+  char buffer[BUFFER_SIZE] = {0}, timebuf1[50], cordsbuf[50], pricebuf[30];
 
+  ConvertTime(&CustAckInfo->ParkingStartTime, timebuf1, sizeof(timebuf1), E_DBS_FORMAT);
+  ConvertPrice(CustAckInfo->PricePerHour, pricebuf, sizeof(pricebuf), E_PPH_FULL_FORMAT, false);
+  CordsToString(cordsbuf, sizeof(cordsbuf), *Cords);
+  snprintf(buffer, sizeof(buffer), "The parking was started at: %s. GPS: %s. Detected city: %s ID: %d OSDID: %d. Park Price: %s", timebuf1, cordsbuf, CustAckInfo->City_Name, CustAckInfo->City_ID, CustAckInfo->OSM_ID, pricebuf);
+  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buffer));
 
+ }
+
+void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, CustAcknowledge_s *LastCustAckInfo, GPS_Cords_s *Cords)
+ {
+  char buffer[BUFFER_SIZE] = {0}, timebuf1[50], timebuf2[50], durtimebuf[50], cordsbuf[50], pricebuf[30], acpricebuf[30];
+
+  LastCustAckInfo->ParkingEndTime = CustAckInfo->ParkingEndTime;
+  LastCustAckInfo->AccumulatedPrice = CustAckInfo->AccumulatedPrice;
+  LastCustAckInfo->ParkingDurationTime = CustAckInfo->ParkingDurationTime;
+
+  ConvertTime(&LastCustAckInfo->ParkingStartTime, timebuf1, sizeof(timebuf1), E_DBS_FORMAT);
+  ConvertTime(&CustAckInfo->ParkingEndTime, timebuf2, sizeof(timebuf2), E_DBS_FORMAT);
+  ConvertTime(&CustAckInfo->ParkingDurationTime, durtimebuf, sizeof(durtimebuf), E_DUR_FORMAT);
+  ConvertPrice(LastCustAckInfo->PricePerHour, pricebuf, sizeof(pricebuf), E_PPH_FORMAT, false);
+  ConvertPrice(CustAckInfo->AccumulatedPrice, acpricebuf, sizeof(acpricebuf), E_ACC_FORMAT, false);
+  CordsToString(cordsbuf, sizeof(cordsbuf), *Cords);
+
+  snprintf(buffer, sizeof(buffer), "The parking was finished. GPS: %s  City: %s ID: %d OSDID: %d. Period: %s - %s; Duration %s Park price %s, For paying %s.", cordsbuf, LastCustAckInfo->City_Name, LastCustAckInfo->City_ID, LastCustAckInfo->OSM_ID, timebuf1, timebuf2, durtimebuf, pricebuf, acpricebuf);
+  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buffer));
+ }
 
 
 void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive)
