@@ -57,11 +57,12 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
        SlaveShMem_s TskContShms;
        SlaveShQue_s TskContShqs;
        InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
-       TaskSMBriefParams_s TaskSMBriefParams = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs};
-       LogSQBriefParams_s LogSQBriefParams = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs };
-       LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Stargint Process..."));
-       ProcToOpen(&TaskSMBriefParams, &LogSQBriefParams);
-       LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Finishing Process..."));
+      //  TaskSMBriefParams_s TaskSMBriefParams = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs};
+      //  LogSQBriefParams_s LogSQBriefParams = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs };
+       ProcParams_s ProcParams = {.ProcName = ProcName, .TskContShms = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs}, .TskContShqs = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs }};
+       LogEvent(&ProcParams.TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Stargint Process..."));
+       ProcToOpen(&ProcParams);
+       LogEvent(&ProcParams.TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Finishing Process..."));
        DeinitProcessing(&TskContShms, &TskContShqs);
       }
       printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));

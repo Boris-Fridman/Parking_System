@@ -57,8 +57,8 @@ int main(int const argc, char const *argv[])
 
   EnableSignals();
   
-  network_pid = OpenProcess(NetworkProc, NETW_PROC_NAME, TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
   i2c_pid = OpenProcess(I2CProc, I2C_PROC_NAME, TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
+  network_pid = OpenProcess(NetworkProc, NETW_PROC_NAME, TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
 
   do
    {

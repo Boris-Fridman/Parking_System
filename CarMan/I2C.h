@@ -13,7 +13,7 @@
 
 
 
-void I2CProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
+void I2CProc(ProcParams_s *ProcParams);
 
 
 #endif  //  ____I2C_h__

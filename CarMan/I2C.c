@@ -62,7 +62,7 @@ void read_i2c(int file, unsigned char buffer[], size_t size)
 
 
 
-void I2CProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs)
+void I2CProc(ProcParams_s *ProcParams)
  {
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
@@ -101,7 +101,7 @@ void I2CProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs)
 
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
-  while((getppid() != 1) && (get_flag((TskContShmData_s*)TskContShms->p_shm, PROC_I2C_E) != true))
+  while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_I2C_E) != true))
    {
     if(skipno++ >= 10)
      {

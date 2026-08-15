@@ -75,9 +75,14 @@ typedef struct LogSQBriefParams_s
   sem_t *p_shs;
  }LogSQBriefParams_s;
 
+typedef struct ProcParams_s
+ {
+  char *ProcName;
+  TaskSMBriefParams_s TskContShms;
+  LogSQBriefParams_s TskContShqs;
+ }ProcParams_s;
 
-
-typedef void(*subprocess_t)(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
+typedef void(*subprocess_t)(ProcParams_s *ProcParams);
 
 
 

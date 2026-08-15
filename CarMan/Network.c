@@ -35,14 +35,14 @@ void CloseNetwork(NetworkParams_s *NetPars);
 
 
 
-void NetworkProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs)
+void NetworkProc(ProcParams_s *ProcParams)
  {
   NetworkParams_s NetworkParams = {0};
   NetQueue_s NetQueue = {0};
 
   InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E);
 
-  DoNetwork(TskContShms, &NetworkParams, &NetQueue);
+  DoNetwork(&ProcParams->TskContShms, &NetworkParams, &NetQueue);
 
   CloseNetQueue(&NetQueue.mq);
  }

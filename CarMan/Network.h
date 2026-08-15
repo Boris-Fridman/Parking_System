@@ -24,7 +24,7 @@ NetworkParams_s;
 
 
 
-void NetworkProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
+void NetworkProc(ProcParams_s *ProcParams);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 
