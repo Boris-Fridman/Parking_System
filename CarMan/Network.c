@@ -29,13 +29,13 @@
 
 
 bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled);
-void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ);
+void DoNetwork(TaskSMBriefParams_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ);
 bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len);
 void CloseNetwork(NetworkParams_s *NetPars);
 
 
 
-void NetworkProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs)
+void NetworkProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs)
  {
   NetworkParams_s NetworkParams = {0};
   NetQueue_s NetQueue = {0};
@@ -68,7 +68,11 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
   if (NetPars->sock_fd < 0) 
    {
     if(AllwaysTermEnabled)
-     perror("Socket creation error");
+     {
+      char buf[50];
+      snprintf(buf, sizeof(buf), "%sSocket creation error%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+      perror(buf);  //  perror("Socket creation error");
+     }
     return false;
    }
 
@@ -107,9 +111,10 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
     host = gethostbyname(DHCPName);
     if(host == NULL)
      {
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      fprintf(stderr, "Couldn't detect dynamic address from DHCP name %s.\n\r", DHCPName);
-      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      fprintf(stderr, "%sCouldn't detect dynamic address from DHCP name %s.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), DHCPName, (StdErrNoPiping ? TermColorsReset : ""));
+      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      // fprintf(stderr, "Couldn't detect dynamic address from DHCP name %s.\n\r", DHCPName);
+      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
      }
    }
   
@@ -121,15 +126,21 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
   else
    {
     DestIP = GetDestinAddr();
-    fprintf(stdout, "Loading Static IP address...\n\r");
+    if(AllwaysTermEnabled)
+     {
+      fprintf(stdout, "Loading Static IP address...\n\r");
+     }
     /* Convert IPv4 address from text to binary format */
     if (inet_pton(AF_INET, DestIP, &NetPars->server_addr.sin_addr) <= 0)   //  if (inet_pton(AF_INET, DESTIN_IP, &NetPars->server_addr.sin_addr) <= 0) 
      {
       if((AllwaysTermEnabled) || (last_errno != errno))
        {
-        fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-        perror("Invalid address or Address not supported");
-        fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+        char buf[50];
+        snprintf(buf, sizeof(buf), "%sInvalid address or Address not supported%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+        perror(buf);
+        // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+        // perror("Invalid address or Address not supported");
+        // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
         last_errno = errno;
        }
       close(NetPars->sock_fd);
@@ -137,15 +148,14 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
      }
    }
 
-  
-
    //inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
 
-
-  uint8_t ad[4];
-  memcpy(ad, &NetPars->server_addr.sin_addr, 4);
-  
-  printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3] ,DestinPort);
+  if(AllwaysTermEnabled)
+   {
+    uint8_t ad[4];
+    memcpy(ad, &NetPars->server_addr.sin_addr, 4);
+    printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3] ,DestinPort);
+   }
   //printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
 
   /* Connect to the server */
@@ -153,11 +163,16 @@ bool StartNetwork(NetworkParams_s *NetPars, bool AllwaysTermEnabled)
    {
     if((AllwaysTermEnabled) || (last_errno != errno))
      {
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      perror("Connection Failed");
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_WARNING] : ""));
-      fprintf(stderr, "Recheck server\n\r");
-      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      char buf[50];
+      snprintf(buf, sizeof(buf), "%sConnection Failed%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+      perror(buf);
+      fprintf(stderr, "%sRecheck server%s\n\r", (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+
+      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      // perror("Connection Failed");
+      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_WARNING] : ""));
+      // fprintf(stderr, "Recheck server\n\r");
+      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       last_errno = errno;
      }
     close(NetPars->sock_fd);
@@ -189,11 +204,17 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
   Result = (nsndbt >= 0);
   if (!Result)
    {
-    fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-    perror("Send failed");
-    printf("errno %d\n\r", errno);
+    char buf[50];
+    snprintf(buf, sizeof(buf), "%sSend failed.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+    perror(buf);
+    fprintf(stderr, "%serrno %d%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), errno, (StdErrNoPiping ? TermColorsReset : ""));
     //EPIPE;
-    fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+
+    // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+    // perror("Send failed");
+    // printf("errno %d\n\r", errno);
+    // //EPIPE;
+    // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
    }
   else
    {
@@ -212,14 +233,18 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
     Result = (bytes_read >= 0);
     if (bytes_read < 0) 
      {
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      perror("Receive failed");
-      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      char buf[50];
+      snprintf(buf, sizeof(buf), "%sReceive failed.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+      perror(buf);
+
+      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      // perror("Receive failed");
+      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
      } 
     else 
      if (bytes_read == 0) 
       {
-       printf("%sServer closed the connection.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+       printf("%sServer closed the connection.%s\n\r", (StdOutNoPiping ? ResultColors[E_FAIL] : ""), (StdOutNoPiping ? TermColorsReset : ""));
        Result = false;
       } 
      else 
@@ -235,9 +260,6 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
        if(DecodeResult)
         {
          printf("The vehicle is parked in: %s%s%s   (ID: %d)\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CustAckInfo.City_Name, (StdOutNoPiping ?  TermColorsReset : ""), CustAckInfo.City_ID);
-         //  printf("Vehicle ID: %s%s%d%s\n\r", TermBGYello, TermBlack, CustAckInfo.Vechicle_ID, TermColorsReset);
-         //VehicleIDToString(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID);
-         //printf("Vehicle ID: %s%s%s%s\n\r", TermBGYello, TermBlack, buffer, TermColorsReset);
          CreateVehIDFormated(buffer, sizeof(buffer), CustAckInfo.Vechicle_ID, StdOutNoPiping);
          printf("Vehicle ID: %s%s\n\r", buffer, (StdErrNoPiping ? TermColorsReset : ""));
   
@@ -246,7 +268,6 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
          ConvertTime(&CustAckInfo.ParkingDurationTime, timedurbuf, sizeof(timedurbuf), E_DUR_FORMAT);
          ConvertPrice(CustAckInfo.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, StdOutNoPiping);
          printf("Parking duration: %s   price: %s\n\r", timedurbuf, buffer);
-         //printf("Parking duration: %s   price: %s%d.%02d%s₪%s\n\r", timedurbuf, (StdOutNoPiping ? PRICE_COLOR : ""), CustAckInfo.AccumulatedPrice / 100, CustAckInfo.AccumulatedPrice % 100, (StdOutNoPiping ? PRICEUNITS_COLOR : ""), (StdOutNoPiping ? TermColorsReset : ""));
         }
        else
         {
@@ -257,7 +278,7 @@ bool SendToNetwork(NetworkParams_s *NetPars, void *Data, size_t Len)    /*  Send
   return Result;
  }
 
-void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
+void DoNetwork(TaskSMBriefParams_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -289,11 +310,12 @@ void DoNetwork(SlaveShMem_s *SlaveShMem, NetworkParams_s *NetPars, NetQueue_s *N
     if (bytes_read >= 0) 
      {
 
-#if !defined(__arm__)
+#if !defined(__arm__)  /* For computer compiled program 64bit */
       printf("Were forwarded from the queue to the network %ld bytes.\n\r", bytes_read);
-#else
+#else                  /* For BeagleBone compiled program 32bit */
       printf("Were forwarded from the queue to the network %d bytes.\n\r", bytes_read);
 #endif
+      
       PrintTermOnConnection = true;
       if(Connected)
        {

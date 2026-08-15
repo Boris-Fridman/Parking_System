@@ -400,7 +400,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
    {
     std::ostringstream stream;    stream.str("");    stream.clear();
     stream << "Starting the " << ProcName << " process...";
-    TaskControl->LogEvent(MakeLogMessage(E_LOG_EVENT, "Main    ", stream.str().c_str()));      
+    TaskControl->LogEvent(MakeLogMessage(E_LOG_EVENT, MAIN_PROC_NAME, stream.str().c_str()));      
    }
 
   pid_t proc_pid;
@@ -616,7 +616,7 @@ void *ProcMan_c::LogThread(void *Args)
    {
     CheckLogMessageExistance();
    }
-   
+
   return nullptr;
  }
 

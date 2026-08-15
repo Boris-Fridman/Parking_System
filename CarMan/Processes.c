@@ -57,9 +57,10 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
        SlaveShMem_s TskContShms;
        SlaveShQue_s TskContShqs;
        InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
-       LogSQBriefParams_s LogSQBriefParams = LgSlToLgPars(&TskContShqs);
+       TaskSMBriefParams_s TaskSMBriefParams = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs};
+       LogSQBriefParams_s LogSQBriefParams = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs };
        LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Stargint Process..."));
-       ProcToOpen(&TskContShms, &TskContShqs);
+       ProcToOpen(&TaskSMBriefParams, &LogSQBriefParams);
        LogEvent(&LogSQBriefParams, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Finishing Process..."));
        DeinitProcessing(&TskContShms, &TskContShqs);
       }
@@ -316,22 +317,6 @@ void CheckLogMessageExistance(LogData_s *LogData)
    }  
  }
 
-
-LogSQBriefParams_s LgSlToLgPars(SlaveShQue_s *LogQueueParams)  /* Log Slave queue&semaphore params to breaf Log params. */
- {
-  LogSQBriefParams_s Result;
-  Result.mq = LogQueueParams->mq;
-  Result.p_shs = LogQueueParams->p_shs;
-  return Result;
- }
-
-LogSQBriefParams_s LgMsToLgPars(MasterShQue_s *LogQueueParams)  /* Log Master queue&semaphore params to breaf Log params. */
- {
-  LogSQBriefParams_s Result;
-  Result.mq = LogQueueParams->mq;
-  Result.p_shs = LogQueueParams->p_shs;
-  return Result;
- }
 
 
 void LogEvent(LogSQBriefParams_s *LogQueueParams, LogMessType_s MessageToLog)

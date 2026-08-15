@@ -22,7 +22,7 @@
 bool FullExit = false;
 
 
-void CatchChildZombie();
+void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams);
 void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
 void EnableSignals();
 
@@ -51,15 +51,18 @@ int main(int const argc, char const *argv[])
 
   InitManaging(&TskContShms, &TskContShqs, &TskContLogData);
 
+  LogSQBriefParams_s LogSQBriefParams = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs};
+
+  LogEvent(&LogSQBriefParams , MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "Starting CarMan Program..."));
 
   EnableSignals();
   
-  network_pid = OpenProcess(NetworkProc, "Network ", TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
-  i2c_pid = OpenProcess(I2CProc, "I2C     ", TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
+  network_pid = OpenProcess(NetworkProc, NETW_PROC_NAME, TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
+  i2c_pid = OpenProcess(I2CProc, I2C_PROC_NAME, TskContShms.sh_mem_key, TskContShms.sem_name, TskContShqs.sq_name, TskContShqs.sem_name);
 
   do
    {
-    CatchChildZombie();
+    CatchChildZombie(&LogSQBriefParams);
     sleep(1);
    }
   while(!FullExit);
@@ -73,6 +76,8 @@ int main(int const argc, char const *argv[])
   WaitUntilFinised(network_pid, i2c_pid);
 
 
+  LogEvent(&LogSQBriefParams , MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "The CarMan Program finished running."));
+
 
   DeinitManaging(&TskContShms, &TskContShqs, &TskContLogData);
 
@@ -84,7 +89,7 @@ int main(int const argc, char const *argv[])
 
 
 /* Catching Zombie-Child-Processes and removing them. */ 
-void CatchChildZombie()
+void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams)
  {
   //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -96,6 +101,12 @@ void CatchChildZombie()
    if(w > 0)
     {
      printf("The process with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_PID_COLOR : ""), w, (StdOutNoPiping ? TermColorsReset : ""));
+     if(LogSQBriefParams != NULL)
+      {
+       char buf[100];
+       snprintf(buf, sizeof(buf), "The process with PID: %d finished running emergencely.", w);
+       LogEvent(LogSQBriefParams, MakeLogMessage(E_LOG_FAIL, MAIN_PROC_NAME, buf));
+      }
     }
   } while (w > 0);
  }

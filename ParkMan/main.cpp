@@ -77,7 +77,7 @@ int main(int const argc, char const *argv[])
   InitConfiguration(argv[0]);
 
   ProcMan_c TaskContSh;  /* Attention !!! The class must be defined when configuration was allready loaded. */
-  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, "Main    ", "Starting ParkMan Program..."));
+  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "Starting ParkMan Program..."));
 
   // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
   // std::cout << TestString << "\n\r";
@@ -160,7 +160,7 @@ int main(int const argc, char const *argv[])
 
   RemovePIDFile(PIDFileName);  /* Removes file with the main pid of this program. */
 
-  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, "Main    ", "The ParkMan Program finished running."));
+  TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "The ParkMan Program finished running."));
 
   std::cout << "The program finished running.\n\r";
   return 0;
@@ -185,11 +185,11 @@ void CatchChildZombie(ProcMan_c *TaskControl)
    if(w > 0)
     {
      std::cout << "The process with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << w  << (StdOutNoPiping ? TermColorsReset : "") << " finished running.\n\r";
-     if(TaskControl)
+     if(TaskControl != nullptr)
       {
        std::ostringstream stream;    stream.str("");    stream.clear();
        stream << "The process with PID: " << w << " finished running emergencely.";
-       TaskControl->LogEvent(MakeLogMessage(E_LOG_FAIL, "Main    ", stream.str().c_str()));      
+       TaskControl->LogEvent(MakeLogMessage(E_LOG_FAIL, MAIN_PROC_NAME, stream.str().c_str()));      
       }
     }
   } while (w > 0);

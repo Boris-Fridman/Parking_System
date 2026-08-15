@@ -9,8 +9,11 @@
 #include "Processes.h"
 
 
+#define I2C_PROC_NAME     (char *)"I2C     "     /* I2C process name*/
 
-void I2CProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
+
+
+void I2CProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
 
 
 #endif  //  ____I2C_h__

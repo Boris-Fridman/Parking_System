@@ -77,7 +77,7 @@ typedef struct LogSQBriefParams_s
 
 
 
-typedef void(*subprocess_t)(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
+typedef void(*subprocess_t)(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
 
 
 
@@ -119,10 +119,6 @@ void DeinitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogD
 
 void InitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs, key_t sh_mem_key, const char sem_name[], char sh_que_name[], char qsem_name[]);
 void DeinitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
-
-
-LogSQBriefParams_s LgSlToLgPars(SlaveShQue_s *LogQueueParams);  /* Log Slave queue&semaphore params to breaf Log params. */
-LogSQBriefParams_s LgMsToLgPars(MasterShQue_s *LogQueueParams);  /* Log Master queue&semaphore params to breaf Log params. */
 
 
 void LogEvent(LogSQBriefParams_s *LogQueueParams, LogMessType_s MessageToLog);

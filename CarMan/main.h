@@ -8,6 +8,9 @@
 //#include <stdlib.h>
 
 
+#define MAIN_PROC_NAME     (char *)"Main    "     /* Main process name*/
+
+
 typedef enum ProcTypeID_e
  {
   PROC_I2C_E,

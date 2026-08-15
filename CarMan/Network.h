@@ -7,6 +7,9 @@
 #include "Processes.h"
 
 
+#define NETW_PROC_NAME     (char *)"Network "     /* Network process name*/
+
+
 typedef struct NetQueue_s
  {
   mqd_t mq;
@@ -21,7 +24,7 @@ NetworkParams_s;
 
 
 
-void NetworkProc(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs);
+void NetworkProc(TaskSMBriefParams_s *TskContShms, LogSQBriefParams_s *TskContShqs);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 
