@@ -58,6 +58,12 @@ uint64_t RandGenLongLong()
   return ((uint64_t)rand() << 32) | ((uint64_t)rand());
  }
 
+uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber)
+ {
+  return MinNumber + rand() % (MAX(MaxNumber, MinNumber) - MinNumber + 1);
+ }
+
+
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection) /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
  {
   int32_t Result;

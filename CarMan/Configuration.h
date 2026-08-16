@@ -25,6 +25,9 @@ char const *GetClientName();
 
 uint32_t GetVechicleID();
 
+uint32_t GetMaxParkTime();
+
+uint32_t GetMaxParkWaitTime();
 
 
 

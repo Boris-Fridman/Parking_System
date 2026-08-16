@@ -133,6 +133,11 @@ extern "C" {
 
 #define I2C_ADDR                  0x55
 
+#define DEF_MAX_PARK_TIME         1800                          /* Maximum time for staying on a parking in seconds. The time will be selected randomly between 0 upto defined value. Giving zero value will mean infinit.                                                              */
+#define DEF_MAX_PARK_DELAY        40                            /* Maximum time for waiting between parkings in seconds. The real value will be generated between 0 upto the given value.                                                                                               */
+
+#define MIN_PARK_TIME             60                            /* Minimum time for staying on a parking in seconds that can be generated. Attention !!! This value must be bigger than zero otherwise if the random-generated value is set to zero the program will not repark at all. */
+#define MIN_PARK_WAIT_TIME        60                            /* Minimum time for waiting between parkings in seconds that can be generated. Should not be set to zero because it wasn't tested with it.                                                                              */
 
 /*======================================================================================================================*/
 
@@ -392,6 +397,8 @@ extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive
 double sqr(double x);
 
 uint64_t RandGenLongLong();
+
+uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
 
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection); /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
 

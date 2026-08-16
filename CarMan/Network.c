@@ -36,6 +36,10 @@ void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars);
 void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, GPS_Cords_s *Cords);
 void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, CustAcknowledge_s *LastCustAckInfo, GPS_Cords_s *Cords);
 
+uint32_t GenParkTime();
+uint32_t GenParkWaitTime();
+void GenParkMessage(char Buffer[], size_t NumBytes, long int StartTime, long int Duration, bool ParkingStartEnd);
+
 
 void NetworkProc(ProcParams_s *ProcParams)
  {
@@ -114,9 +118,6 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
     if(host == NULL)
      {
       fprintf(stderr, "%sCouldn't detect dynamic address from DHCP name %s.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), DHCPName, (StdErrNoPiping ? TermColorsReset : ""));
-      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      // fprintf(stderr, "Couldn't detect dynamic address from DHCP name %s.\n\r", DHCPName);
-      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
      }
    }
   
@@ -140,9 +141,6 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
         char buf[50];
         snprintf(buf, sizeof(buf), "%sInvalid address or Address not supported%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
         perror(buf);
-        // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-        // perror("Invalid address or Address not supported");
-        // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
         last_errno = errno;
        }
       close(NetPars->sock_fd);
@@ -158,7 +156,6 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
    {
     printf("Trying to connect to the address %d.%d.%d.%d with port %d ...\n\r", ad[0], ad[1], ad[2], ad[3], DestinPort);
    }
-  //printf("Trying to connect to the address %s with port %d ...\n\r", DestIP ,DestinPort);
 
   /* Connect to the server */
   if (connect(NetPars->sock_fd, (struct sockaddr *)&NetPars->server_addr, sizeof(NetPars->server_addr)) < 0) 
@@ -219,14 +216,6 @@ bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Dat
     fprintf(stdout, "%sWere sent %d bytes to the network.%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), SentDataSize, (StdOutNoPiping ? TermColorsReset : ""));
 #endif
 
-//     fprintf(stdout, "%s", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""));   
-// #if !defined(__arm__)
-//     printf("Were sent %ld bytes to the network.\n\r", SentDataSize);
-// #else
-//     printf("Were sent %d bytes to the network.\n\r", SentDataSize);
-// #endif
-//     fprintf(stdout, "%s", (StdOutNoPiping ? TermColorsReset : ""));
-  
     FreeData(&DataForSending);
   
     /* Receive data back from the server */
@@ -237,10 +226,6 @@ bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Dat
       char buf[50];
       snprintf(buf, sizeof(buf), "%sReceive failed.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
       perror(buf);
-
-      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      // perror("Receive failed");
-      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
      } 
     else 
      if (bytes_read == 0) 
@@ -250,7 +235,7 @@ bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Dat
       } 
      else 
       {
-       buffer[bytes_read] = '\0'; // Null-terminate the received string
+       buffer[bytes_read] = '\0'; /* Null-terminate the received string */
   
 #if !defined(__arm__)
        printf("Server responded data contains %ld bytes.\n\r", bytes_read);
@@ -292,21 +277,50 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
   struct timespec ts;
   GPS_Cords_s Cords;
   CustAcknowledge_s CustAckInfo = {0}, LastCustAckInfo = {0};
+  uint32_t ParkTime = 0;  /* The time of start or end parking*/
+  uint32_t ReqParkTime = 0;
+  bool TimeTaken;
 
+  srand(time(NULL));
 
   while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_NETWORK_E) != true))
    {
+    TimeTaken = (clock_gettime(CLOCK_REALTIME, &ts) != -1);
 
-    if(!Connected)
+    if((!Connected))
      {
-      Connected = StartNetwork(ProcParams, NetPars, PrintTermOnConnection);
-      PrintTermOnConnection = false;
+      if((ParkTime == 0) || !TimeTaken || (ts.tv_sec - ParkTime > ReqParkTime)) /* Attention !!! This condition is based on the conditional short-circuit and subconditions cannot be changedplaces. */
+       {
+        Connected = StartNetwork(ProcParams, NetPars, PrintTermOnConnection);
+        PrintTermOnConnection = false;
+       }
+      if(Connected && TimeTaken)
+       {
+        ParkTime = ts.tv_sec;
+        ReqParkTime = GenParkTime();
+        GenParkMessage(buffer, sizeof(buffer), ts.tv_sec, ReqParkTime, false);
+        printf("%s\n\r",buffer);
+       }
+     }
+
+    if(Connected)
+     {
+      if((ParkTime > 0) && (ReqParkTime >= MIN_PARK_TIME) && TimeTaken && (ts.tv_sec - ParkTime > ReqParkTime)) /* Attention !!! This condition is based on the conditional short-circuit and subconditions cannot be changedplaces. */
+       {  /* Parking timeout */
+        CloseNetwork(ProcParams, NetPars);
+        Connected = false;
+        ParkTime = ts.tv_sec;
+        ReqParkTime = GenParkWaitTime();
+        GenParkMessage(buffer, sizeof(buffer), ts.tv_sec, ReqParkTime, true);
+        printf("%s\n\r",buffer);
+       }
      }
 
     if (clock_gettime(CLOCK_REALTIME, &ts) != -1) 
      {
       ++ts.tv_sec;
      }
+
     /* Block until a message is received */
     ssize_t bytes_read = mq_timedreceive(NetQ->mq, buffer, MAX_SIZE, &prio, &ts);
     if (bytes_read >= 0) 
@@ -322,21 +336,22 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
       if(Connected)
        {
         Connected = SendToNetwork(ProcParams, NetPars, buffer, bytes_read, &CustAckInfo);
-       }
-      if(!Connected)
-       {
-        CloseNetwork(ProcParams, NetPars);
+        if(!Connected)  /*Emergency disconnection detected. */
+         {
+          CloseNetwork(ProcParams, NetPars);
+          ParkTime = ReqParkTime = 0; /* Resetting parking timers. */
+         }
        }
     
       if(Connected != LastConnected)
        {
-        if(Connected)
+        if(Connected)  /* On Connect*/
          {
           Cords = ((Customer_s*)buffer)->Cords;
           LastCustAckInfo = CustAckInfo;
           LogStartOfParking(ProcParams, &CustAckInfo, &Cords);
          }
-        else
+        else  /* On Disconnect*/
          {
           LogEnfOfParking(ProcParams, &CustAckInfo, &LastCustAckInfo, &Cords);          
          }
@@ -359,7 +374,7 @@ void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars)
 
   /* Close the socket connection */
   close(NetPars->sock_fd);
-  printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[E_PROBLEM] : ""), (StdOutNoPiping ? TermColorsReset : ""));  /* Must be printed anyway */
+  printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[E_PROBLEM] : ""), (StdOutNoPiping ? TermColorsReset : ""));
   LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
  }
 
@@ -449,3 +464,30 @@ void CloseNetQueue(mqd_t *mq)
   mq_close(*mq);
   mq_unlink(QUEUE_NAME); /* Removes queue from system completely */
  }
+
+uint32_t GenParkTime()
+ {
+  return GenRandNumber(MIN_PARK_TIME, GetMaxParkTime());
+ }
+
+uint32_t GenParkWaitTime()
+ {
+  return GenRandNumber(MIN_PARK_WAIT_TIME, GetMaxParkWaitTime());
+ }
+
+void GenParkMessage(char Buffer[], size_t NumBytes, long int StartTime, long int Duration, bool ParkingStartEnd)
+ {
+  char timebuf1[100], timebuf2[100], timebuf3[100];
+  long int et = StartTime + Duration;
+  ConvertTime(&StartTime  , timebuf1, sizeof(timebuf1), E_CAL_FORMAT);
+  ConvertTime(&et         , timebuf2, sizeof(timebuf2), E_CAL_FORMAT);
+  et = Duration;
+  ConvertTime(&et         , timebuf3, sizeof(timebuf2), E_DUR_FORMAT);
+
+  if(ParkingStartEnd == false)
+   snprintf(Buffer, NumBytes, "The parking started at: %s and will be finished at %s after %s", timebuf1, timebuf2, timebuf3);
+  else
+   snprintf(Buffer, NumBytes, "The parking finished at: %s and will be started at %s after %s", timebuf1, timebuf2, timebuf3);
+
+ }
+
