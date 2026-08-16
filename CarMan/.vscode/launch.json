@@ -36,7 +36,7 @@
             "name": "C/C++: gcc build and debug active file",
             "type": "cppdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "program": "${workspaceFolder}/carman",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
@@ -53,7 +53,13 @@
                     "description": "Set Disassembly Flavor to Intel",
                     "text": "-gdb-set disassembly-flavor intel",
                     "ignoreFailures": true
+                },
+                {
+                    "description": "Follow the child process on fork",
+                    "text": "-gdb-set follow-fork-mode child",
+                    "ignoreFailures": false
                 }
+
             ],
             "preLaunchTask": "C/C++: gcc build active file",
             "miDebuggerPath": "/usr/bin/gdb"

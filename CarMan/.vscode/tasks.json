@@ -43,9 +43,22 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                "${file}",
+                "-std=c99",
+                "-pedantic",
+                "-Wall",
+                "-Wextra",
+                "-D_GNU_SOURCE",
+                "${workspaceFolder}/../Common_Libs/CommonData.c",
+                "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
+                "${workspaceFolder}/../Common_Libs/Logging/Logging.c",
+                "*.c",
                 "-o",
-                "${fileDirname}/${fileBasenameNoExtension}"
+                "${workspaceFolder}/carman",
+                "-I${workspaceFolder}",
+                "-I${workspaceFolder}/../Common_Libs",
+                "-I${workspaceFolder}/../Common_Libs/Configuration",
+                "-I${workspaceFolder}/../Common_Libs/Logging",
+                "-lm"
             ],
             "options": {
                 "cwd": "${fileDirname}"

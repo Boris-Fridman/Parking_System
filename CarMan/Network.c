@@ -31,14 +31,14 @@
 bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool AllwaysTermEnabled);
 void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *NetQ);
 bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Data, size_t Len, CustAcknowledge_s *CustAckInfo_p);
-void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars);
+void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, LogLevel_e LogLevel);
 
 void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, GPS_Cords_s *Cords);
 void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, CustAcknowledge_s *LastCustAckInfo, GPS_Cords_s *Cords);
 
 uint32_t GenParkTime();
 uint32_t GenParkWaitTime();
-void GenParkMessage(char Buffer[], size_t NumBytes, long int StartTime, long int Duration, bool ParkingStartEnd);
+void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Duration, bool ParkingStartEnd);
 
 
 void NetworkProc(ProcParams_s *ProcParams)
@@ -307,7 +307,7 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
      {
       if((ParkTime > 0) && (ReqParkTime >= MIN_PARK_TIME) && TimeTaken && (ts.tv_sec - ParkTime > ReqParkTime)) /* Attention !!! This condition is based on the conditional short-circuit and subconditions cannot be changedplaces. */
        {  /* Parking timeout */
-        CloseNetwork(ProcParams, NetPars);
+        CloseNetwork(ProcParams, NetPars, E_LOG_EVENT);
         Connected = false;
         ParkTime = ts.tv_sec;
         ReqParkTime = GenParkWaitTime();
@@ -338,7 +338,7 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
         Connected = SendToNetwork(ProcParams, NetPars, buffer, bytes_read, &CustAckInfo);
         if(!Connected)  /*Emergency disconnection detected. */
          {
-          CloseNetwork(ProcParams, NetPars);
+          CloseNetwork(ProcParams, NetPars, E_LOG_FAIL);
           ParkTime = ReqParkTime = 0; /* Resetting parking timers. */
          }
        }
@@ -362,20 +362,31 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
     
    }
 
-  CloseNetwork(ProcParams, NetPars);
+  CloseNetwork(ProcParams, NetPars, E_LOG_MESSAGE);
   LogEnfOfParking(ProcParams, &CustAckInfo, &LastCustAckInfo, &Cords);          
 
  }
 
-void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars)
+void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, LogLevel_e LogLevel)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-
+  
   /* Close the socket connection */
   close(NetPars->sock_fd);
-  printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[E_PROBLEM] : ""), (StdOutNoPiping ? TermColorsReset : ""));
-  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
+  if(LogLevel == E_LOG_FAIL)
+   {
+    printf("%sDisconnected from server. Communication failed.%s\n\r", (StdOutNoPiping ? ResultColors[E_FAIL] : ""), (StdOutNoPiping ? TermColorsReset : ""));
+    LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server. Communication Failed."));
+   }
+  else
+   {
+    Error_Results_e ErRes = ((LogLevel == E_LOG_EVENT) ? E_SUCCESS : E_PROBLEM);
+    printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[ErRes] : ""), (StdOutNoPiping ? TermColorsReset : ""));  
+    LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
+   }
+  // printf("%sDisconnected from server.%s\n\r", (StdOutNoPiping ? ResultColors[E_PROBLEM] : ""), (StdOutNoPiping ? TermColorsReset : ""));
+  // LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
  }
 
 
@@ -475,10 +486,10 @@ uint32_t GenParkWaitTime()
   return GenRandNumber(MIN_PARK_WAIT_TIME, GetMaxParkWaitTime());
  }
 
-void GenParkMessage(char Buffer[], size_t NumBytes, long int StartTime, long int Duration, bool ParkingStartEnd)
+void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Duration, bool ParkingStartEnd)
  {
   char timebuf1[100], timebuf2[100], timebuf3[100];
-  long int et = StartTime + Duration;
+  time_t et = StartTime + Duration;
   ConvertTime(&StartTime  , timebuf1, sizeof(timebuf1), E_CAL_FORMAT);
   ConvertTime(&et         , timebuf2, sizeof(timebuf2), E_CAL_FORMAT);
   et = Duration;
