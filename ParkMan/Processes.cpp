@@ -408,20 +408,24 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
   switch(proc_pid)
    {
     case -1: /* Error */
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      perror("fork error.");
-      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+      perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "fork error." << (StdErrNoPiping ? TermColorsReset : "");
+      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      // perror("fork error.");
+      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       exit(EXIT_FAILURE);
      break;
     case 0:  /* Child */
       proc_pid = getpid();
-      printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
+      std::cout << "Starting new process: " << (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") << "  PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+      // printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.sq_name, Procparams.qsem_name, Procparams.ProcType);
-      printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
+      std::cout << "The process " <<  (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") <<" with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") << " finished running.\n\r";
+      // printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);
      break;
     default: /* Parent */
-      printf("The new %s%s%s process with PID: %s%d%s started.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
+      std::cout << "The new " << (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") << " process with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") <<" started.\n\r";
+      // printf("The new %s%s%s process with PID: %s%d%s started.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       return proc_pid;
      break;
    }

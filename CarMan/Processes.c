@@ -45,10 +45,15 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
   switch(proc_pid)
    {
     case -1: /* Error */
-      fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      perror("fork error.");
-      fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
-      exit(EXIT_FAILURE);
+      {
+       char buf[50];
+       snprintf(buf, sizeof(buf),"%sfork error.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+       perror(buf);
+      //  fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
+      //  perror("fork error.");
+      //  fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
+       exit(EXIT_FAILURE);
+      }
      break;
     case 0:  /* Child*/
       proc_pid = getpid();
@@ -57,8 +62,6 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
        SlaveShMem_s TskContShms;
        SlaveShQue_s TskContShqs;
        InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
-      //  TaskSMBriefParams_s TaskSMBriefParams = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs};
-      //  LogSQBriefParams_s LogSQBriefParams = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs };
        ProcParams_s ProcParams = {.ProcName = ProcName, .TskContShms = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs}, .TskContShqs = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs }};
        LogEvent(&ProcParams.TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Stargint Process..."));
        ProcToOpen(&ProcParams);
