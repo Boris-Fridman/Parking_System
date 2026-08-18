@@ -93,6 +93,7 @@ pid_t OpenProcess(subprocess_t, char ProcName[], key_t sh_mem_key, char sem_name
 
 void GenShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size);
 void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs);
+void GenShQueName(char const basic_name[], char que_name[], size_t MaxSize);
 
 void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size);
 void DeactivateMasterShMem(MasterShMem_s *MasterShMem);

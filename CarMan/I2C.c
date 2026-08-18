@@ -102,8 +102,8 @@ void I2CProc(ProcParams_s *ProcParams)
   
   strcpy(CustomerData.Customer_Name, GetClientName());
   CustomerData.Vechicle_ID = GetVechicleID();
-
-  InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
+  
+  InitNetQueue(&NetQueue.mq, QUEUE_SEND_E, ((TskContShmData_s*)ProcParams->TskContShms.p_shm)->NetQueueName);
   
   while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_I2C_E) != true) && (Exit != true))
    {
@@ -173,7 +173,7 @@ void I2CProc(ProcParams_s *ProcParams)
     /* Making delay between sendings. */
     sleep(1);
    }
-  CloseNetQueue(&NetQueue.mq);
+  CloseNetQueue(&NetQueue.mq, ((TskContShmData_s*)ProcParams->TskContShms.p_shm)->NetQueueName);
 
 #ifdef BEAGLE_BONE
   close(file);

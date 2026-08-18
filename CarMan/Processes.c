@@ -10,6 +10,8 @@
 
 #include "Configuration.h"
 
+#include "Network.h"
+
 #define LOG_QUEUE_NAME     "/car_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
 
@@ -21,7 +23,7 @@ void CheckLogMessageExistance(LogData_s *LogData);
 
 void set_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno, bool state)
  {
-  TskContShmData->exit_proc_flags = ((TskContShmData->exit_proc_flags & (~(0x01<<flagno))) | (state<<flagno));
+  TskContShmData->exit_proc_flags = ((TskContShmData->exit_proc_flags & (~(0x01 << flagno))) | (state << flagno));
  }
 
 bool get_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno)
@@ -108,20 +110,20 @@ void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
   while (*p_shs == SEM_FAILED);
  }
 
-void GenShQueName(char const basic_name[], char que_name[])
+void GenShQueName(char const basic_name[], char que_name[], size_t MaxSize)
  {
   char tempstrg[PATH_LEN];
   struct stat st;
   do
    {
     /* code */
-    sprintf(que_name, "%s_%d", basic_name, rand());
+    snprintf(que_name, MaxSize, "%s_%d", basic_name, rand());
     if(que_name[0] != '/')
      {
-      sprintf(tempstrg, "/%s", que_name);
-      strcpy(que_name, tempstrg);
+      snprintf(tempstrg, sizeof(tempstrg), "/%s", que_name);
+      strncpy(que_name, tempstrg, MaxSize);
      }
-    sprintf(tempstrg, "/dev/mqueue%s", que_name);
+    snprintf(tempstrg, sizeof(tempstrg), "/dev/mqueue%s", que_name);
    } 
   while (stat(tempstrg, &st) == 0);
  }
@@ -172,7 +174,7 @@ void DeactivateSlaveShMem(SlaveShMem_s *SlaveShMem)
 
 void ActivateMasterShQue(MasterShQue_s *MasterShQue, QueueDirection_e const SendReceive, char const basic_name[], long int msg_size)
  {
-  GenShQueName(basic_name, MasterShQue->sq_name);
+  GenShQueName(basic_name, MasterShQue->sq_name, sizeof(MasterShQue->sq_name));
   InitQueue(&MasterShQue->mq, SendReceive, MasterShQue->sq_name, msg_size);
   GenShSemKeyID(&MasterShQue->sh_sem_key,  MasterShQue->sem_name,  &MasterShQue->p_shs);
   sem_post(MasterShQue->p_shs);
@@ -250,6 +252,8 @@ void InitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogDat
  {
   ActivateMasterShMem(TskContShms, sizeof(TskContShmData_s));
   ActivateMasterShQue(TskContShqs, QUEUE_SEND_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s));
+  
+  GenerateNetQueueName(((TskContShmData_s*)TskContShms->p_shm)->NetQueueName, sizeof(((TskContShmData_s*)TskContShms->p_shm)->NetQueueName));
 
   memset((void*)&LogData->LogParams, 0, sizeof(LogData->LogParams));
   LogData->p_sq = &TskContShqs->mq;

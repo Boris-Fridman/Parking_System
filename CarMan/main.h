@@ -23,9 +23,7 @@ typedef enum ProcTypeID_e
 typedef struct TskContShmData_s
  {
   uint8_t exit_proc_flags;
-  // void set_flag(ProcTypeID_e flagno, bool state){exit_proc_flags = ((exit_proc_flags & (~(0x01<<flagno))) | (state<<flagno));};
-  // bool get_flag(ProcTypeID_e flagno){return ((exit_proc_flags >> flagno) & 0x01);};
-  // TskContShmData_s():exit_proc_flags(0){};
+  char NetQueueName[NAME_LEN]; /* Is used for communication between Network and I2C Processes. */
  }TskContShmData_s;
 
 

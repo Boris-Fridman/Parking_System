@@ -28,8 +28,9 @@ void NetworkProc(ProcParams_s *ProcParams);
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len);
 
-void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive);
-void CloseNetQueue(mqd_t *mq);
+void GenerateNetQueueName(char Name[], size_t Size);
+void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive, char const QueueName[]);
+void CloseNetQueue(mqd_t *mq, char const QueueName[]);
 
 
 

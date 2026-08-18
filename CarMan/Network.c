@@ -46,11 +46,11 @@ void NetworkProc(ProcParams_s *ProcParams)
   NetworkParams_s NetworkParams = {0};
   NetQueue_s NetQueue = {0};
 
-  InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E);
+  InitNetQueue(&NetQueue.mq, QUEUE_RECEIVE_E, ((TskContShmData_s*)ProcParams->TskContShms.p_shm)->NetQueueName);
 
   DoNetwork(ProcParams, &NetworkParams, &NetQueue);
 
-  CloseNetQueue(&NetQueue.mq);
+  CloseNetQueue(&NetQueue.mq, ((TskContShmData_s*)ProcParams->TskContShms.p_shm)->NetQueueName);
  }
 
 
@@ -422,9 +422,14 @@ void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, C
  }
 
 
-void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive)
+void GenerateNetQueueName(char Name[], size_t Size)
  {
-  InitQueue(mq, SendReceive, QUEUE_NAME, MAX_SIZE);
+  GenShQueName(QUEUE_NAME, Name, Size);
+ }
+
+void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive, char const QueueName[])
+ {
+  InitQueue(mq, SendReceive, QueueName, MAX_SIZE);
  }
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process ▬▬▬▶ Queue
@@ -443,9 +448,9 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
    }
  }
 
-void CloseNetQueue(mqd_t *mq)
+void CloseNetQueue(mqd_t *mq, char const QueueName[])
  {
-  CloseQueue(mq, QUEUE_NAME);
+  CloseQueue(mq, QueueName);
  }
 
 uint32_t GenParkTime()
@@ -473,4 +478,5 @@ void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Dur
    snprintf(Buffer, NumBytes, "The parking finished at: %s and will be started at %s after %s", timebuf1, timebuf2, timebuf3);
 
  }
+
 

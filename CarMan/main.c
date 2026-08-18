@@ -41,7 +41,6 @@ int main(int const argc, char const *argv[])
   MasterShQue_s TskContShqs;
   LogData_s TskContLogData;
 
-
   UNUSED(argc);
   
   own_pid = getpid();
