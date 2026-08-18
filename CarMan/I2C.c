@@ -24,15 +24,15 @@
 #endif
 
 
-#define MAX_LONGIGUDE             (  35.0 + 40.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // (  180 )
-#define MIN_LONGIGUDE             (  34.0 + 16.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±180˚  */    // ( -180 )
+#define MAX_LONGIGUDE             (  35.0 + 40.0/60.0  )  /*  Israel Limit in degrees minutes seconds ( ˚ ' " )  */         /*  ±180˚  */    // (  180 )
+#define MIN_LONGIGUDE             (  34.0 + 16.0/60.0  )  /*  Israel Limit in degrees minutes seconds ( ˚ ' " )  */         /*  ±180˚  */    // ( -180 )
 
-#define MAX_LATITUDE              (  33.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // (  90  )
-#define MIN_LATITUDE              (  29.0 + 29.0/60.0  )  /*  Israel Limit in degrees minutes seconds (˚ ' ")  */         /*  ±90˚   */    // ( -90  )
+#define MAX_LATITUDE              (  33.0 + 17.0/60.0  )  /*  Israel Limit in degrees minutes seconds ( ˚ ' " )  */         /*  ±90˚   */    // (  90  )
+#define MIN_LATITUDE              (  29.0 + 29.0/60.0  )  /*  Israel Limit in degrees minutes seconds ( ˚ ' " )  */         /*  ±90˚   */    // ( -90  )
 
 #define RESOLUTIONS                10000000000  
 
-
+#define REG_PERIODE                10                     /*  Coordinates Regeneration Periode in seconds.       */         
 
 
 
@@ -100,14 +100,14 @@ void I2CProc(ProcParams_s *ProcParams)
 
   
   
-  strcpy(CustomerData.Customer_Name, GetClientName());  //strcpy(CustomerData.Customer_Name, "Boris Fridman");
-  CustomerData.Vechicle_ID = GetVechicleID();           //CustomerData.Vechicle_ID = 13248551;
+  strcpy(CustomerData.Customer_Name, GetClientName());
+  CustomerData.Vechicle_ID = GetVechicleID();
 
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E);
   
   while((getppid() != 1) && (get_flag((TskContShmData_s*)ProcParams->TskContShms.p_shm, PROC_I2C_E) != true) && (Exit != true))
    {
-    if(skipno++ >= 10)
+    if(skipno++ >= REG_PERIODE)
      {
       skipno = 0;
 #ifdef BEAGLE_BONE

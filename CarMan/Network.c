@@ -77,7 +77,7 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
      {
       char buf[50];
       snprintf(buf, sizeof(buf), "%sSocket creation error%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
-      perror(buf);  //  perror("Socket creation error");
+      perror(buf);
      }
     return false;
    }
@@ -424,34 +424,7 @@ void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, C
 
 void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive)
  {
-  struct mq_attr attr;
-
-  /* Define queue attributes */
-  attr.mq_flags = 0;
-  attr.mq_maxmsg = 10;        // Maximum messages in queue
-  attr.mq_msgsize = MAX_SIZE; // Maximum size of any message
-  attr.mq_curmsgs = 0;
-  /* Create and open the queue for writing */
-  switch(SendReceive)
-   {
-    case QUEUE_SEND_E:
-      *mq = mq_open(QUEUE_NAME, O_CREAT | O_WRONLY, 0644, &attr);
-     break;
-    case QUEUE_RECEIVE_E:
-      *mq = mq_open(QUEUE_NAME, O_CREAT | O_RDONLY, 0644, &attr);
-     break;
-    case QUEUE_SEND_RECEIVE_E:
-      *mq = mq_open(QUEUE_NAME, O_CREAT | O_RDWR  , 0644, &attr);
-     break;
-
-   }
-   
-  if (*mq == (mqd_t)(-1)) 
-   {
-    perror("mq_open failed");
-    exit(1);
-   }
-
+  InitQueue(mq, SendReceive, QUEUE_NAME, MAX_SIZE);
  }
 
 void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process ▬▬▬▶ Queue
@@ -463,7 +436,7 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
   else 
    {
 #if !defined(__arm__)
-    printf("Message sent successfully. %ld bytes sent.\n\r", Len);
+    printf("Message to network queue was sent successfully. %ld bytes sent.\n\r", Len);
 #else
     printf("Message sent successfully. %d bytes sent.\n\r", Len);
 #endif
@@ -472,8 +445,7 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
 
 void CloseNetQueue(mqd_t *mq)
  {
-  mq_close(*mq);
-  mq_unlink(QUEUE_NAME); /* Removes queue from system completely */
+  CloseQueue(mq, QUEUE_NAME);
  }
 
 uint32_t GenParkTime()

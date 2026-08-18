@@ -26,7 +26,7 @@ char ConfData[NUM_CONF_IT][2][PATH_LEN] =
   { DATABASEPATH    , "../" CONF_DIR_NAME "/" DB_FILENAME         },
   { SHAPEFILESPATH  , "../" CONF_DIR_NAME "/" SHP_FILENAME        },
   { PROGINFOPATH    , "../" CONF_DIR_NAME "/" DB_MAN_PID_FILENAME },
-  { LOGFILEPATH     , "../" CONF_DIR_NAME "/" LOG_FILENAME        },
+  { LOGFILEPATH     , LOG_FILENAME                                },
   { PORTNUMBER      , TO_STRING(DESTIN_PORT)                      },
   { SHAPECITYNAME   , SHP_FIELD_NAME                              },
   { SHAPEOSMID      , SHP_OSM_ID                                  },
