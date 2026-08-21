@@ -27,25 +27,25 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  000f51d8  2**0
                   CONTENTS, READONLY
- 12 .debug_info   00010ba1  00000000  00000000  000f5208  2**0
+ 12 .debug_info   00010cee  00000000  00000000  000f5208  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 13 .debug_abbrev 00002a33  00000000  00000000  00105da9  2**0
+ 13 .debug_abbrev 00002a48  00000000  00000000  00105ef6  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 14 .debug_aranges 00000d58  00000000  00000000  001087e0  2**3
+ 14 .debug_aranges 00000d60  00000000  00000000  00108940  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 15 .debug_rnglists 00000a37  00000000  00000000  00109538  2**0
+ 15 .debug_rnglists 00000a3e  00000000  00000000  001096a0  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 16 .debug_macro  000282e3  00000000  00000000  00109f6f  2**0
+ 16 .debug_macro  000282e9  00000000  00000000  0010a0de  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 17 .debug_line   00011dcf  00000000  00000000  00132252  2**0
+ 17 .debug_line   00011e9c  00000000  00000000  001323c7  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    000ed313  00000000  00000000  00144021  2**0
+ 18 .debug_str    000ed393  00000000  00000000  00144263  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  00231334  2**0
+ 19 .comment      00000043  00000000  00000000  002315f6  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  00004a30  00000000  00000000  00231378  2**2
+ 20 .debug_frame  00004a60  00000000  00000000  0023163c  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 00000079  00000000  00000000  00235da8  2**0
+ 21 .debug_line_str 00000079  00000000  00000000  0023609c  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1341,12 +1341,12 @@ Disassembly of section .text:
  800105c:	4770      	bx	lr
  800105e:	bf00      	nop
 
-08001060 <AngToDebMinSecDec>:
-AngDegMinSec_s
-#endif
-    ;
+08001060 <AngToDegMinSecDec>:
+ }
 
-void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
+
+
+void AngToDegMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  {
  8001060:	b5f0      	push	{r4, r5, r6, r7, lr}
  8001062:	b087      	sub	sp, #28
@@ -1362,7 +1362,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  800107c:	f7ff fd4e 	bl	8000b1c <__aeabi_dcmplt>
  8001080:	4603      	mov	r3, r0
  8001082:	2b00      	cmp	r3, #0
- 8001084:	d101      	bne.n	800108a <AngToDebMinSecDec+0x2a>
+ 8001084:	d101      	bne.n	800108a <AngToDegMinSecDec+0x2a>
  8001086:	2300      	movs	r3, #0
  8001088:	461e      	mov	r6, r3
  800108a:	75fe      	strb	r6, [r7, #23]
@@ -1396,7 +1396,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  80010d0:	4610      	mov	r0, r2
  80010d2:	4619      	mov	r1, r3
  80010d4:	f04f 0200 	mov.w	r2, #0
- 80010d8:	4b56      	ldr	r3, [pc, #344]	@ (8001234 <AngToDebMinSecDec+0x1d4>)
+ 80010d8:	4b56      	ldr	r3, [pc, #344]	@ (8001234 <AngToDegMinSecDec+0x1d4>)
  80010da:	f7ff faad 	bl	8000638 <__aeabi_dmul>
  80010de:	4602      	mov	r2, r0
  80010e0:	460b      	mov	r3, r1
@@ -1426,7 +1426,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  8001122:	4610      	mov	r0, r2
  8001124:	4619      	mov	r1, r3
  8001126:	f04f 0200 	mov.w	r2, #0
- 800112a:	4b42      	ldr	r3, [pc, #264]	@ (8001234 <AngToDebMinSecDec+0x1d4>)
+ 800112a:	4b42      	ldr	r3, [pc, #264]	@ (8001234 <AngToDegMinSecDec+0x1d4>)
  800112c:	f7ff fa84 	bl	8000638 <__aeabi_dmul>
  8001130:	4602      	mov	r2, r0
  8001132:	460b      	mov	r3, r1
@@ -1446,7 +1446,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  8001152:	4610      	mov	r0, r2
  8001154:	4619      	mov	r1, r3
  8001156:	f04f 0200 	mov.w	r2, #0
- 800115a:	4b36      	ldr	r3, [pc, #216]	@ (8001234 <AngToDebMinSecDec+0x1d4>)
+ 800115a:	4b36      	ldr	r3, [pc, #216]	@ (8001234 <AngToDegMinSecDec+0x1d4>)
  800115c:	f7ff fa6c 	bl	8000638 <__aeabi_dmul>
  8001160:	4602      	mov	r2, r0
  8001162:	460b      	mov	r3, r1
@@ -1476,7 +1476,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  80011a4:	4610      	mov	r0, r2
  80011a6:	4619      	mov	r1, r3
  80011a8:	f04f 0200 	mov.w	r2, #0
- 80011ac:	4b21      	ldr	r3, [pc, #132]	@ (8001234 <AngToDebMinSecDec+0x1d4>)
+ 80011ac:	4b21      	ldr	r3, [pc, #132]	@ (8001234 <AngToDegMinSecDec+0x1d4>)
  80011ae:	f7ff fa43 	bl	8000638 <__aeabi_dmul>
  80011b2:	4602      	mov	r2, r0
  80011b4:	460b      	mov	r3, r1
@@ -1496,7 +1496,7 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  80011d4:	4610      	mov	r0, r2
  80011d6:	4619      	mov	r1, r3
  80011d8:	f04f 0200 	mov.w	r2, #0
- 80011dc:	4b15      	ldr	r3, [pc, #84]	@ (8001234 <AngToDebMinSecDec+0x1d4>)
+ 80011dc:	4b15      	ldr	r3, [pc, #84]	@ (8001234 <AngToDegMinSecDec+0x1d4>)
  80011de:	f7ff fa2b 	bl	8000638 <__aeabi_dmul>
  80011e2:	4602      	mov	r2, r0
  80011e4:	460b      	mov	r3, r1
@@ -1521,9 +1521,9 @@ void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  8001210:	b29b      	uxth	r3, r3
  8001212:	7dfa      	ldrb	r2, [r7, #23]
  8001214:	2a00      	cmp	r2, #0
- 8001216:	d002      	beq.n	800121e <AngToDebMinSecDec+0x1be>
+ 8001216:	d002      	beq.n	800121e <AngToDegMinSecDec+0x1be>
  8001218:	f64f 72ff 	movw	r2, #65535	@ 0xffff
- 800121c:	e000      	b.n	8001220 <AngToDebMinSecDec+0x1c0>
+ 800121c:	e000      	b.n	8001220 <AngToDegMinSecDec+0x1c0>
  800121e:	2201      	movs	r2, #1
  8001220:	fb12 f303 	smulbb	r3, r2, r3
  8001224:	b29b      	uxth	r3, r3
@@ -1556,20 +1556,20 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
  8001254:	ed87 6b04 	vstr	d6, [r7, #16]
  8001258:	ed87 7b06 	vstr	d7, [r7, #24]
   AngDegMinSec_s LatConvAng, LongConvAng;
-  AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
+  AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
  800125c:	ed97 7b06 	vldr	d7, [r7, #24]
  8001260:	f107 0338 	add.w	r3, r7, #56	@ 0x38
  8001264:	4618      	mov	r0, r3
  8001266:	eeb0 0a47 	vmov.f32	s0, s14
  800126a:	eef0 0a67 	vmov.f32	s1, s15
- 800126e:	f7ff fef7 	bl	8001060 <AngToDebMinSecDec>
-  AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
+ 800126e:	f7ff fef7 	bl	8001060 <AngToDegMinSecDec>
+  AngToDegMinSecDec(GPSCords.Longitude, &LongConvAng);
  8001272:	ed97 7b04 	vldr	d7, [r7, #16]
  8001276:	f107 0328 	add.w	r3, r7, #40	@ 0x28
  800127a:	4618      	mov	r0, r3
  800127c:	eeb0 0a47 	vmov.f32	s0, s14
  8001280:	eef0 0a67 	vmov.f32	s1, s15
- 8001284:	f7ff feec 	bl	8001060 <AngToDebMinSecDec>
+ 8001284:	f7ff feec 	bl	8001060 <AngToDegMinSecDec>
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
   snprintf(Buf, MaxSize, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #else  // For ARM

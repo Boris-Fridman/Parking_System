@@ -25,23 +25,6 @@ struct CustomerTab_s
  };
 
 
-// class DBShMemCont_c:public ShSemMem_c
-//  {
-
-//   public:
-//     DBShMemCont_c();
-//     DBShMemCont_c(key_t sh_mem_key, const char sem_name[]);
-//     ~DBShMemCont_c();
-//     void SetNewShmKey(key_t KeyToSet);
-//     key_t GetNewShmKey();
-//     void SetPriceDBSeize(uint16_t SizeToSet);
-//     uint16_t GetPriceDBSeize();
-//     void SetUpdReqState(bool StateToSet);
-//     bool GetUpdReqState();
-//     void SetDBUpdated(bool StateToSet);
-//     bool GetDBUpdated();
-//  };
-
 class DBShmemPriceData_c:public ShSemMemQue_c
  {
   protected:
@@ -60,12 +43,6 @@ class DBShmemPriceData_c:public ShSemMemQue_c
     void CheckMessageExistance(sqlite3 **conn);
     void AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMsg_s &ClientQueueMsg);
  };
-
-
-
-
-
-
 
 
 

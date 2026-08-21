@@ -183,6 +183,19 @@ QueueDirection_e
 #endif
 ;
 
+#ifndef __cplusplus
+typedef 
+#endif
+enum PointState_e
+ {
+  OUTSIZE_E,
+  ONBOUND_E,
+  INSIDE_E
+ }
+#ifndef __cplusplus
+PointState_e
+#endif
+;
 
 
 /* GPS Coordinates. Are given in degrees. */
@@ -447,6 +460,8 @@ uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection);
 
 /*======================================================================================================================*/
+
+PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords);
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 

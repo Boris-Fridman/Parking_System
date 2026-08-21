@@ -95,6 +95,9 @@ int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection) /*   "RoundDirrection=
  * *************************************************************************************************************
  */
 
+#define PERMITED_ERROR 0.01
+
+
 #ifndef __cplusplus
 typedef
 #endif
@@ -109,6 +112,45 @@ struct AngDegMinSec_s
 AngDegMinSec_s
 #endif
 ;
+
+PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords)
+ {
+  size_t i;
+  double x1, x2, y1, y2, yt, xt;
+  double angle, dang;
+  bool inside, outside;
+  size_t sz;
+  sz = PolySize;
+  for(i = 0, angle = 0; i < PolySize; i++)
+   {
+    x1 = BoundingPoly[ i          ].Longitude - Cords.Longitude;
+    y1 = BoundingPoly[ i          ].Latitude  - Cords.Latitude ;
+    x2 = BoundingPoly[(i + 1) % sz].Longitude - Cords.Longitude;
+    y2 = BoundingPoly[(i + 1) % sz].Latitude  - Cords.Latitude ;
+
+    xt = x1 * x2 + y1 * y2;
+    yt = x1 * y2 - x2 * y1;
+
+    if((xt == 0) && (yt == 0))  /* Checking if the tested point is on any bounding point limit. if this happens arctg(yt/xt) means arctg(0/0) that isn't defined. In addition it means that the point is placed on the bounding corner. */
+     return ONBOUND_E;  /* The tested point exists on the corner of the bounding polynom. Nothing to check else. */
+
+    dang = atan2(yt, xt);
+
+    if(fabs(dang) == M_PI) /* Checking if the angle is equivalent to 180° or π radians that means that the point exist exactely on the bounding line. */
+     return ONBOUND_E;  /* The point exists on the line of the bounding polynom. Nothing to check else. */
+    
+    angle += dang;
+   }
+
+  angle = fabs(angle);  // In case of the oposite rotation the angle will be -2π instead of 2π.
+  outside = fabs(angle             ) < PERMITED_ERROR;  //  Outsize
+  inside  = fabs(angle - (2 * M_PI)) < PERMITED_ERROR;  //  Insize
+  if(outside) return OUTSIZE_E;
+  else if(inside) return INSIDE_E;
+  else return ONBOUND_E;
+ }
+
+
 
 void AngToDegMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  {

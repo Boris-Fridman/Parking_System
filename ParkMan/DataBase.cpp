@@ -172,7 +172,6 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
    {
     ConvertPrice(ClientQueueMsg.AccumulatedPrice, buffer, sizeof(ClientQueueMsg.AccumulatedPrice), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-    //std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << " ag" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     AddOrUpdateParkingSession(conn, ClientQueueMsg);
    }
  }
@@ -205,7 +204,6 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of "<< ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " was already existing. Were updated only time and price." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     ConvertPrice(ClientQueueMsg.AccumulatedPrice, pricebuf, sizeof(pricebuf), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << pricebuf << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-    //std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << (StdOutNoPiping ? PRICE_COLOR : "") << ClientQueueMsg.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << ClientQueueMsg.AccumulatedPrice % 100 << " " << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪" << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
     std::cout.copyfmt(old_state);
     std::cout.fill(old_fill);
@@ -246,86 +244,6 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
 
 
 /*======================================================================================================================*/
-
-// DBShMemCont_c::DBShMemCont_c()
-//  :ShSemMem_c(sizeof(ControlDBPrice_s))
-//  {
-//  }
-
-// DBShMemCont_c::DBShMemCont_c(key_t sh_mem_key, const char sem_name[])
-//  :ShSemMem_c(sh_mem_key, sem_name, sizeof(ControlDBPrice_s))
-//  {
-//  }
-
-// DBShMemCont_c::~DBShMemCont_c()
-//  {
-//  }
-
-// void DBShMemCont_c::SetNewShmKey(key_t KeyToSet)
-//  {
-//   sem_wait(p_shs);
-//   ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey = KeyToSet;
-//   sem_post(p_shs);
-//  }
-
-// key_t DBShMemCont_c::GetNewShmKey()
-//  {
-//   key_t result;
-//   sem_wait(p_shs);
-//   result = ((ControlDBPrice_s*)p_shm)->CitiesNewShmKey;
-//   sem_post(p_shs);
-//   return result;
-//  }
-
-
-// void DBShMemCont_c::SetPriceDBSeize(uint16_t SizeToSet)
-//  {
-//   sem_wait(p_shs);
-//   ((ControlDBPrice_s*)p_shm)->NumPriceDBCities = SizeToSet;
-//   sem_post(p_shs);
-//  }
-
-// uint16_t DBShMemCont_c::GetPriceDBSeize()
-//  {
-//   uint16_t result;
-//   sem_wait(p_shs);
-//   result = ((ControlDBPrice_s*)p_shm)->NumPriceDBCities;
-//   sem_post(p_shs);
-//   return result;
-//  }
-
-// void DBShMemCont_c::SetUpdReqState(bool StateToSet)
-//  {
-//   sem_wait(p_shs);
-//   ((ControlDBPrice_s*)p_shm)->DBUpdateRequired = StateToSet;
-//   sem_post(p_shs);
-//  }
-
-// bool DBShMemCont_c::GetUpdReqState()
-//  {
-//   bool result;
-//   sem_wait(p_shs);
-//   result = ((ControlDBPrice_s*)p_shm)->DBUpdateRequired;
-//   sem_post(p_shs);
-//   return result;
-//  }
-
-// void DBShMemCont_c::SetDBUpdated(bool StateToSet)
-//  {
-//   sem_wait(p_shs);
-//   ((ControlDBPrice_s*)p_shm)->DBUpdated = StateToSet;
-//   sem_post(p_shs);
-//  }
-
-// bool DBShMemCont_c::GetDBUpdated()
-//  {
-//   bool result;
-//   sem_wait(p_shs);
-//   result = ((ControlDBPrice_s*)p_shm)->DBUpdated;
-//   sem_post(p_shs);
-//   return result;
-//  }
-
 
 
 

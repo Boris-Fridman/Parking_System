@@ -38,7 +38,6 @@
                 "${workspaceFolder}/../Common_Libs/Logging/Logging.c",
 
                 //source file - use all top level .cpp files:
-                "${workspaceFolder}/../Common_Libs/CitiesRecognition/CitiesInfo.cpp",
                 "*.cpp",
                 
                 //outputfile - always "program" at workspace directory:
@@ -49,7 +48,6 @@
                 "-I${workspaceFolder}",
                 "-I${workspaceFolder}/../Common_Libs",
                 "-I${workspaceFolder}/../Common_Libs/DataBase",
-                "-I${workspaceFolder}/../Common_Libs/CitiesRecognition",
                 "-I${workspaceFolder}/../Common_Libs/Configuration",
                 "-I${workspaceFolder}/../Common_Libs/Logging",
                 "-I/usr/include/gdal",

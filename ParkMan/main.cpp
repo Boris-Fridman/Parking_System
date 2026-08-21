@@ -82,31 +82,11 @@ int main(int const argc, char const *argv[])
    }
   printf("Starting ParkMan Program...\n\r");
   
-  //TaskControl_ShSM_c TaskContSh;
-
   InitConfiguration(OwnName);
 
   ProcMan_c TaskContSh;  /* Attention !!! The class must be defined when configuration was allready loaded. */
   TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "Starting ParkMan Program..."));
 
-  // std::string TestString = "Quiriyat Motsquin";//"Petach Tiqua";
-  // std::cout << TestString << "\n\r";
-  
-  // RemoveUnneededChars(TestString);
-  // std::cout << TestString << "\n\r";
-
-  // ReplaceSubStrings(TestString);
-  // std::cout << TestString << "\n\r";
-
-
-  // GPS_Cords_s TelAviv = {32.0853, 34.7818}, Jerusalem = {31.7683, 35.2137};
-  // double d;
-  // d = GetDistance(TelAviv, Jerusalem);
-
-  // std::cout << std::fixed << std::setprecision(6);
-  
-  // std::cout << d << "\n\r";
- 
   own_pid = getpid();
 
   std::cout << "The current program is: "<< OwnName <<"\n\r";
@@ -114,14 +94,10 @@ int main(int const argc, char const *argv[])
 
   {
    char PathFileName[PATH_LEN] = {0};
-  //  GetDataBaseFile(OwnName, PathFileName);
-  //  TaskContSh.SetDBFileName(PathFileName);
    TaskContSh.SetDBFileName(GetDataBaseFilePathName());
    
    std::cout << "Loaded DataBase File: " << PathFileName << "\n\r";
 
-  //  GetShapeFile(OwnName, PathFileName);
-  //  TaskContSh.SetSHPFileName(PathFileName);
    TaskContSh.SetSHPFileName(GetGeoLocShapeFilePathName());
    std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }

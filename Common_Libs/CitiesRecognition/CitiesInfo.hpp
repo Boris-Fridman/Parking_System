@@ -15,12 +15,6 @@ struct CityData_s
   GPS_Poly_t CityCords;
  };
 
-enum PointState_e
- {
-  OUTSIZE_E,
-  ONBOUND_E,
-  INSIDE_E
- };
 
 double Atan2(double y, double x);
 PointState_e PointInPoly(GPS_Poly_t BoundingPoly, GPS_Cords_s Cords); 
