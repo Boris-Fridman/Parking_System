@@ -108,9 +108,9 @@ struct AngDegMinSec_s
 #ifndef __cplusplus
 AngDegMinSec_s
 #endif
-    ;
+;
 
-void AngToDebMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
+void AngToDegMinSecDec(double Angle, AngDegMinSec_s *ConvAng)
  {
   bool sgn = Angle < 0;
   Angle = fabs(Angle);
@@ -142,8 +142,8 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
  {
   AngDegMinSec_s LatConvAng, LongConvAng;
-  AngToDebMinSecDec(GPSCords.Latitude, &LatConvAng);
-  AngToDebMinSecDec(GPSCords.Longitude, &LongConvAng);
+  AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
+  AngToDegMinSecDec(GPSCords.Longitude, &LongConvAng);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
   snprintf(Buf, MaxSize, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #else  // For ARM
@@ -393,6 +393,8 @@ void FreeData(uint8_t **Data)
  * *************************************************************************************************************
  */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Converts the given path from local to full. */
 void AdjustPath(char const *OwnProgName, char *PathToAdjust)
  {
   int len = strlen(PathToAdjust);
@@ -417,6 +419,8 @@ void AdjustPath(char const *OwnProgName, char *PathToAdjust)
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the configuration file name according the given name of a program by generating .                            */
 void GetConfFileName(char const *OwnProgName, char *ConfFileName)
  {
   char *p;
@@ -430,6 +434,9 @@ void GetConfFileName(char const *OwnProgName, char *ConfFileName)
   strcat(ConfFileName,".ini");
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives the path of the folder in which can be stored the configuration files.                                         */
+/* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
 bool GetConfigPath(char const *OwnProgName, char NamePath[])
  {
   struct stat buffer;
@@ -484,6 +491,9 @@ bool GetConfigPath(char const *OwnProgName, char NamePath[])
   return result;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives the name with path of the database file.                                                                       */
+/* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
 bool GetDataBaseFile(char const *OwnProgName, char NamePath[])
  {
   bool result;
@@ -492,6 +502,9 @@ bool GetDataBaseFile(char const *OwnProgName, char NamePath[])
   return result;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives the name with path of the file with the program PID.                                                           */
+/* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
 bool GetPIDFile(char const *OwnProgName, char NamePath[])
  {
   bool result;
@@ -500,6 +513,9 @@ bool GetPIDFile(char const *OwnProgName, char NamePath[])
   return result;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives the name with path of the file containing the map-shapes of cities, towns, vilages and other geographic places.*/
+/* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
 bool GetShapeFile(char const *OwnProgName, char NamePath[])
  {
   bool result;
@@ -509,12 +525,15 @@ bool GetShapeFile(char const *OwnProgName, char NamePath[])
  }
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
+/*----------------------------------------------------------------------------------------------------------------------*/
 
   char const * const PROC_PATH     = "/proc/";     /* Root Folder contains all running-processes'-information. */
   char const * const STATUS_FILE   = "/status";    /* Text file to see PPID. Must be found the line "PPID:	<PPID>" */
   char const * const COMMON_FILE   = "/comm";      /* Text file containing process name. Contains only string with program name only. "<program_name>" */
   char const * const EXE_FILE      = "/exe";       /* Link file contains path to the program file from which the process was executed. */
 
+/*----------------------------------------------------------------------------------------------------------------------*/  
+/* Checks if the copy of the current program is allready running. Returns "true" if running or "false" if not.          */
 bool PrevProcCopyRunning(char const *OwnProgName)
  {
   DIR *dir;
@@ -560,8 +579,9 @@ bool PrevProcCopyRunning(char const *OwnProgName)
   return Result;
  }
 
-
-void GetOwnNamePath(char OwnPathToRet[], size_t MaxSize)
+/*----------------------------------------------------------------------------------------------------------------------*/  
+/* Gives the name with the full path of the current running program by checking the /proc/<PID>/exe link file.          */
+void GetOwnNamePath(char OwnPathToRet[], size_t const MaxSize)
  {
   char FilePath[PATH_LEN];
   ssize_t len;

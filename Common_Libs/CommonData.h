@@ -591,7 +591,7 @@ bool GetShapeFile(char const *OwnProgName, char NamePath[]);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
 bool PrevProcCopyRunning(char const *OwnProgName);
 
-void GetOwnNamePath(char OwnPathToRet[], size_t MaxSize);
+void GetOwnNamePath(char OwnPathToRet[], size_t const MaxSize);
 #endif
 
 /*======================================================================================================================*/

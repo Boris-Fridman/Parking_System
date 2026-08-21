@@ -3,13 +3,24 @@
 
 #include "string.h"
 
-#include <libgen.h> // Required header for dirname()
+#include <libgen.h> /* Required header for dirname() */
 
 
-#define CONF_IT_DIVIDER  ':'
+/*======================================================================================================================*/
 
+#define CONF_IT_DIVIDER  ':'  /* The divider betwen key and data in the .ini text file. */
 
-static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
+/*======================================================================================================================*/
+/*
+ * *************************************************************************************************************
+ **          Basic configuration managing Functions.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Scans all the data items and in each key finishing with "PATH" converts existing pathes in data from local to full   */
+/* by running the "AdjustPath()" function.                                                                              */
+static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
  {
   size_t i;
   for(i = 0; i < NumConfIt; i++)
@@ -21,7 +32,9 @@ static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t NumConfIt, cha
  }
 
 
-static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads configuration from file.                                                                                       */
+static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
   size_t i;
@@ -65,7 +78,10 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t NumConfIt, cha
    return false;
  }
 
-static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates a default configuration.                                                                                     */
+static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
   size_t i;
@@ -89,8 +105,16 @@ static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char c
  }
 
 
+/*======================================================================================================================*/
+/*
+ * *************************************************************************************************************
+ **          Main configuration managing Functions.
+ * *************************************************************************************************************
+ */
 
-void InitConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnProgName)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizes configuration.                                                                                            */
+void InitConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
  {
   bool Result;
   
@@ -104,7 +128,9 @@ void InitConf(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const *OwnPro
  }
 
 
-char const *GetDataByName(char ConfData[][2][PATH_LEN], size_t NumConfIt, char const DataName[])
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives data by a given name.                                                                                          */
+char const *GetDataByName(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const DataName[])
  {
   size_t i;
   for(i = 0; i < NumConfIt; i++)
