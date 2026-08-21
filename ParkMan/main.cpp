@@ -45,7 +45,7 @@
 void CatchChildZombie(ProcMan_c *TaskControl = nullptr);
 void WaitUntilFinised();
 
-void CreatePIDFile(int const argc, char const *argv[], char FileName[]);
+void CreatePIDFile(char FileName[]);
 void RemovePIDFile(char FileName[]);
 void EnableSignals();
 
@@ -69,12 +69,22 @@ bool UpdateDataBase = false;
 /*  Main function from which the program starts running.                                                                */
 int main(int const argc, char const *argv[])
  {
-
+  UNUSED(argc);
+  UNUSED(argv);
+  char OwnName[PATH_LEN];
   char PIDFileName[PATH_LEN];
+  GetOwnNamePath(OwnName, sizeof(OwnName));
+
+  if(PrevProcCopyRunning(OwnName))
+   {
+    printf("The program is allready running.\n\r");
+    exit(-2);
+   }
+  printf("Starting ParkMan Program...\n\r");
   
   //TaskControl_ShSM_c TaskContSh;
 
-  InitConfiguration(argv[0]);
+  InitConfiguration(OwnName);
 
   ProcMan_c TaskContSh;  /* Attention !!! The class must be defined when configuration was allready loaded. */
   TaskContSh.LogEvent(MakeLogMessage(E_LOG_MESSAGE, MAIN_PROC_NAME, "Starting ParkMan Program..."));
@@ -99,24 +109,24 @@ int main(int const argc, char const *argv[])
  
   own_pid = getpid();
 
-  std::cout << "The current program is: "<< argv[0] <<"\n\r";
+  std::cout << "The current program is: "<< OwnName <<"\n\r";
   std::cout << "The pid is: " << own_pid << "\n\r";
 
   {
    char PathFileName[PATH_LEN] = {0};
-  //  GetDataBaseFile(argv[0], PathFileName);
+  //  GetDataBaseFile(OwnName, PathFileName);
   //  TaskContSh.SetDBFileName(PathFileName);
    TaskContSh.SetDBFileName(GetDataBaseFilePathName());
    
    std::cout << "Loaded DataBase File: " << PathFileName << "\n\r";
 
-  //  GetShapeFile(argv[0], PathFileName);
+  //  GetShapeFile(OwnName, PathFileName);
   //  TaskContSh.SetSHPFileName(PathFileName);
    TaskContSh.SetSHPFileName(GetGeoLocShapeFilePathName());
    std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }
   
-  CreatePIDFile(argc, argv, PIDFileName);
+  CreatePIDFile(PIDFileName);
   EnableSignals();
 
   ProcParams_s ProcParams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
@@ -222,12 +232,9 @@ void WaitUntilFinised()
 
  }
 
-void CreatePIDFile(int const argc, char const *argv[], char FileName[])
+void CreatePIDFile(char FileName[])
  {
   int pid;
-  UNUSED(argc);
-  UNUSED(argv);
-  //GetPIDFile(argv[0], FileName);
   strcpy(FileName, GetProgInfoPIDFilePathName());
   pid = getpid();
   

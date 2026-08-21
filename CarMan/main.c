@@ -19,6 +19,14 @@
 
 #include "Configuration.h"
 
+#define CONVERT_TO_DAEMON
+
+
+#ifdef CONVERT_TO_DAEMON  
+#include <syslog.h>
+#endif
+
+
 bool FullExit = false;
 
 
@@ -26,27 +34,52 @@ void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams);
 void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
 void EnableSignals();
 
+#define CONVERT_TO_DAEMON
 
 int main(int const argc, char const *argv[])
  {
+  UNUSED(argc);
+  UNUSED(argv);
+
+  // //ansi clear screen
+  // printf("\033[2J\033[H");
+
+  //code
+
+  char OwnName[PATH_LEN];
+  GetOwnNamePath(OwnName, sizeof(OwnName));
+#ifdef CONVERT_TO_DAEMON  
+  if(PrevProcCopyRunning(OwnName))
+   {
+    printf("The program is allready running.\n\r");
+    exit(-2);
+   }
+  printf("Starting CarMan Daemon...\n\r");
+  openlog("carman_daemon_test", LOG_PID, LOG_DAEMON);
+  if(daemon(0, 0) == -1)
+   {
+    syslog(LOG_ERR, "Failed to daemonize process.");
+    closelog();
+    return -1;
+   }
+  else
+   {
+    syslog(LOG_INFO, "The program was started as a daemon successfully.");
+   }
+#endif
+
   pid_t network_pid;
   pid_t i2c_pid;
   pid_t own_pid;
 
-  //ansi clear screen
-  printf("\033[2J\033[H");
-
-  //code
   MasterShMem_s TskContShms;
   MasterShQue_s TskContShqs;
   LogData_s TskContLogData;
 
-  UNUSED(argc);
-  
   own_pid = getpid();
   printf("Starting Main Car Manager Process with PID: %d\n\r", own_pid);
 
-  InitConfiguration(argv[0]);
+  InitConfiguration(OwnName);
 
   InitManaging(&TskContShms, &TskContShqs, &TskContLogData);
 
@@ -81,6 +114,12 @@ int main(int const argc, char const *argv[])
   DeinitManaging(&TskContShms, &TskContShqs, &TskContLogData);
 
   printf("Exitting...\n\r");
+
+#ifdef CONVERT_TO_DAEMON  
+  syslog(LOG_INFO, "The protram finished running.");
+  closelog();
+#endif
+
   return 0;
  }
 

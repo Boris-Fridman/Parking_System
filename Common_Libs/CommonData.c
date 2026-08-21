@@ -19,6 +19,14 @@
 #include <libgen.h>
 #include <time.h>
 
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
+#include <dirent.h>
+#include <unistd.h>
+#include <errno.h>
+#else  // For ARM
+#endif
+
+
 /*======================================================================================================================*/
 
 char const *const ResultColors[] = {TermRed, TermGreen, TermBrightYello, TermYello, TermCyan, TermMagenta};
@@ -495,6 +503,74 @@ bool GetShapeFile(char const *OwnProgName, char NamePath[])
   strcat(NamePath, SHP_FILENAME);
   return result;
  }
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
+
+  char const * const PROC_PATH     = "/proc/";     /* Root Folder contains all running-processes'-information. */
+  char const * const STATUS_FILE   = "/status";    /* Text file to see PPID. Must be found the line "PPID:	<PPID>" */
+  char const * const COMMON_FILE   = "/comm";      /* Text file containing process name. Contains only string with progarm name only. "<program_name>" */
+  char const * const EXE_FILE      = "/exe";       /* Link file contains path to the program file from which the process was executed. */
+
+bool PrevProcCopyRunning(char const *OwnProgName)
+ {
+  DIR *dir;
+  struct dirent *Entry;  
+  //char ProcFilePath[100];
+  char FilePath[PATH_LEN];
+  char RealPath[PATH_LEN];
+  char *EndPtr;
+  long pid;
+  ssize_t len;
+  dir = opendir(PROC_PATH);
+  bool Result = false;
+  
+  if(dir == NULL) /* The folder with process' names couldn't be open. It means the function cannot check if any copy of the program is allready running. */
+   {
+    return false; /* If there is no possiblity to check if one program copy is running the function returns false to prevent emergency exitting. */
+   }
+  else /* The folder can be opened. */
+   {
+    while((Entry = readdir(dir)) != NULL)
+     {
+      if(Entry->d_type == DT_DIR) /* The found entry is directory */
+       {
+        errno = 0;
+        pid = strtol(Entry->d_name, &EndPtr, 10);
+        
+        if((EndPtr != Entry->d_name) && (*EndPtr == '\0') && (errno != ERANGE) && ((getpid() != pid))) /* The directory name is a numeric string that means it is a process' PID. The found PID is different from own one that means the process is other. */
+         {
+          snprintf(FilePath, sizeof(FilePath), "%s%s%s", PROC_PATH, Entry->d_name, EXE_FILE);
+          len = readlink(FilePath, RealPath, sizeof(RealPath) - 1);
+          if(len != -1)
+           RealPath[len] = '\0';
+          if(!strncmp(OwnProgName, RealPath, strlen(OwnProgName)))
+           {
+            Result = true;
+            break;
+           }
+         }
+       }
+     }
+    closedir(dir);
+   }
+  return Result;
+ }
+
+
+void GetOwnNamePath(char OwnPathToRet[], size_t MaxSize)
+ {
+  char FilePath[PATH_LEN];
+  ssize_t len;
+
+  snprintf(FilePath, sizeof(FilePath), "%s%d%s", PROC_PATH, getpid(), EXE_FILE);
+  len = readlink(FilePath, OwnPathToRet, MaxSize - 1);
+  if(len != -1)
+   OwnPathToRet[len] = '\0';
+ }
+
+
+#endif
+
 /*======================================================================================================================*/
 
 /*
