@@ -192,21 +192,21 @@ typedef
 struct GPS_Cords_s
  {
   double Longitude;   /* (˚) (deg) */  /* Positive number - East  , Negative number - West  .     > 0 - EL ;  < 0 - WL .  */
-  double Latitude;    /* (˚) (deg) */  /* Positive number - North , Negative nomber - South .     > 0 - NL ;  < 0 - SL .  */
+  double Latitude;    /* (˚) (deg) */  /* Positive number - North , Negative number - South .     > 0 - NL ;  < 0 - SL .  */
  }
  #ifndef __cplusplus
  GPS_Cords_s
  #endif
  ;
 
-/* Distance Coordinates are the analogues of the GPS Coordinates and are used for calculating the distance. Are given in kilomters. */
+/* Distance Coordinates are the analog of the GPS Coordinates and are used for calculating the distance. Are given in kilometers. */
 #ifndef __cplusplus
 typedef 
 #endif
 struct Dist_Cords_s
  {
   double x; /* Longitude; */ /* km */ /* Positive number - East  , Negative number - West  .  */
-  double y; /* Latitude;  */ /* km */ /* Positive number - North , Negative nomber - South .  */
+  double y; /* Latitude;  */ /* km */ /* Positive number - North , Negative number - South .  */
  }
  #ifndef __cplusplus
  Dist_Cords_s
@@ -356,7 +356,7 @@ typedef
 enum TimeForm_e
  {
   E_CAL_FORMAT,   /* Regular Calendar format d/m/y  h:m:s   */
-  E_DBS_FORMAT,   /* Database fromat  yyyy/mm/dd - hh:mm:ss */
+  E_DBS_FORMAT,   /* Database format  yyyy/mm/dd - hh:mm:ss */
   E_DUR_FORMAT    /* Duration format  d-h:m:s               */
  }
 #ifndef __cplusplus
@@ -394,7 +394,7 @@ extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive
 /*======================================================================================================================*/
 
 /**
- * @brief Rases numbers to the square power.
+ * @brief Raises numbers to the square power.
  * 
  * @code
  * double sqr(double x);
@@ -414,7 +414,7 @@ double sqr(double x);
  * uint64_t RandGenLongLong();
  * @code
  * 
- * @return The random geterated number in 64-bit length.
+ * @return The random generated number in 64-bit length.
  */
 uint64_t RandGenLongLong();
 
@@ -440,7 +440,7 @@ uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
  * int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection);
  * @code
  * 
- * @param Value           The value from which the logorythm is calculated.
+ * @param Value           The value from which the logarithm is calculated.
  * 
  * @param RoundDirrection "0" if the result must be rounded down or "1" if must be rounded up.
  */

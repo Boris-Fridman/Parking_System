@@ -1,2 +1,2 @@
-../UserLibs/ParkingsData.c:25:6:GenRandNumber	1
-../UserLibs/ParkingsData.c:31:6:GetRandParking	1
+../UserLibs/ParkingsData.c:26:6:GenRandParkNumber	1
+../UserLibs/ParkingsData.c:33:6:GetRandParking	1

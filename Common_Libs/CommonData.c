@@ -48,12 +48,12 @@ char const *LONGSGN[] = {"E", "W"}; // Longitude sign "E" (East)  in case of pos
 /*======================================================================================================================*/
 /*
  * *************************************************************************************************************
- **          Additional mathematic Functions.
+ **          Additional mathematics Functions.
  * *************************************************************************************************************
  */
 
 /*----------------------------------------------------------------------------------------------------------------------*/
-/* Rases numbers to the square power.                                                                                   */
+/* Raises numbers to the square power.                                                                                   */
 double sqr(double x)
  {
   return x * x;
@@ -79,7 +79,7 @@ uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber)
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection) /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
  {
   int32_t Result;
-  /*  If rounding up is required the comparison result will be "(Value!=0)". If tequired the rounding down the comparison result will be "(Value>=10)".   */
+  /*  If rounding up is required the comparison result will be "(Value!=0)". If required the rounding down the comparison result will be "(Value>=10)".   */
   for (Result = 0; (RoundDirrection ? (Value != 0) : (Value >= 10)); Value /= 10)
    {
     ++Result;
@@ -244,7 +244,7 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
     case E_CAL_FORMAT: /* Regular Calendar format d/m/y  h:m:s   */
       strftime(TimeAsStr, TimeStrSize, "%d/%b/%Y - %H:%M:%S", &tmp);
      break;
-    case E_DBS_FORMAT: /* Database fromat  yyyy/mm/dd - hh:mm:ss */
+    case E_DBS_FORMAT: /* Database format  yyyy/mm/dd - hh:mm:ss */
       strftime(TimeAsStr, TimeStrSize, "%G/%m/%d %a   %H:%M:%S", &tmp);
      break;
     case E_DUR_FORMAT: /* Duration format  d-h:m:s               */
@@ -512,7 +512,7 @@ bool GetShapeFile(char const *OwnProgName, char NamePath[])
 
   char const * const PROC_PATH     = "/proc/";     /* Root Folder contains all running-processes'-information. */
   char const * const STATUS_FILE   = "/status";    /* Text file to see PPID. Must be found the line "PPID:	<PPID>" */
-  char const * const COMMON_FILE   = "/comm";      /* Text file containing process name. Contains only string with progarm name only. "<program_name>" */
+  char const * const COMMON_FILE   = "/comm";      /* Text file containing process name. Contains only string with program name only. "<program_name>" */
   char const * const EXE_FILE      = "/exe";       /* Link file contains path to the program file from which the process was executed. */
 
 bool PrevProcCopyRunning(char const *OwnProgName)
@@ -528,9 +528,9 @@ bool PrevProcCopyRunning(char const *OwnProgName)
   dir = opendir(PROC_PATH);
   bool Result = false;
   
-  if(dir == NULL) /* The folder with process' names couldn't be open. It means the function cannot check if any copy of the program is allready running. */
+  if(dir == NULL) /* The folder with process' names couldn't be open. It means the function cannot check if any copy of the program is already running. */
    {
-    return false; /* If there is no possiblity to check if one program copy is running the function returns false to prevent emergency exitting. */
+    return false; /* If there is no possibility to check if one program copy is running the function returns false to prevent emergency exiting. */
    }
   else /* The folder can be opened. */
    {

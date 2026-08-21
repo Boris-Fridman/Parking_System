@@ -127,7 +127,7 @@ int main(void)
   {
    if(GenerationEmabled)
     {
-     GenRandNumber();
+     GenRandParkNumber();
      GetRandParking(&ParkPlace, &Parking);
      printf("%5d: ",ParkPlace);
      PrintGPSCords(Parking.ParkingCords);
@@ -264,7 +264,7 @@ void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
 
  }
 
-/* USER CODE END 4 */
+ /* USER CODE END 4 */
 
  /* MPU Configuration */
 
