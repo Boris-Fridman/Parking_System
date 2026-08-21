@@ -61,8 +61,8 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
       proc_pid = getpid();
       printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""), ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       {
-       SlaveShMem_s TskContShms;
-       SlaveShQue_s TskContShqs;
+       SlaveShMem_s TskContShms = { 0 };
+       SlaveShQue_s TskContShqs = { 0 };
        InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
        ProcParams_s ProcParams = {.ProcName = ProcName, .TskContShms = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs}, .TskContShqs = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs }};
        LogEvent(&ProcParams.TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Starting Process..."));
@@ -189,8 +189,8 @@ void DeactivateMasterShQue(MasterShQue_s *MasterShQue)
 
 void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, char sh_que_name[], char qsem_name[], QueueDirection_e const SendReceive, long int const msg_size)
  {
-  strncpy(SlaveShQue->sq_name, sh_que_name, sizeof(SlaveShQue->sq_name));
-  strncpy(SlaveShQue->sem_name, qsem_name, sizeof(SlaveShQue->sem_name));
+  strncpy(SlaveShQue->sq_name, sh_que_name, sizeof(SlaveShQue->sq_name) - 1);
+  strncpy(SlaveShQue->sem_name, qsem_name, sizeof(SlaveShQue->sem_name) - 1);
   InitQueue(&SlaveShQue->mq, SendReceive, SlaveShQue->sq_name, msg_size);
   SlaveShQue->p_shs = sem_open(SlaveShQue->sem_name, 0, 0600);
   if(SlaveShQue->p_shs == SEM_FAILED)

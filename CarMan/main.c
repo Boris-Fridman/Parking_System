@@ -19,7 +19,7 @@
 
 #include "Configuration.h"
 
-#define CONVERT_TO_DAEMON
+//#define CONVERT_TO_DAEMON
 
 
 #ifdef CONVERT_TO_DAEMON  
@@ -33,8 +33,6 @@ bool FullExit = false;
 void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams);
 void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
 void EnableSignals();
-
-#define CONVERT_TO_DAEMON
 
 int main(int const argc, char const *argv[])
  {

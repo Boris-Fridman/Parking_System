@@ -393,17 +393,60 @@ extern char const *LONGSGN[];  // Longitude sign "E" (East)  in case of positive
 
 /*======================================================================================================================*/
 
-
+/**
+ * @brief Rases numbers to the square power.
+ * 
+ * @code
+ * double sqr(double x);
+ * @code
+ * 
+ * @param x The number from which is calculated the square power
+ * 
+ * @return The given parameter multiplied by itself. x²
+ * 
+ */
 double sqr(double x);
 
+/**
+ * @brief Generates random numbers in 64 bit size.
+ * 
+ * @code 
+ * uint64_t RandGenLongLong();
+ * @code
+ * 
+ * @return The random geterated number in 64-bit length.
+ */
 uint64_t RandGenLongLong();
 
+/**
+ * @brief Generates random numbers between MinNumber and MaxNumber including.
+ * 
+ * @code
+ * uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
+ * @code
+ * 
+ * @param MinNumber Minimal Number that can be generated.
+ * 
+ * @param MaxNumber Maximal Number that can be generated.
+ * 
+ * @return Random generated Number between the given limits including them.
+ */
 uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
 
-int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection); /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
+/**
+ * @brief Finds log on decimal base without using real numbers with rounding up or down according second parameter.
+ * 
+ * @code
+ * int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection);
+ * @code
+ * 
+ * @param Value           The value from which the logorythm is calculated.
+ * 
+ * @param RoundDirrection "0" if the result must be rounded down or "1" if must be rounded up.
+ */
+int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection);
 
 /*======================================================================================================================*/
-
 
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
@@ -441,10 +484,9 @@ void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStr
  *
  * @param Length   The length of the data.
  *
- * @param InitVal The initialization value.
+ * @param InitVal  The initialization value.
  *
  * @return Calculated CRC.
- *
  */
 uint32_t FindCRC(uint8_t const *Data, uint8_t Length, uint32_t InitVal);
 
@@ -474,7 +516,6 @@ void Add_CRC(uint8_t buf[], size_t len);
  * @param len   The length of data. Including CRC.
  *              For example if the given length is 12 the CRC checking will be made from the first 8 bytes
  *              and the result will be compared to the last 4 bytes.
- *
  */
 bool CRC_Correct(uint8_t const buf[], size_t len);
 
@@ -497,7 +538,6 @@ bool CRC_Correct(uint8_t const buf[], size_t len);
  * @param NetSendData  Encoded data.
  * 
  * @return             The length of data if encoded successfully or "0" if failed.
- * 
  */
 ssize_t EncodeNetData(uint8_t const * const CustomData, uint8_t Len, uint8_t **NetSendData);
 
@@ -531,7 +571,6 @@ bool DecodeNetData(uint8_t const NetRecData[], size_t Len, uint8_t *CustomData);
  * @code
  * 
  * @param Data     The pointer to pointer to the dynamically allocated memory for freeing.
- * 
  */
 void FreeData(uint8_t **Data);
 

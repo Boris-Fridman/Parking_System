@@ -66,12 +66,16 @@ uint64_t RandGenLongLong()
   return ((uint64_t)rand() << 32) | ((uint64_t)rand());
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates random numbers between MinNumber and MaxNumber including.                                                  */
 uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber)
  {
   return MinNumber + rand() % (MAX(MaxNumber, MinNumber) - MinNumber + 1);
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Finds log on decimal base without using real numbers with rounding up or down according second parameter.            */
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection) /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
  {
   int32_t Result;

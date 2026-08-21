@@ -89,7 +89,7 @@ void CreateStringLineToLog(char LogString[], size_t MaxSize, LogMessType_s LogMe
 
 void AddToLog(LogParams_s *LogParams, LogMessType_s LogMessage)
  {
-  char Buf[LOGMSG_LEN + 70];
+  char Buf[LOGMSG_LEN + 100];
   CreateStringLineToLog(Buf, sizeof(Buf), LogMessage, LogParams->DatDiv);
   fprintf(LogParams->fp, "%s\n", Buf);
   fflush(LogParams->fp);

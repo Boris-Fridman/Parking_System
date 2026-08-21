@@ -78,25 +78,29 @@ DEFINES = -D_GNU_SOURCE
 SRCS = \
 *.c                                      \
 ../Common_Libs/CommonData.c              \
-../Common_Libs/Configuration/ConfMan.c
+../Common_Libs/Configuration/ConfMan.c   \
+../Common_Libs/Logging/Logging.c
 
 TARGNAME = carman
 EXT = .elf
 TARGET = "$(OUT_DIR)/$(TARGNAME)$(EXT)"
 ARMTARGET = "$(OUT_DIR)/$(TARGNAME)-arm$(EXT)"
+ARMDAEMONTARGET = "$(OUT_DIR)/$(TARGNAME)-daemon-arm$(EXT)"
 
 #Includes:
 INCLUDES = -I.\
 -I./../Common_Libs                       \
--I./../Common_Libs/Configuration               
+-I./../Common_Libs/Configuration         \
+-I./../Common_Libs/Logging          
 
 #Link math lib:
 LINKMATH = -lm
 
 
 #Implementing database:
-COMPFLAGS    = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(DEFINES) $(SRCS) -o $(TARGET) $(INCLUDES) $(LINKMATH)
-ARMCOMPFLAGS = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(DEFINES) $(SRCS) -o $(ARMTARGET) $(INCLUDES) $(LINKMATH)
+COMPFLAGS          = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(DEFINES) $(SRCS) -o $(TARGET) $(INCLUDES) $(LINKMATH)
+ARMCOMPFLAGS       = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(DEFINES) $(SRCS) -o $(ARMTARGET) $(INCLUDES) $(LINKMATH)
+ARMDAEMONCOMPFLAGS = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(DEFINES) -DCONVERT_TO_DAEMON $(SRCS) -o $(ARMDAEMONTARGET) $(INCLUDES) $(LINKMATH)
 
 #OBJS = $(SRCS:.c=.o)
 
@@ -104,6 +108,7 @@ ARMCOMPFLAGS = $(COLORSENABLE) $(STANDARD) $(ENFORCESTANDARD) $(WARNINGFLAGS) $(
 all:
 	@$(MAKE) release
 	@$(MAKE) crossrelease
+	@$(MAKE) crossreleasedaemon
 
 debug: compdebug
 compdebug:
@@ -129,6 +134,13 @@ compcrossrelease:
 	@echo "$(TermYello)Running Release Arm Specific Compilation$(TermColorsReset)"
 	@$(CXXARM) -O3 -Werror -DRELEASE $(ARMCOMPFLAGS)
 crossrelease: showresult
+
+crossreleasedaemon: compcrossreleasedaemon
+compcrossreleasedaemon: 
+	@echo "$(TermYello)Running Release Daemon Arm Specific Compilation$(TermColorsReset)"
+	@$(CXXARM) -O3 -Werror -DRELEASE $(ARMDAEMONCOMPFLAGS)
+crossreleasedaemon: showresult
+
 
 
 showfinalresult: showresult

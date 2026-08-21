@@ -66,7 +66,7 @@ void I2CProc(ProcParams_s *ProcParams)
  {
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
-  size_t skipno;
+  size_t skipno = 0;
   bool Exit = false;
   char buf[100];
 
