@@ -20,7 +20,7 @@
 #include "Configuration.h"
 
 //#define CONVERT_TO_DAEMON
-
+//#define BEAGLE_BONE
 
 #ifdef CONVERT_TO_DAEMON  
 #include <syslog.h>
@@ -48,8 +48,8 @@ int main(int const argc, char const *argv[])
   bool PrevProgRunning;
   GetOwnNamePath(OwnName, sizeof(OwnName));
 
-#ifdef CONVERT_TO_DAEMON  
-  PrevProgRunning = PrevProcCopyRunning(OwnName, false); /* In the daemon mode the program cannot run in several copies anyway neither from the same path nor from different pathes. */
+#if defined(CONVERT_TO_DAEMON) || defined (BEAGLE_BONE)
+  PrevProgRunning = PrevProcCopyRunning(OwnName, false); /* In the daemon mode the program cannot run in several copies anyway neither from the same path nor from different pathes. In case of BeagleBone version the multicopy running is impossible anyway because they can shere the same I2C Prot. */
 #else
   PrevProgRunning = PrevProcCopyRunning(OwnName, true);  /* In regular application mode the program cannot run from the same path in several copies, but from different pathes copy per path. */
 #endif  
