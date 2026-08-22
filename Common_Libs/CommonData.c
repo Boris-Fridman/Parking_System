@@ -576,7 +576,7 @@ bool GetShapeFile(char const *OwnProgName, char NamePath[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/  
 /* Checks if the copy of the current program is allready running. Returns "true" if running or "false" if not.          */
-bool PrevProcCopyRunning(char const *OwnProgName)
+bool PrevProcCopyRunning(char const *OwnProgPathName, bool ByNameAndPath) /* "false" by name only; "true" by path and name */
  {
   DIR *dir;
   struct dirent *Entry;  
@@ -584,6 +584,8 @@ bool PrevProcCopyRunning(char const *OwnProgName)
   char FilePath[PATH_LEN];
   char RealPath[PATH_LEN];
   char *EndPtr;
+  char const *OwnName; 
+  char const *FoundName;
   long pid;
   ssize_t len;
   dir = opendir(PROC_PATH);
@@ -607,11 +609,26 @@ bool PrevProcCopyRunning(char const *OwnProgName)
           snprintf(FilePath, sizeof(FilePath), "%s%s%s", PROC_PATH, Entry->d_name, EXE_FILE);
           len = readlink(FilePath, RealPath, sizeof(RealPath) - 1);
           if(len != -1)
-           RealPath[len] = '\0';
-          if(!strncmp(OwnProgName, RealPath, strlen(OwnProgName)))
            {
-            Result = true;
-            break;
+            RealPath[len] = '\0';
+
+            strncpy(FilePath, OwnProgPathName, sizeof(FilePath) - 1);
+            if(ByNameAndPath)
+             {
+              OwnName = FilePath;
+              FoundName = RealPath;
+             }
+            else
+             {
+              OwnName = basename(FilePath);
+              FoundName = basename(RealPath);
+             }
+            if(!strcmp(OwnName, FoundName))
+             {
+              Result = true;
+              break;
+             }
+
            }
          }
        }

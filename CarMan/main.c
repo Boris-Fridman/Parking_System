@@ -45,13 +45,23 @@ int main(int const argc, char const *argv[])
   //code
 
   char OwnName[PATH_LEN];
+  bool PrevProgRunning;
   GetOwnNamePath(OwnName, sizeof(OwnName));
+
 #ifdef CONVERT_TO_DAEMON  
-  if(PrevProcCopyRunning(OwnName))
+  PrevProgRunning = PrevProcCopyRunning(OwnName, false); /* In the daemon mode the program cannot run in several copies anyway neither from the same path nor from different pathes. */
+#else
+  PrevProgRunning = PrevProcCopyRunning(OwnName, true);  /* In regular application mode the program cannot run from the same path in several copies, but from different pathes copy per path. */
+#endif  
+
+  if(PrevProgRunning)
    {
     printf("The program is allready running.\n\r");
     exit(-2);
    }
+
+
+#ifdef CONVERT_TO_DAEMON  
   printf("Starting CarMan Daemon...\n\r");
   openlog("carman_daemon_test", LOG_PID, LOG_DAEMON);
   if(daemon(0, 0) == -1)
@@ -64,6 +74,8 @@ int main(int const argc, char const *argv[])
    {
     syslog(LOG_INFO, "The program was started as a daemon successfully.");
    }
+#else
+  printf("Starting CarMan Program...\n\r");
 #endif
 
   pid_t network_pid;

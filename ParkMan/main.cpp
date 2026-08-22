@@ -75,7 +75,7 @@ int main(int const argc, char const *argv[])
   char PIDFileName[PATH_LEN];
   GetOwnNamePath(OwnName, sizeof(OwnName));
 
-  if(PrevProcCopyRunning(OwnName))
+  if(PrevProcCopyRunning(OwnName, false))  /* Because the program is a server it cannot run in several copies at all neither from the same path nor from different pathes. */
    {
     printf("The program is allready running.\n\r");
     exit(-2);
