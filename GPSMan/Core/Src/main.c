@@ -129,10 +129,12 @@ int main(void)
     {
      GenRandParkNumber();
      GetRandParking(&ParkPlace, &Parking);
-     printf("%5d: ",ParkPlace);
-     PrintGPSCords(Parking.ParkingCords);
-     printf("\n\r");
-     //printf("%5d: (%0.8f,%0.8f) %s\n\r", ParkPlace, Parking.ParkingCords.Longitude, Parking.ParkingCords.Latitude, Parking.ParkingName);
+     char buf[200];
+     CreateCordsFormatted(buf, sizeof(buf), Parking.ParkingCords, true);
+     printf("%5d: %s\n\r",ParkPlace, buf);
+//     printf("%5d: ",ParkPlace);
+//     PrintGPSCords(Parking.ParkingCords);
+//     printf("\n\r");
     }
    HAL_Delay(1000);
     /* USER CODE END WHILE */

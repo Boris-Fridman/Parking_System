@@ -170,7 +170,7 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
   //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
   if(bytes_read >= 0)
    {
-    ConvertPrice(ClientQueueMsg.AccumulatedPrice, buffer, sizeof(ClientQueueMsg.AccumulatedPrice), E_ACC_FORMAT, StdOutNoPiping);
+    ConvertPrice(ClientQueueMsg.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << "City: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << ClientQueueMsg.City_Name << (StdOutNoPiping ? TermColorsReset : "") << "    Price: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     AddOrUpdateParkingSession(conn, ClientQueueMsg);
    }

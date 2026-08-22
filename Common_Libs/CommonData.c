@@ -187,12 +187,38 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
   AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDegMinSecDec(GPSCords.Longitude, &LongConvAng);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
+  snprintf(Buf, MaxSize - 1, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #else  // For ARM
-  snprintf(Buf, MaxSize, "%d˚%d'%d\".%03ld LONG %d˚%d'%d\".%03ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
+  snprintf(Buf, MaxSize - 1, "%d˚%d'%d\".%03ld LONG %d˚%d'%d\".%03ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
+#endif
+ }
+
+void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored)
+ {
+  int l;
+  char const *uc = (Colored ? TermBrightYello   : ""); /* Units       Color */
+  char const *nc = (Colored ? TermBrightCyan    : ""); /* Numbers     Color */
+  char const *pc = (Colored ? TermBrightMagenta : ""); /* Points      Color */
+  char const *dc = (Colored ? TermBrightGreen   : ""); /* Description Color */
+  char const *rc = (Colored ? TermColorsReset   : ""); /* Reset       Color */
+  AngDegMinSec_s LatConvAng, LongConvAng;
+  AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
+  AngToDegMinSecDec(GPSCords.Longitude, &LongConvAng);
+  
+  //  🌍🌎🌏🌐📍🗺🧭
+
+  snprintf(Buf, MaxSize, "%s🌐 ",  (Colored ? TermBGBlack : ""));
+  l = strlen(Buf);
+
+#if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
+  snprintf(&Buf[l], MaxSize - l, "%s%d%s˚%s%d%s'%s%d%s\"%s.%s%03d %sLONG %s%d%s˚%s%d%s'%s%d%s\"%s.%s%03d%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
+#else  // For ARM
+  snprintf(&Buf[l], MaxSize - l, "%s%d%s˚%s%d%s'%s%d%s\"%s.%s%03ld %sLONG %s%d%s˚%s%d%s'%s%d%s\"%s.%s%03ld%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
 #endif
 
-  // snprintf(Buf, MaxSize, "%3.8lf˚ lat %3.8lf˚ long", GPSCords.Latitude, GPSCords.Longitude);
+  //CordsToString(&Buf[l], MaxSize - l, GPSCords);
+  l = strlen(Buf);
+  snprintf(&Buf[l], MaxSize - l, "%s", rc);  
  }
 
 void PrintGPSCords(GPS_Cords_s CordsToPrint)
@@ -267,6 +293,18 @@ void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colore
   l = strlen(Buf);
   snprintf(&Buf[l], MaxSize - l, "%s", (Colored ? TermColorsReset : ""));  
  }
+
+
+/*======================================================================================================================*/
+
+void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored)
+ {
+  // 웃  👤  🕴🚶🧍🧎⛹⛷🏂🏃🏄🏋🏌🚹
+  char const *nc = (Colored ? TermBGWhite TermMagenta : ""); /* Name     Color */
+  char const *rc = (Colored ? TermColorsReset         : ""); /* Reset    Color */
+  snprintf(Buf, MaxSize - 1, "%s👤%s%s", nc, Name, rc);
+ }
+
 
 /*======================================================================================================================*/
 /*
@@ -766,3 +804,4 @@ voit ttt()
 
 //  🌍🌎🌏🌐🚗🚶🅿️📁💸🖨⌖🧭📍°
 
+// 웃  👤  🕴🚶🧍🧎⛹⛷🏂🏃🏄🏋🏌🚹

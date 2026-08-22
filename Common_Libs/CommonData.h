@@ -467,6 +467,8 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
+void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored);
+
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
 
 /*======================================================================================================================*/
@@ -477,6 +479,9 @@ void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colore
 
 /*======================================================================================================================*/
 
+void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored);
+
+/*======================================================================================================================*/
 void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat);
 
 

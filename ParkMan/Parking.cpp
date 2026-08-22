@@ -99,7 +99,7 @@ bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t
 bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, uint32_t &EdRegCode, std::string &ShapeFileName)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  // bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   OGRPoint Point(0,0);
   OGRwkbGeometryType FigureType;
@@ -162,12 +162,11 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, 
   x = Cords.Longitude;
   y = Cords.Latitude;
 
+  char CordsBuf[200];
+  CreateCordsFormatted(CordsBuf, sizeof(CordsBuf), GPS_Cords_s(x,y), StdOutNoPiping);
   std::cout << "Converting Given Coordinates ...\n\r";
-  PrintGPSCords(GPS_Cords_s(x,y));
-  std::cout << "  ->  ";
   //backPoCT->Transform(1, &x, &y);
-  std::cout << "x=" << x << ", y=" << y;
-  std::cout << "\n\r";
+  std::cout << CordsBuf << "  ->  " << "x=" << x << ", y=" << y << "\n\r";
 
   Point = OGRPoint(x,y);
   NumFeatures = poLayer->GetFeatureCount();

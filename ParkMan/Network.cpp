@@ -113,13 +113,13 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
 
     if(DecodeResult)
      {
-      //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << CustomerInfo.Vechicle_ID << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
-      //VehicleIDToString(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID);
-      //std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << (StdOutNoPiping ? TermBGYello TermBlack : "") << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
+      char NameBuf[75], CordsBuf[200];
+      CreateCordsFormatted(CordsBuf, sizeof(CordsBuf),CustomerInfo.Cords, StdOutNoPiping);
+      CreateNameFormated(NameBuf, sizeof(NameBuf), CustomerInfo.Customer_Name, StdOutNoPiping);
       CreateVehIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
-      std::cout << "The customer is: " << CustomerInfo.Customer_Name << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: ";
-      PrintGPSCords(CustomerInfo.Cords);
-      std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+      std::cout << "The customer is: " << NameBuf << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: " << CordsBuf << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
+      // PrintGPSCords(CustomerInfo.Cords);
+      // std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
       if(FirstInt)
        {

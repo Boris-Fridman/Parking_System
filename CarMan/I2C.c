@@ -64,11 +64,14 @@ void read_i2c(int file, unsigned char buffer[], size_t size)
 
 void I2CProc(ProcParams_s *ProcParams)
  {
+  //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   Customer_s CustomerData;
   NetQueue_s NetQueue = {0};
   size_t skipno = 0;
   bool Exit = false;
-  char buf[100];
+  char buf1[200], buf2[100], buf3[75];
 
 
 #ifdef BEAGLE_BONE
@@ -159,8 +162,11 @@ void I2CProc(ProcParams_s *ProcParams)
 
 #endif
 
-      CordsToString(buf, sizeof(buf), CustomerData.Cords);
-      printf("Customer name: %s Vehicle: %d\n\rThe generated cordinates are: %s\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID, buf);
+      //CordsToString(buf, sizeof(buf), CustomerData.Cords);
+      CreateCordsFormatted(buf1, sizeof(buf1), CustomerData.Cords, StdOutNoPiping);
+      CreateVehIDFormated(buf2, sizeof(buf2), CustomerData.Vechicle_ID, StdOutNoPiping);
+      CreateNameFormated(buf3, sizeof(buf3), CustomerData.Customer_Name, StdOutNoPiping);
+      printf("Customer name: %s Vehicle: %s\n\rThe generated cordinates are: %s\n\r", buf3, buf2, buf1);
 
       // printf("Customer name: %s Vehicle: %d\n\r", CustomerData.Customer_Name, CustomerData.Vechicle_ID);
       // printf("The generated cordinates are: ");
