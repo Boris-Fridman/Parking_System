@@ -152,6 +152,9 @@ extern "C" {
 #define TO_STRING(x) STRINGIZE_DETAIL(x)
 
 /*======================================================================================================================*/
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The structure for defining the screen message type. Is requred for deciding in which color to show a message.        */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -169,6 +172,8 @@ enum Error_Results_e
  #endif
  ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The queue direction enumeration defines if the messages via a queue can be sent, received or sent and received.      */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -183,6 +188,8 @@ QueueDirection_e
 #endif
 ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Defines the point state in reference the city-defining polygon outisde, inside or exactly on a bound.                */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -197,7 +204,8 @@ PointState_e
 #endif
 ;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* GPS coordinates defininig structure longitude and latitude. The coordinates are given in degrees.                    */
 /* GPS Coordinates. Are given in degrees. */
 #ifndef __cplusplus
 typedef 
@@ -212,7 +220,8 @@ struct GPS_Cords_s
  #endif
  ;
 
-/* Distance Coordinates are the analog of the GPS Coordinates and are used for calculating the distance. Are given in kilometers. */
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Strucutre for defining the distance coordinates that are given in kilometers. Are used for calculating a distance.   */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -226,6 +235,8 @@ struct Dist_Cords_s
  #endif
  ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The structure for defining the 3D-Spce coordinates that are given in kilometers.                                     */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -240,26 +251,26 @@ struct Space_Cords_s
  #endif
  ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+//  #ifndef __cplusplus
+//  typedef 
+//  #endif
+//  struct Parking_s
+//   {
+//    GPS_Cords_s Cords;
+//    uint16_t    Parking_ID;
+//    uint16_t    MaxNumPlaces;
+//    uint16_t    NumPlaces;
+//    uint16_t    Price;              /*  0.01₪ / hour  */
+//    char Name[NAME_LEN];
+//   }
+// #ifndef __cplusplus  
+// Parking_s
+// #endif
+// ;
 
-
-
- #ifndef __cplusplus
- typedef 
- #endif
- struct Parking_s
-  {
-   GPS_Cords_s Cords;
-   uint16_t    Parking_ID;
-   uint16_t    MaxNumPlaces;
-   uint16_t    NumPlaces;
-   uint16_t    Price;              /*  0.01₪ / hour  */
-   char Name[NAME_LEN];
-  }
-#ifndef __cplusplus  
-Parking_s
-#endif
-;
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Parking price structure used for sending the parking information via the queue.                                      */
  #ifndef __cplusplus
 typedef 
  #endif
@@ -274,7 +285,8 @@ PriceTab_s
 #endif
 ;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Client information structure, Is used for sending data via the network from client to srver.     Client ▬▬▬▶ Server  */
  #ifndef __cplusplus
  typedef 
  #endif
@@ -289,6 +301,8 @@ Customer_s
 #endif
 ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Server response information strucutre. Is used for giving response acknowledge back.               Clent ◀▬▬▬ Server */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -309,7 +323,8 @@ CustAcknowledge_s
 #endif
 ;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Structure for sending real-time parking information via queue to DataBase.                                           */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -332,7 +347,8 @@ ClientQueueMsg_s
 #endif
 ;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Parking information structure for sending the information about parking from GPS program vis I2C. GPSMan ▬▬▬▶ CarMan */
 #ifndef __cplusplus
 typedef
 #endif
@@ -346,9 +362,8 @@ ParkingData_s
 #endif
 ;
 
-
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Cursor Position structure. Is defined for screen clearing procedure.                                                 */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -363,6 +378,8 @@ LnPrt_e
 #endif
 ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Printing / Showing date and time format type enumeration.                                                            */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -377,7 +394,8 @@ TimeForm_e
 #endif
 ;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Printing / Showing price format units' type enumeration.                                                             */
 #ifndef __cplusplus
 typedef 
 #endif
@@ -456,40 +474,198 @@ uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber);
  * @param Value           The value from which the logarithm is calculated.
  * 
  * @param RoundDirrection "0" if the result must be rounded down or "1" if must be rounded up.
+ * 
+ * @return Log10 from value rounded up or down according to the "RoundDirrection" Flag.
  */
 int32_t IntLog10(uint32_t Value, uint8_t RoundDirrection);
 
 /*======================================================================================================================*/
 
+/**
+ * @brief Checks if the given GPS Point is inside the givne zone polygon. 
+ * 
+ * @code
+ * PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords);
+ * @code
+ * 
+ * @param BoundingPoly The polygon defining any city or village zone.
+ * 
+ * @param PolySize     The number of points that the bounding polygon contains.
+ * 
+ * @param Cords        The GPS coordinates of the point been checke.
+ * 
+ * @return             Result if the point is in the zone of the polygon, out of it or on the bound itself.
+ */
 PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords);
 
+/**
+ * @brief Finds the distance from the given any two points on the Earth. 
+ *        The function calculates distance by taking in account the middle radius/diameter of the Earth.
+ *        The function doesn't nake in account any relief.
+ * 
+ * @code 
+ * double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
+ * @code
+ * 
+ * @param p1 The first  one of the two GPS points between which must be calculated the distance.
+ * 
+ * @param p2 The second one of the two GPS points between which must be calculated the distance.
+ * 
+ * @return The distance between the two points "p1" and "p2".
+ */
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2);
 
+/**
+ * @brief Converts the given GPS coordinates and creates a string showing them in degrees, minutes, secons and decimals of seconds. 
+ *        In addition adds to them the tags which of them is the longitude and which one is the latitude.
+ *        The south latitude and the west longitude will be shown with the negative sign. 
+ *        The north latitude and the east longitude will be shown without negative sign.
+ * 
+ * @code
+ * void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
+ * @code
+ * 
+ * @param Buf      The string buffer to which is put the GPS information. The size must be at least 40 characters.
+ * 
+ * @param MaxSize  The maximum length of the buffer to which is copied the information. 
+ *                 The information must be at least 40 characters length.
+ *                 If the length is not big enough the part of the information will be lost.
+ * 
+ * @param GPSCords The coordinates that are given for putting them to the string.
+ */
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords);
 
+/**
+ * @brief Converts the given GPS coordinates and creates a string showing them in degrees, minutes, secons and decimals of seconds. 
+ *        In addition adds to them the tags which of them is the longitude and which one is the latitude.
+ *        The south latitude and the west longitude will be shown with the negative sign. 
+ *        The north latitude and the east longitude will be shown without negative sign.
+ *        The coordinates can be colored or not depending of requirements.
+ *        In case of coloring the bufer must be at least of 200 characters length. Without coloring only 50.
+ * 
+ * @code
+ * void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored);
+ * @code
+ * 
+ * @param Buf      The string buffer to which is put the GPS information. The size must be at least 40 characters.
+ * 
+ * @param MaxSize  The maximum length of the buffer to which is copied the information. 
+ *                 The information must be at least 200 characters length in coloring mode or 50 characterss if not.
+ *                 If the length is not big enough the part of the information will be lost.
+ * 
+ * @param GPSCords The coordinates that are given for putting them to the string.
+ * 
+ * @param Colored  If set "true" if the coordinates must be colorde or "false" if not. 
+ *                 Is useful if the printf is redirected to any output file.
+ */
 void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored);
 
+/**
+ * @brief Prints the GPS coordinates romatted byt the "CordsToString()" procedure.
+ * 
+ * @code
+ * void PrintGPSCords(GPS_Cords_s CordsToPrint);
+ * @code
+ * 
+ * @param CordsToPrint The coordinates that are given for printing.
+ */
 void PrintGPSCords(GPS_Cords_s CordsToPrint);
 
 /*======================================================================================================================*/
 
+/**
+ * @brief Converts the Vehicle ID number to divided one with lines depending of its length as in the israelian stadards.
+ *        For example: the number with 6 digits will be converted to xxx-xxx.
+ *                                with 7 digits will be converted to xx-xxx-xx.
+ *                                with 8 digits will be converted to xxx-xx-xxx.
+ * 
+ * @code
+ * void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID);
+ * @code
+ * 
+ * @param Buf      The output string buffer to which is written the ID number.
+ * 
+ * @param MaxSize  The buffer size. If the buffer is smaller than required the part of the data will be lost. 
+ * 
+ * @param VehcleID The Vehicle ID Number.
+ */
 void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID);
 
+/**
+ * @brief Converts the Vehicle ID number to divided one with lines depending of its length as in the israelian stadards.
+ *        For example: the number with 6 digits will be converted to xxx-xxx.
+ *                                with 7 digits will be converted to xx-xxx-xx.
+ *                                with 8 digits will be converted to xxx-xx-xxx.
+ *        The number finaly will be formatted and colored as israelian standarted number if the coloring is enabled.
+ * 
+ * @code
+ * void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored);
+ * @code
+ * 
+ * @param Buf      The output string buffer to which is written the ID number.
+ * 
+ * @param MaxSize  The buffer size. If the buffer is smaller than required the part of the data will be lost. 
+ * 
+ * @param VehcleID The Vehicle ID Number.
+ * 
+ * @param Colored  "true" if coloring must be enabled or "false" if not.
+ */
 void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored);
 
 /*======================================================================================================================*/
 
+/**
+ * @brief Creates the string with formatted name of a client that can be then shown on a screen through a terminal.
+ * 
+ * @code
+ * void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored);
+ * @code
+ * 
+ * @param Buf     The output buffer to which the string with the formatted name is written.
+ * 
+ * @param MaxSize The size of the buffer. If the buffer is too small the part of data will be lost.
+ * 
+ * @param Name    The name of the client to be formatted.
+ * 
+ * @param Colored "true" if the formatted name must be colored or "false" if not.
+ */
 void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored);
 
 /*======================================================================================================================*/
+
+/**
+ * @brief Converts time to string format.
+ * 
+ * @code
+ * void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat);
+ * @code
+ * 
+ * @param TimeToConvert Time data to be converted.
+ * 
+ * @param TimeAsStr     The given string buffer to which is put the given time converted to string.
+ * 
+ * @param TimeStrSize   The given string buffer's size. If the buffer is smaller than needed a part of data will be lost.
+ * 
+ * @param TimeFormat    The time format to which the time is converted. 
+ */
 void ConvertTime(time_t const * const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat);
-
-
 
 /*======================================================================================================================*/
 
+/**
+ * @brief Converts price to string format.
+ * 
+ * @code
+ * void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated);
+ * @code
+ * 
+ * @param PriceToConvert The price to be converted.
+ * 
+ * @param PriceAsString  The output string buffer to which is put the formatted price.
+ * 
+ * @param PriceStrgSize  The output string buffer's size. If the size is too small a part of data will be lost.
+ */
 void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated);
-
 
 /*======================================================================================================================*/
 

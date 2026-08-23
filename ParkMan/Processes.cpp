@@ -391,6 +391,8 @@ void TaskControl_ShSM_c::LogEvent(LogMessType_s MessageToLog)
 /*======================================================================================================================*/
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Opens a new process.                                                                                                 */
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */

@@ -154,7 +154,23 @@ class ProcMan_c: public TaskControl_ShSM_c
  };
  
 
- 
+/**
+ * @brief Opens a new process. 
+ * 
+ * @code
+ * pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl = nullptr);
+ * @code
+ * 
+ * @param ProcToOpen The pointer to process-defining-function.
+ * 
+ * @param Procparams The parameters given to process for usage containing the shared memory and semaphore between processea controlling flags and other optional possible parameters.
+ * 
+ * @param ProcName The name given to the process.
+ * 
+ * @param TaskControl The Process-Controlling-Class-Object.
+ * 
+ * @return Process ID.
+ */
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl = nullptr);
 
 

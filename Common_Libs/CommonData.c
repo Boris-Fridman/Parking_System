@@ -113,6 +113,8 @@ AngDegMinSec_s
 #endif
 ;
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks if the given GPS Point is inside the givne zone polygon.                                                      */
 PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords)
  {
   size_t i;
@@ -170,6 +172,10 @@ void GPSToSpace(Space_Cords_s *SpaceCords, GPS_Cords_s GPS_Data)
   SpaceCords->z = EARTH_RADIUS_P * sin(GPS_Data.Latitude * M_PI / 180);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Finds the distance from the given any two points on the Earth.                                                       */
+/* The function calculates distance by taking in account the middle radius/diameter of the Earth.                       */
+/* The function doesn't nake in account any relief.                                                                     */
 double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
  {
   Space_Cords_s s1, s2;
@@ -181,6 +187,11 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
   return ArcDist;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Converts the given GPS coordinates and creates a string showing them in degrees, minutes, secons and second decimals.*/
+/* In addition adds to them the tags which of them is the longitude and which one is the latitude.                      */
+/* The south latitude and the west longitude will be shown with the negative sign.                                      */
+/* The north latitude and the east longitude will be shown without negative sign.                                       */
 void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
  {
   AngDegMinSec_s LatConvAng, LongConvAng;
@@ -193,6 +204,13 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
 #endif
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Converts the given GPS coordinates and creates a string showing them in degrees, minutes, secons and second decimals.*/
+/* In addition adds to them the tags which of them is the longitude and which one is the latitude.                      */
+/* The south latitude and the west longitude will be shown with the negative sign.                                      */
+/* The north latitude and the east longitude will be shown without negative sign.                                       */
+/* The coordinates can be colored or not depending of requirements.                                                     */
+/* In case of coloring the bufer must be at least of 200 characters length. Without coloring only 50.                   */
 void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored)
  {
   int l;
@@ -221,6 +239,8 @@ void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Co
   snprintf(&Buf[l], MaxSize - l, "%s", rc);  
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Prints the GPS coordinates romatted byt the "CordsToString()" procedure.                                             */
 void PrintGPSCords(GPS_Cords_s CordsToPrint)
  {
   char buf[200];
@@ -230,6 +250,17 @@ void PrintGPSCords(GPS_Cords_s CordsToPrint)
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Vehicle ID formating Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Converts the Vehicle ID number to divided one with lines depending of its length as in the israelian stadards.       */
+/* For example: the number with 6 digits will be converted to xxx-xxx.                                                  */
+/*                         with 7 digits will be converted to xx-xxx-xx.                                                */
+/*                         with 8 digits will be converted to xxx-xx-xxx.                                               */
 void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
  {
   uint8_t NumDigits;
@@ -281,7 +312,12 @@ void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
    }
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Converts the Vehicle ID number to divided one with lines depending of its length as in the israelian stadards.       */
+/* For example: the number with 6 digits will be converted to xxx-xxx.                                                  */
+/*                         with 7 digits will be converted to xx-xxx-xx.                                                */
+/*                         with 8 digits will be converted to xxx-xx-xxx.                                               */
+/* The number finaly will be formatted and colored as israelian standarted number if the coloring is enabled.           */
 void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored)
  {
    //  ✡  🔯  🕎 🟌 🇮🇱 🇺🇸
@@ -297,6 +333,14 @@ void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colore
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Client Name formating Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates the string with formatted name of a client that can be then shown on a screen through a terminal.            */
 void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored)
  {
   // 웃  👤  🕴🚶🧍🧎⛹⛷🏂🏃🏄🏋🏌🚹
@@ -346,7 +390,7 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
  */
 
 /*----------------------------------------------------------------------------------------------------------------------*/
-/*  Converts price to string format.                                                                                     */
+/*  Converts price to string format.                                                                                    */
 void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated)
  {
   char const * const units[] = {" ₪ / hour", "₪/h","₪"};
