@@ -772,22 +772,122 @@ void FreeData(uint8_t **Data);
 
 /*======================================================================================================================*/
 
-void AdjustPath(char const *OwnProgName, char *PathToAdjust);
+/**
+ * @brief Checks if the path is local and if it is - converts it to full according the path of this executed program.
+ * 
+ * @code
+ * void AdjustPath(char const *OwnProgName, char *PathToAdjust);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param PathToAdjust    The path that is adjusted.
+ */
+void AdjustPath(char const *OwnProgPathName, char *PathToAdjust);
 
-void GetConfFileName(char const *OwnProgName, char *ConfFileName);
+/**
+ * @brief Generates a name of a configuration .ini file according to the name of this running executable file.
+ *        The extention in this case will be removed. For example:  "program"       ▬▬▬▶   "program.ini".
+ *                                                                  "program.elf"   ▬▬▬▶   "program.ini"
+ * @code
+ * void GetConfFileName(char const *OwnProgPathName, char *ConfFileName);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param ConfFileName    The returned name of the configuration file.
+ */
+void GetConfFileName(char const *OwnProgPathName, char *ConfFileName);
 
-bool GetConfigPath(char const *OwnProgName, char NamePath[]);
+/**
+ * @brief Gives the path of the folder in which can be stored the configuration files. 
+ * 
+ * @code bool GetConfigPath(char const *OwnProgPathName, char NamePath[]);
+ * 
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param NamePath        The returned path to the configuration file.
+ * 
+ * @return                "true" if the folder was created. Otherwise returns "false".
+ */
+bool GetConfigPath(char const *OwnProgPathName, char NamePath[]);
 
-bool GetDataBaseFile(char const *OwnProgName, char NamePath[]);
+/**
+ * @brief Gives the name with path of the database file. 
+ * 
+ * @code
+ * bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[]);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param NamePath        The returned name of the database file including path to it.
+ * 
+ * @return "true" if the folder was created. Otherwise returns "false".
+ */
+bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[]);
 
-bool GetPIDFile(char const *OwnProgName, char NamePath[]);
+/**
+ * @brief Gives the name with path of the file with the program PID.
+ * 
+ * @code 
+ * bool GetPIDFile(char const *OwnProgPathName, char NamePath[]);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param NamePath The returned name of the containing PIDFile including its path.
+ * 
+ * @return "true" if the folder was created. Otherwise returns "false". *   
+ */
+bool GetPIDFile(char const *OwnProgPathName, char NamePath[]);
 
-bool GetShapeFile(char const *OwnProgName, char NamePath[]);
+/**
+ * @brief  Gives the name with path of the file containing the map-shapes of cities, towns, vilages and other geographic places.
+ * 
+ * @code
+ * bool GetShapeFile(char const *OwnProgPathName, char NamePath[]);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param NamePath        The returned name of the map-shapes file including its path.
+ * 
+ * @return "true" if the folder was created. Otherwise returns "false".
+ */
+bool GetShapeFile(char const *OwnProgPathName, char NamePath[]);
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  /* For Linux */
 
-bool PrevProcCopyRunning(char const *OwnProgPathName, bool ByNameAndPath); /* "false" by name only; "true" by path and name */
+/**
+ * @brief Checks if the copy of the current program is allready running. Returns "true" if running or "false" if not.
+ * 
+ * @code
+ * bool PrevProcCopyRunning(char const *OwnProgPathName, bool ByNameAndPath);
+ * @code
+ * 
+ * @param OwnProgPathName The name with path this running program itself.
+ * 
+ * @param ByNameAndPath   Set to "false" if additional copy is not permitted at all or "true" if only from the same path.
+ * 
+ * @return "true" if the one copy of the current program is allready runnig or "false" if not.
+ */
+bool PrevProcCopyRunning(char const *OwnProgPathName, bool ByNameAndPath);
 
+/**
+ * @brief Gives the name with the full path of the current running program by checking the /proc/<PID>/exe link file.
+ * 
+ * @code
+ * void GetOwnNamePath(char OwnPathToRet[], size_t const MaxSize);
+ * @code
+ * 
+ * @param OwnPathToRet The returned name of this current running program including its path.
+ * 
+ * @param MaxSize      The maximum lingth of the the returned string. 
+ *                     If the length is smaller than required the part of the data will be lost.
+ */
 void GetOwnNamePath(char OwnPathToRet[], size_t const MaxSize);
 
 #endif
