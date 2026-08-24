@@ -45,8 +45,8 @@
 void CatchChildZombie(ProcMan_c *TaskControl = nullptr);
 void WaitUntilFinised();
 
-void CreatePIDFile(char FileName[]);
-void RemovePIDFile(char FileName[]);
+void CreatePIDFile(char FileName[], size_t MaxSize);
+void RemovePIDFile(char const FileName[]);
 void EnableSignals();
 
 /*======================================================================================================================*/
@@ -102,7 +102,7 @@ int main(int const argc, char const *argv[])
    std::cout << "Loaded Shape File: " << PathFileName << "\n\r";
   }
   
-  CreatePIDFile(PIDFileName);
+  CreatePIDFile(PIDFileName, sizeof(PIDFileName));
   EnableSignals();
 
   ProcParams_s ProcParams = {.sh_mem_key = TaskContSh.ShMemKey(), .sem_name = TaskContSh.SemName().c_str(), .sq_name = TaskContSh.QueueName().c_str(), .qsem_name = TaskContSh.QSemName().c_str(), .ProcType = PROC_DATABASE_E};
@@ -208,10 +208,10 @@ void WaitUntilFinised()
 
  }
 
-void CreatePIDFile(char FileName[])
+void CreatePIDFile(char FileName[], size_t MaxSize)
  {
   int pid;
-  strcpy(FileName, GetProgInfoPIDFilePathName());
+  strncpy(FileName, GetProgInfoPIDFilePathName(), MaxSize - 1);
   pid = getpid();
   
   std::ofstream outFile(FileName);
@@ -224,7 +224,7 @@ void CreatePIDFile(char FileName[])
 
  }
 
-void RemovePIDFile(char FileName[])
+void RemovePIDFile(char const FileName[])
  {
   remove(FileName);
  }

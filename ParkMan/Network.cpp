@@ -50,12 +50,6 @@ void NetworkProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, s
  }
 
 
-// void CalculateParkingPriceTime(Customer_s *CustomerInfo, CustAcknowledge_s CustAckInfo)
-//  {
-  
-
-//  }
-
 void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = nullptr, std::string ShapeFileName = "", Network_c *NetCl = nullptr, std::string AddrStamp = "        ---        ") 
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -69,7 +63,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   bool DecodeResult;
   time_t CurrentTime;
   //char timebuf[100];
-  bool FirstInt = true; /* First repeat interration. */
+  bool FirstInt = true;           /* First repeat interration. */
   bool CityDetected = false;
   bool DataBaseChecked = false;
   bool CityFoundInDataBase = false;
@@ -86,7 +80,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   std::cout << "Handling client in thread ID: " << std::this_thread::get_id() << "  Netrowk address: " << AddrStamp << "\n\r";
   CustAckInfo.ParkingDurationTime = 0;
   time(&CustAckInfo.ParkingStartTime);
-  //ConvertTime(&CustAckInfo.ParkingStartTime, timebuf,sizeof(timebuf));
   
   /* Communication loop. */
   while (true) 
@@ -159,18 +152,18 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
             NetCl->LogEvent(MessageToLog);
             FirstInt = false;
            }
-          strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+          strncpy(CityPriceInfo.City_Name, DetectedCityName.c_str(), sizeof(CityPriceInfo.City_Name - 1));
          }
-        if(CityDetected)  // City is allready checked. Now it is possible to serach it in database.  Attention !!! This condition mustn't be written via else because the database checking must be done immediately.
+        if(CityDetected)  /* City is allready checked. Now it is possible to serach it in database.  Attention !!! This condition mustn't be written via else because the database checking must be done immediately. */
          {
           stream.str("");
           stream.clear();
 
-          if(!DataBaseChecked)  // DataBase isn't checked.
+          if(!DataBaseChecked)  /* DataBase isn't checked. */
            {
-            if(DBShmemPriceData != nullptr) // DataBase is given (Parameter of database eixists).
+            if(DBShmemPriceData != nullptr) /* DataBase is given (Parameter of database eixists). */
              {
-              if(*DBShmemPriceData != nullptr) // The DataBase is loaded.
+              if(*DBShmemPriceData != nullptr) /* The DataBase is loaded. */
                {
                 for(i = 0; i < NumPriceDBCities; ++i)
                  {
@@ -192,7 +185,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                     stream << AddrStamp << ": The city " << DetectedCityName << " was found in the database and detected as " << CityPriceInfo.City_Name << "."; 
                     ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
                     stream <<" The price will be " << buffer << ".";
-                    //stream <<" The price will be " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
                     BufForMess = stream.str();
                     MessageToLog = MakeLogMessage(E_LOG_MESSAGE, NetCl->GetProcName().c_str(), BufForMess.c_str());
                     NetCl->LogEvent(MessageToLog);
@@ -211,28 +203,24 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                   MessageToLog = MakeLogMessage(E_LOG_WARNING, NetCl->GetProcName().c_str(), BufForMess.c_str());
                   NetCl->LogEvent(MessageToLog);
 
-                  strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
+                  strncpy(CityPriceInfo.City_Name, DetectedCityName.c_str(), sizeof(CityPriceInfo.City_Name) - 1);
                  }
                 FirstInt = false;
                }
-              else // The DataBase is still not loaded.
+              else /* The DataBase is still not loaded. */
                {
                 std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "  The database is not loaded." << "\n\r";
-                //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
                 FirstInt = false;
                }
               if((!CityFoundInDataBase) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist.
                {
                 std::cout << "Loading zero price.\n\r";
-                //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
                }
               DataBaseChecked = true; 
-              //FirstInt = false;
              }
-            else  // The database is not given (Thea pointer to database is null).
+            else  /* The database is not given (Thea pointer to database is null). */
              {
               std::cerr << (StdErrNoPiping ? TermRed : "") << "DataBase error." << (StdErrNoPiping ? TermColorsReset : "") << "  The database is not given." << "\n\r";
-              //strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
               FirstInt = false;
              }
            }
@@ -253,7 +241,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
           stream << " Coordinates: " << buffer << " City: " << CityPriceInfo.City_Name; 
           ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
           stream << " price: " << buffer;
-          //stream << " price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
           ConvertTime(&CustAckInfo.ParkingStartTime, buffer, sizeof(buffer), E_CAL_FORMAT);
           stream << " Registered parking time: " << buffer;
           BufForMess = stream.str();
@@ -265,8 +252,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       //std::cout << "FirstInt = " << FirstInt << "  DetectedCityName = " << DetectedCityName << "  CityPriceInfo.City_Name = " << CityPriceInfo.City_Name << "\n\r";
 
       /* Loading info for response. */
-      //strcpy(CustAckInfo.City_Name, DetectedCityName.c_str());
-      strcpy(CustAckInfo.City_Name, CityPriceInfo.City_Name);
+      strncpy(CustAckInfo.City_Name, CityPriceInfo.City_Name, sizeof(CustAckInfo.City_Name));
       time(&CurrentTime);
       CustAckInfo.City_ID = CityPriceInfo.City_ID;
       CustAckInfo.OSM_ID = RegionCode;
@@ -284,7 +270,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
      {
       std::cerr << (StdErrNoPiping ? TermRed : "") << "Error in decoding" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
       CustAckInfo.City_ID = 1;
-      strcpy(CustAckInfo.City_Name, "  -----  ");
+      strncpy(CustAckInfo.City_Name, "  -----  ", sizeof(CustAckInfo.City_Name) - 1);
       CustAckInfo.ParkingDurationTime = 0;
       CustAckInfo.Vechicle_ID = 0;
      }
@@ -308,7 +294,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   stream << " Coordinates: " << buffer << ". City: " << CityPriceInfo.City_Name << "."; 
   ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, false);
   stream << " Price: " << buffer << ".";
-  //stream << " Price: " << CityPriceInfo.Price / 100 << "." << std::setfill('0') << std::setw(2) << CityPriceInfo.Price % 100 << "₪/h.";
+
   ConvertTime(&CustAckInfo.ParkingStartTime, buffer, sizeof(buffer), E_CAL_FORMAT);
   stream << " Start parking time: " << buffer;
   ConvertTime(&CurrentTime, buffer, sizeof(buffer), E_CAL_FORMAT);
@@ -317,7 +303,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   stream << " Parking duration: " << buffer;
   ConvertPrice(CustAckInfo.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, false);
   stream << " Final price: " << buffer << ".";
-//  stream << " Final price: " << CustAckInfo.AccumulatedPrice / 100 << "." << std::setfill('0') << std::setw(2) << CustAckInfo.AccumulatedPrice % 100 << "₪.";
+
   BufForMess = stream.str();
   MessageToLog = MakeLogMessage(E_LOG_MESSAGE, NetCl->GetProcName().c_str(), BufForMess.c_str());
   NetCl->LogEvent(MessageToLog);
@@ -353,7 +339,6 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   /* Create the server socket */
   if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == 0) 
    {
-    //std::cerr << "Socket creation failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Socket creation failed" << (StdErrNoPiping ? TermColorsReset : "");
     MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
     LogEvent(MessageToLog);      
@@ -383,11 +368,10 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
 
   if (setsockopt(serverSocket, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) 
    {
-    //std::cerr << "Setting SO_RCVTIMEO failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Setting SO_RCVTIMEO failed" << (StdErrNoPiping ? TermColorsReset : "");
     MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
     LogEvent(MessageToLog);      
-    // Handle error or close socket
+    /* Handle error or close socket. */
    }
 
   address.sin_family = AF_INET;
@@ -397,7 +381,6 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   /* Bind the socket */
   if (bind(serverSocket, (struct sockaddr *)&address, sizeof(address)) < 0) 
    {
-    //std::cerr << "Bind failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Bind failed" << (StdErrNoPiping ? TermColorsReset : "");
     MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
     LogEvent(MessageToLog);      
@@ -408,7 +391,6 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   /* Start listening for incoming connections */
   if (listen(serverSocket, 3) < 0) 
    {
-    //std::cerr << "Listen failed\n\r";
     perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Listen failed" << (StdErrNoPiping ? TermColorsReset : "");
     MessageToLog = MakeLogMessage(E_LOG_FAIL, GetProcName().c_str(), std::strerror(errno));
     LogEvent(MessageToLog);      

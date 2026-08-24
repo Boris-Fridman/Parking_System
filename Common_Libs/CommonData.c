@@ -33,16 +33,16 @@ char const *const ResultColors[] = {TermRed, TermGreen, TermBrightYello, TermYel
 
 /*======================================================================================================================*/
 
-#define EARTH_DIAMETER 12742.018 /* km */          /* Mean earth diameter */
-#define EARTH_RADIUS (EARTH_DIAMETER / 2) /* km */ /* Mean earth radius   */
+#define EARTH_DIAMETER 12742.018 /* km */               /* Mean earth diameter       */
+#define EARTH_RADIUS (EARTH_DIAMETER / 2)      /* km */ /* Mean earth radius         */
 
-#define EARTH_DIAMETER_P 12713.505 /* km */ /* Polar earth diameter */
-#define EARTH_DIAMETER_E 12756.274 /* km */ /* Equatorial earth diameter */
+#define EARTH_DIAMETER_P 12713.505             /* km */ /* Polar earth diameter      */
+#define EARTH_DIAMETER_E 12756.274             /* km */ /* Equatorial earth diameter */
 
-#define EARTH_RADIUS_P (EARTH_DIAMETER_P / 2) /* km */ /* Polar earth radius */
-#define EARTH_RADIUS_E (EARTH_DIAMETER_E / 2) /* km */ /* Equatorial earth radius */
+#define EARTH_RADIUS_P (EARTH_DIAMETER_P / 2) /* km */ /* Polar earth radius         */
+#define EARTH_RADIUS_E (EARTH_DIAMETER_E / 2) /* km */ /* Equatorial earth radius    */
 
-char const *LATSGN[] = {"N", "S"};  // Latitude  sign "N" (North) in case of positive, "S" (South) in case of negative.
+char const *LATSGN[]  = {"N", "S"}; // Latitude  sign "N" (North) in case of positive, "S" (South) in case of negative.
 char const *LONGSGN[] = {"E", "W"}; // Longitude sign "E" (East)  in case of positive, "W" (West)  in case of negative.
 
 /*======================================================================================================================*/
@@ -53,14 +53,14 @@ char const *LONGSGN[] = {"E", "W"}; // Longitude sign "E" (East)  in case of pos
  */
 
 /*----------------------------------------------------------------------------------------------------------------------*/
-/* Raises numbers to the square power.                                                                                   */
+/* Raises numbers to the square power.                                                                                  */
 double sqr(double x)
  {
   return x * x;
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
-/* Generates random numbers in 64 bit size.                                                                            */
+/* Generates random numbers in 64 bit size.                                                                             */
 uint64_t RandGenLongLong()
  {
   return ((uint64_t)rand() << 32) | ((uint64_t)rand());

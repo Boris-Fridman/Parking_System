@@ -578,7 +578,7 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
             if(result == SQLITE_ROW)
              {
               name = sqlite3_column_text(stmt,1);
-              strcpy((*list)[i].City_Name, (char*)name);
+              strncpy((*list)[i].City_Name, (char*)name ,sizeof((*list)[i].City_Name) - 1);
               (*list)[i].City_ID = sqlite3_column_int(stmt, 0);
               (*list)[i].Price = sqlite3_column_int(stmt, 2);
              }

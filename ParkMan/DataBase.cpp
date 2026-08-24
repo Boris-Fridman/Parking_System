@@ -303,18 +303,18 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
   ClientQueueMsg_s ClientMsg;
   size_t Len;
 
-  ClientMsg.Cords               =  CustomerInfo->Cords;
-  strcpy(ClientMsg.Customer_Name,  CustomerInfo->Customer_Name);
-  ClientMsg.Vechicle_ID         =  CustomerInfo->Vechicle_ID;
+  ClientMsg.Cords                 =  CustomerInfo->Cords;
+  strncpy(ClientMsg.Customer_Name ,  CustomerInfo->Customer_Name,      sizeof(ClientMsg.Customer_Name));
+  ClientMsg.Vechicle_ID           =  CustomerInfo->Vechicle_ID;
 
-  ClientMsg.ParkingStartTime    =  CustAckInfo->ParkingStartTime;
-  ClientMsg.ParkingEndTime      =  CustAckInfo->ParkingEndTime;
-  ClientMsg.ParkingDurationTime =  CustAckInfo->ParkingDurationTime;
-  ClientMsg.OSM_ID              =  CustAckInfo->OSM_ID;
-  ClientMsg.City_ID             =  CustAckInfo->City_ID;
-  strcpy(ClientMsg.City_Name    ,  CustAckInfo->City_Name);
-  ClientMsg.AccumulatedPrice    =  CustAckInfo->AccumulatedPrice;
-  ClientMsg.PricePerHour        =  CustAckInfo->PricePerHour;
+  ClientMsg.ParkingStartTime      =  CustAckInfo->ParkingStartTime;
+  ClientMsg.ParkingEndTime        =  CustAckInfo->ParkingEndTime;
+  ClientMsg.ParkingDurationTime   =  CustAckInfo->ParkingDurationTime;
+  ClientMsg.OSM_ID                =  CustAckInfo->OSM_ID;
+  ClientMsg.City_ID               =  CustAckInfo->City_ID;
+  strncpy(ClientMsg.City_Name     ,  CustAckInfo->City_Name,           sizeof(ClientMsg.City_Name));
+  ClientMsg.AccumulatedPrice      =  CustAckInfo->AccumulatedPrice;
+  ClientMsg.PricePerHour          =  CustAckInfo->PricePerHour;
 
   Len = sizeof(ClientQueueMsg_s);
 

@@ -66,7 +66,7 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfI
         StartConfInf = strstr(line, StrToFind);
         if((StartConfInf != NULL) && (strlen(StartConfInf) > 0))  /* Attention !!! Due to the shortcircuit characteristics the conditions MUSTN'T be changed places. */
          {
-          strcpy(ConfData[i][1], &StartConfInf[strlen(StrToFind)]);
+          strncpy(ConfData[i][1], &StartConfInf[strlen(StrToFind)], (PATH_LEN - 1));
           NumFoundOptions++;
          }
        }

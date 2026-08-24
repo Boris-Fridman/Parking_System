@@ -103,7 +103,7 @@ void I2CProc(ProcParams_s *ProcParams)
 
   
   
-  strcpy(CustomerData.Customer_Name, GetClientName());
+  strncpy(CustomerData.Customer_Name, GetClientName(), sizeof(CustomerData.Customer_Name) - 1);
   CustomerData.Vechicle_ID = GetVechicleID();
   
   InitNetQueue(&NetQueue.mq, QUEUE_SEND_E, ((TskContShmData_s*)ProcParams->TskContShms.p_shm)->NetQueueName);
