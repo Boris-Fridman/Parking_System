@@ -107,7 +107,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
     if(DecodeResult)
      {
       char NameBuf[75], CordsBuf[200];
-      CreateCordsFormatted(CordsBuf, sizeof(CordsBuf),CustomerInfo.Cords, StdOutNoPiping);
+      CreateCordsFormatted(CordsBuf, sizeof(CordsBuf), CustomerInfo.Cords, StdOutNoPiping);
       CreateNameFormated(NameBuf, sizeof(NameBuf), CustomerInfo.Customer_Name, StdOutNoPiping);
       CreateVehIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
       std::cout << "The customer is: " << NameBuf << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: " << CordsBuf << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
@@ -152,7 +152,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
             NetCl->LogEvent(MessageToLog);
             FirstInt = false;
            }
-          strncpy(CityPriceInfo.City_Name, DetectedCityName.c_str(), sizeof(CityPriceInfo.City_Name - 1));
+          strncpy(CityPriceInfo.City_Name, DetectedCityName.c_str(), sizeof(CityPriceInfo.City_Name) - 1);
          }
         if(CityDetected)  /* City is allready checked. Now it is possible to serach it in database.  Attention !!! This condition mustn't be written via else because the database checking must be done immediately. */
          {

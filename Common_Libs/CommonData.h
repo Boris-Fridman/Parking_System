@@ -776,88 +776,106 @@ void FreeData(uint8_t **Data);
  * @brief Checks if the path is local and if it is - converts it to full according the path of this executed program.
  * 
  * @code
- * void AdjustPath(char const *OwnProgName, char *PathToAdjust);
+ * void AdjustPath(char const *OwnProgName, char *PathToAdjust, size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param PathToAdjust    The path that is adjusted.
+ * 
+ * @param MaxSize      The maximum lingth of the the returned string. 
+ *                     If the length is smaller than required the part of the data will be lost.
  */
-void AdjustPath(char const *OwnProgPathName, char *PathToAdjust);
+void AdjustPath(char const *OwnProgPathName, char *PathToAdjust, size_t const MaxSize);
 
 /**
  * @brief Generates a name of a configuration .ini file according to the name of this running executable file.
  *        The extention in this case will be removed. For example:  "program"       ▬▬▬▶   "program.ini".
  *                                                                  "program.elf"   ▬▬▬▶   "program.ini"
  * @code
- * void GetConfFileName(char const *OwnProgPathName, char *ConfFileName);
+ * void GetConfFileName(char const *OwnProgPathName, char *ConfFileName, size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param ConfFileName    The returned name of the configuration file.
+ * 
+ * @param MaxSize         The maximum lingth of the the returned string. 
+ *                        If the length is smaller than required the part of the data will be lost.
  */
-void GetConfFileName(char const *OwnProgPathName, char *ConfFileName);
+void GetConfFileName(char const *OwnProgPathName, char *ConfFileName, size_t const MaxSize);
 
 /**
  * @brief Gives the path of the folder in which can be stored the configuration files. 
  * 
- * @code bool GetConfigPath(char const *OwnProgPathName, char NamePath[]);
- * 
+ * @code 
+ * bool GetConfigPath(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param NamePath        The returned path to the configuration file.
  * 
+ * @param MaxSize         The maximum lingth of the the returned string. 
+ *                        If the length is smaller than required the part of the data will be lost.
+ * 
  * @return                "true" if the folder was created. Otherwise returns "false".
  */
-bool GetConfigPath(char const *OwnProgPathName, char NamePath[]);
+bool GetConfigPath(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
 
 /**
  * @brief Gives the name with path of the database file. 
  * 
  * @code
- * bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[]);
+ * bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param NamePath        The returned name of the database file including path to it.
  * 
+ * @param MaxSize         The maximum lingth of the the returned string. 
+ *                        If the length is smaller than required the part of the data will be lost.
+ * 
  * @return "true" if the folder was created. Otherwise returns "false".
  */
-bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[]);
+bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
 
 /**
  * @brief Gives the name with path of the file with the program PID.
  * 
  * @code 
- * bool GetPIDFile(char const *OwnProgPathName, char NamePath[]);
+ * bool GetPIDFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param NamePath The returned name of the containing PIDFile including its path.
  * 
+ * @param MaxSize         The maximum lingth of the the returned string. 
+ *                        If the length is smaller than required the part of the data will be lost.
+ * 
  * @return "true" if the folder was created. Otherwise returns "false". *   
  */
-bool GetPIDFile(char const *OwnProgPathName, char NamePath[]);
+bool GetPIDFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
 
 /**
  * @brief  Gives the name with path of the file containing the map-shapes of cities, towns, vilages and other geographic places.
  * 
  * @code
- * bool GetShapeFile(char const *OwnProgPathName, char NamePath[]);
+ * bool GetShapeFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
  * @code
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
  * @param NamePath        The returned name of the map-shapes file including its path.
  * 
+ * @param MaxSize         The maximum lingth of the the returned string. 
+ *                        If the length is smaller than required the part of the data will be lost.
+ * 
  * @return "true" if the folder was created. Otherwise returns "false".
  */
-bool GetShapeFile(char const *OwnProgPathName, char NamePath[]);
+bool GetShapeFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize);
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  /* For Linux */
 

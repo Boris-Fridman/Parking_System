@@ -519,26 +519,26 @@ void FreeData(uint8_t **Data)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Checks if the path is local and if it is - converts it to full according the path of this executed program.          */
-void AdjustPath(char const *OwnProgPathName, char *PathToAdjust)
+void AdjustPath(char const *OwnProgPathName, char *PathToAdjust, size_t const MaxSize)
  {
   int len = strlen(PathToAdjust);
   char PathDir[PATH_LEN] = {0};
   char *p;
-  strcpy(PathDir, OwnProgPathName);
+  strncpy(PathDir, OwnProgPathName, sizeof(PathDir) - 1);
   dirname(PathDir);
   if((len == 0) || ((len == 1) && (PathToAdjust[0] = '.'))) /* The path is local and simple */
    {
-    strcpy(PathToAdjust, PathDir);
+    strncpy(PathToAdjust, PathDir, MaxSize);
    }
   else
    {
     if((PathToAdjust[0] != '/') && (PathToAdjust[0] != '~')) /* The path is local, but complicated. */
      {
       if(PathDir[strlen(PathDir) - 1] != '/')
-       strcat(PathDir, "/");
+       strncat(PathDir, "/", sizeof(PathDir));
       p = (!strncmp(PathToAdjust, "./", 2)) ? (PathToAdjust + 2) : PathToAdjust;
-      strcat(PathDir, p);
-      strcpy(PathToAdjust, PathDir);
+      strncat(PathDir, p, sizeof(PathDir) - 1);
+      strncpy(PathToAdjust, PathDir, MaxSize);
      }
    }
  }
@@ -547,23 +547,26 @@ void AdjustPath(char const *OwnProgPathName, char *PathToAdjust)
 /* Generates a name of a configuration .ini file according to the name of this running executable file.                 */
 /* The extention in this case will be removed. For example:  "program"       ▬▬▬▶   "program.ini".                      */
 /*                                                           "program.elf"   ▬▬▬▶   "program.ini"                       */
-void GetConfFileName(char const *OwnProgPathName, char *ConfFileName)
+void GetConfFileName(char const *OwnProgPathName, char *ConfFileName, size_t const MaxSize)
  {
-  char *p;
-  strcpy(ConfFileName, OwnProgPathName);
-  ConfFileName = basename(ConfFileName);
-  p = strrchr(ConfFileName, '.');
+  char *p, *ptnp;
+  char TempNamePath[PATH_LEN];
+  ptnp = TempNamePath;
+  strncpy(TempNamePath, OwnProgPathName, sizeof(TempNamePath) - 1);
+  ptnp = basename(ptnp = TempNamePath);
+  p = strrchr(ptnp, '.');
   if(p != NULL)
    {
     *p = '\0';
    }
-  strcat(ConfFileName,".ini");
+  strncat(ptnp,".ini", sizeof(TempNamePath) - (ptnp - TempNamePath));
+  strncpy(ConfFileName, ptnp, MaxSize);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Gives the path of the folder in which can be stored the configuration files.                                         */
 /* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
-bool GetConfigPath(char const *OwnProgPathName, char NamePath[])
+bool GetConfigPath(char const *OwnProgPathName, char NamePath[], size_t const MaxSize)
  {
   struct stat buffer;
   char *p;
@@ -573,12 +576,12 @@ bool GetConfigPath(char const *OwnProgPathName, char NamePath[])
   bool result = false;
 
   char PathDir[PATH_LEN] = {0};
-  strncpy(PathDir, OwnProgPathName, (PATH_LEN-1));
+  strncpy(PathDir, OwnProgPathName, (PATH_LEN - 1));
   // p = basename(PathDir);
   p = dirname(PathDir);
   if (!strcmp(p, "."))
    {
-    strcpy(NamePath, "./../");
+    strncpy(NamePath, "./../", MaxSize);
    }
   else
    {
@@ -597,11 +600,11 @@ bool GetConfigPath(char const *OwnProgPathName, char NamePath[])
 
   if (stat(NamePath, &buffer)) /* The previous path doesn't exist. */
    {
-    strcpy(NamePath, p);
-    strcat(NamePath, "/");
+    strncpy(NamePath, p, MaxSize);
+    strncat(NamePath, "/", MaxSize);
    }
 
-  strcat(NamePath, CONF_DIR_NAME "/");
+  strncat(NamePath, CONF_DIR_NAME "/", MaxSize);
 
   /* stat returns 0 on success */
   if (stat(NamePath, &stats) == 0)
@@ -620,33 +623,33 @@ bool GetConfigPath(char const *OwnProgPathName, char NamePath[])
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Gives the name with path of the database file.                                                                       */
 /* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
-bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[])
+bool GetDataBaseFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize)
  {
   bool result;
-  result = GetConfigPath(OwnProgPathName, NamePath);
-  strcat(NamePath, DB_FILENAME);
+  result = GetConfigPath(OwnProgPathName, NamePath, MaxSize);
+  strncat(NamePath, DB_FILENAME, MaxSize);
   return result;
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Gives the name with path of the file with the program PID.                                                           */
 /* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
-bool GetPIDFile(char const *OwnProgPathName, char NamePath[])
+bool GetPIDFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize)
  {
   bool result;
-  result = GetConfigPath(OwnProgPathName, NamePath);
-  strcat(NamePath, DB_MAN_PID_FILENAME);
+  result = GetConfigPath(OwnProgPathName, NamePath, MaxSize);
+  strncat(NamePath, DB_MAN_PID_FILENAME, MaxSize);
   return result;
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Gives the name with path of the file containing the map-shapes of cities, towns, vilages and other geographic places.*/
 /* Returns "true" if the folder was created. Otherwise returns "false".                                                 */
-bool GetShapeFile(char const *OwnProgPathName, char NamePath[])
+bool GetShapeFile(char const *OwnProgPathName, char NamePath[], size_t const MaxSize)
  {
   bool result;
-  result = GetConfigPath(OwnProgPathName, NamePath);
-  strcat(NamePath, SHP_FILENAME);
+  result = GetConfigPath(OwnProgPathName, NamePath, MaxSize);
+  strncat(NamePath, SHP_FILENAME, MaxSize);
   return result;
  }
 

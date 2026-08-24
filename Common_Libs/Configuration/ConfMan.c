@@ -27,7 +27,7 @@ static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t const NumConfI
    {
     char *p = strstr(ConfData[i][0], "PATH");
     if(p != NULL)
-     AdjustPath(OwnProgName, ConfData[i][1]);
+     AdjustPath(OwnProgName, ConfData[i][1], PATH_LEN);
    }
  }
 
@@ -45,7 +45,7 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfI
   char *lastc;
   size_t NumFoundOptions;
 
-  GetConfFileName(OwnProgName, FileName);
+  GetConfFileName(OwnProgName, FileName, sizeof(FileName));
   printf("%s\n\r", FileName);
   
   ConfIniFile = fopen(FileName, "r");
@@ -87,7 +87,7 @@ static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, 
   size_t i;
   FILE *ConfIniFile;
 
-  GetConfFileName(OwnProgName, FileName);
+  GetConfFileName(OwnProgName, FileName, sizeof(FileName));
   printf("%s\n\r", FileName);
 
   ConfIniFile = fopen(FileName, "w");

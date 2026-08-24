@@ -60,14 +60,6 @@ int main(int const argc, char const *argv[])
     uint16_t Price = 0;
     int Result;
     int pid;
-    // char pathfile[PATH_LEN];
-    // char *c;
-    // c = pathfile;
-
-    //strcpy(pathfile, argv[0]);
-    // strcpy(pathfile, "./priceman");
-    // ApplyDBPath(argc, &c);
-    // pid = LoadParkManPID(argc, &c);
 
     InitConfiguration(argv[0]);
 
@@ -134,7 +126,7 @@ void ExtractName(char const *Strings[], int const NumStrings, char Name[])
     if(strlen(Name) < NAME_LEN - 2)
      {
       if(!first)
-        strcat(Name, " ");
+        strncat(Name, " ", NAME_LEN);
       first = false;
       // StringLen = strlen(Strings[i]);
       // RemLen = NAME_LEN - strlen(Name); //  NAME_LEN
@@ -212,7 +204,7 @@ int LoadParkManPID(int const argc, char const *argv[])
   UNUSED(argc);
   UNUSED(argv);
   //GetPIDFile(argv[0], NamePath);
-  strcpy(NamePath, GetProgInfoPIDFilePathName());
+  strncpy(NamePath, GetProgInfoPIDFilePathName(), sizeof(NamePath) - 1);
   printf("%s\n\r", NamePath);
   f = fopen(NamePath, "r");
   if(f)

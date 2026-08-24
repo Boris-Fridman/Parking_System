@@ -635,7 +635,7 @@ void SetDBPathName(char const FileNameToSet[])
 void ApplyDBPath(int const argc, char const *argv[])
  {
   UNUSED(argc);
-  GetDataBaseFile(argv[0], PathFileName);
+  GetDataBaseFile(argv[0], PathFileName, sizeof(PathFileName));
   printf("%s\n\r", PathFileName);
  }
 
