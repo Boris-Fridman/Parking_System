@@ -443,6 +443,7 @@ void Add_CRC(uint8_t buf[], size_t const len)
   CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
   memcpy(buf + len - CRC_SIZE, &CalcCRC, CRC_SIZE);
  }
+ 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Checks if the CRC is correct.                                                                                       */
 /*  For example if the given length is 12 the CRC checking will be made from the first 8 bytes                          */

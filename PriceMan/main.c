@@ -21,10 +21,10 @@
 #define ARG_RENAME_RESULT 4
 
 
-#define ADD_PARAM     "add"
-#define REMOVE_PARAM "remove"
-#define RENAME_PARAM "rename"
-#define HELP_PARAM   "h"
+#define ADD_PARAM         "add"
+#define REMOVE_PARAM      "remove"
+#define RENAME_PARAM      "rename"
+#define HELP_PARAM        "h"
 
 /*======================================================================================================================*/
 
@@ -48,13 +48,14 @@ void RenameCity(char OldName[], char NewName[]);
  **          Main Function from which the program starts running. 
  * *************************************************************************************************************
  */
+
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Main function from which the program starts running.                                                                */
-
 int main(int const argc, char const *argv[])
  {
     //ansi clear screen
     printf("\033[2J\033[H");
+    //code
     char Name[NAME_LEN] = "";
     char NewName[NAME_LEN] = "";
     uint16_t Price = 0;
@@ -68,7 +69,6 @@ int main(int const argc, char const *argv[])
     pid = LoadParkManPID(argc, argv);
     printf("%s\n\r", argv[0]);
     printf("Was loaded the parkman's pid: %d\n\r", pid);
-    //code
     Result = CheckArgs(argc, argv, Name, &Price, NewName);
     switch(Result)
      {
@@ -117,9 +117,7 @@ void ExtractName(char const *Strings[], int const NumStrings, char Name[])
  {
   int i;
   bool first = true;
-  //size_t StringLen, RemLen;
   size_t l;
-  //size_t stl;
   Name[0] = '\0';
   for(i = 0; i < NumStrings; i++)
    {
@@ -128,15 +126,8 @@ void ExtractName(char const *Strings[], int const NumStrings, char Name[])
       if(!first)
         strncat(Name, " ", NAME_LEN);
       first = false;
-      // StringLen = strlen(Strings[i]);
-      // RemLen = NAME_LEN - strlen(Name); //  NAME_LEN
       l = MIN((NAME_LEN - 1 - strlen(Name)), (NAME_LEN - 1));
-      //stl = NAME_LEN - 1 - l;
-      //NAME_LEN - 1 - stl;
-      //l;
-      //strncat(Name, Strings[i], NAME_LEN - 1 - strlen(Name));
       strncat(Name, Strings[i], l);
-      //strncat(Name, Strings[i], MIN(RemLen, StringLen));
      }
     else 
      break;
@@ -203,7 +194,7 @@ int LoadParkManPID(int const argc, char const *argv[])
   int r;
   UNUSED(argc);
   UNUSED(argv);
-  //GetPIDFile(argv[0], NamePath);
+
   strncpy(NamePath, GetProgInfoPIDFilePathName(), sizeof(NamePath) - 1);
   printf("%s\n\r", NamePath);
   f = fopen(NamePath, "r");
@@ -225,8 +216,8 @@ int LoadParkManPID(int const argc, char const *argv[])
 void SendSignal(pid_t const pid)
  {
   union sigval value;
-  value.sival_int = 78;  // For test only.
-  //value.sival_ptr = NULL;  // Is used for sending data via reserved memory, but is actoal for sending information between the threads in the same process only because the data between processes is isolated.
+  value.sival_int = 78;    // For test only.
+  //value.sival_ptr = NULL;  // Is used for sending data via reserved memory, but is actual for sending information between the threads in the same process only because the data between processes is isolated.
   printf("Trying to sending the signal %d to task with pid %d\n\r", DB_UPADATE_SIGNAL, pid);
   if(pid > 0)
    {
@@ -287,15 +278,15 @@ void AddOrUpdateNewCity(char const CityName[], int const CityPrice)
   ConvertPrice(CityPrice, buffer, sizeof(buffer), E_PPH_FULL_FORMAT, StdOutNoPiping);
 
   printf("Adding the city: %s%s%s and with the price %s to the database\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ?  TermColorsReset : ""), buffer);
-  //printf("Adding the city: %s and with the price %d.%02d ₪ / hour to the database\n\r", CityName, CityPrice / 100, CityPrice % 100);
-  CreateLoadDatabase(&conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
+  
+  CreateLoadDatabase(&conn); /* Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function. */
   result = UpdateCityPriceInDataBase(&conn, CityName, CityPrice);
   if(result == 0)  /* The reqauired city allready exists in database. */
    {
     if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
     printf("The city \"%s%s%s\" was already existing. Was updated only price.\n\r", (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ?  TermColorsReset : ""));
     printf("The price was updated to: %s.\n\r", buffer);
-    //printf("The price was updated to: %d.%02d ₪ / hour.\n\r", CityPrice / 100, CityPrice % 100);
+  
     if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
    }
   else if(result < 0)  /* The update wasn't be possible because the city didn't exist. */
@@ -305,9 +296,6 @@ void AddOrUpdateNewCity(char const CityName[], int const CityPrice)
     if(result == 0)
      {
       printf("%sThe city \"%s%s%s\" with the price %s%s was added successrully.%s \n\r", (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), (StdOutNoPiping ?  CITYNAME_COLOR : ""), CityName,  (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), buffer, (StdOutNoPiping ?  ResultColors[E_CORRECT] : ""), (StdOutNoPiping ?  TermColorsReset : ""));
-      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-      // printf("The city \"%s\" with the price %d.%02d ₪ / hour was added successrully. \n\r", CityName,  CityPrice / 100, CityPrice % 100);
-      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);    
      }
    }
   if(result == -1)
@@ -330,15 +318,9 @@ void RemoveCity(char CityName[])
    {
     case 0: // CITYNAME_COLOR
       printf("%sThe city \"%s%s%s\" was removed successfully%s\n\r", (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? CITYNAME_COLOR : ""), CityName, (StdOutNoPiping ? ResultColors[E_CORRECT] : ""), (StdOutNoPiping ? TermColorsReset : ""));
-      // if(StdOutNoPiping)fprintf(stdout, "%s", ResultColors[E_CORRECT]);
-      // printf("The city \"%s\" was removed successfully\n\r", CityName);
-      // if(StdOutNoPiping)fprintf(stdout, "%s", TermColorsReset);
      break;
     case -3: 
       printf("%sThe city \"%s%s%s\" was not found%s\n\r", (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? CITYNAME_COLOR : ""), CityName, (StdErrNoPiping ? ResultColors[E_WARNING] : ""), (StdErrNoPiping ? TermColorsReset : ""));     
-      // if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_WARNING]);
-      // printf("The city \"%s\" was not found\n\r", CityName);
-      // if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
      break;
     default: 
       if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
@@ -392,28 +374,43 @@ void RenameCity(char OldName[], char NewName[])
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Prints all cities existing in database.                                                                             */
-// #define STR(x) #x
-// #define XSTR(x) STR(x)
 
 void PrintCitiesFromDataBase()
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+
   int result;
   PriceTab_s *ListOfCities;
   int ListSize, i;
+  char buffer[50];
   result = GetCitiesList(&conn, &ListOfCities, &ListSize);
 
-  if(result == 0)
+  switch(result)
    {
-    printf("\n\r");
-    printf("%4s       %-*s  %s\n\r","ID", NAME_LEN, "Name","Price");
-    for(i = 0; i < ListSize; i++)
-     {
-      printf("%06d   %-*s     %d.%02d\n\r",ListOfCities[i].City_ID, NAME_LEN, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
-      //printf("%03d   %-" XSTR(NAME_LEN) "s   %d.%02d\n\r",ListOfCities[i].City_ID, ListOfCities[i].City_Name, ListOfCities[i].Price / 100, ListOfCities[i].Price % 100);
-     }
-    printf("\n\r");
+    case 0:
+       printf("\n\r");
+       printf("%4s       %-*s   %s\n\r","ID", NAME_LEN, "Name","Price");
+       for(i = 0; i < ListSize; i++)
+        {
+         ConvertPrice(ListOfCities[i].Price, buffer, sizeof(buffer), E_PPH_FULL_FORMAT, StdOutNoPiping);
+         //printf("%06d   %-*s     %s\n\r",      ListOfCities[i].City_ID, NAME_LEN, ListOfCities[i].City_Name, buffer);
+         printf("%06d   %s%-*s%s     %s\n\r",      ListOfCities[i].City_ID, (StdOutNoPiping ?  CITYNAME_COLOR : ""), NAME_LEN, ListOfCities[i].City_Name, (StdOutNoPiping ?  TermColorsReset : ""), buffer);
+        }
+       printf("\n\r");
+     break;
+    case -1:
+       fprintf(stderr, "%sThe database cannot be opened.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+     break;
+    case -2:
+       fprintf(stderr, "%sThe memory cannot be reserved.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+     break;
+    case -3:
+       fprintf(stderr, "%sThe database cannot be filled.%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+     break;
+
    }
-  
+
   FreeList(&ListOfCities);  /* No need to compare the list to NULL because it is compared in the procedure itself. Even more it should be run anyway without any condition to prevent emergency memory leakage. */
  }
 
