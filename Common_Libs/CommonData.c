@@ -54,7 +54,7 @@ char const *LONGSGN[] = {"E", "W"}; // Longitude sign "E" (East)  in case of pos
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Raises numbers to the square power.                                                                                  */
-double sqr(double x)
+double sqr(double const x)
  {
   return x * x;
  }
@@ -68,7 +68,7 @@ uint64_t RandGenLongLong()
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Generates random numbers between MinNumber and MaxNumber including.                                                  */
-uint32_t GenRandNumber(uint32_t MinNumber, uint32_t MaxNumber)
+uint32_t GenRandNumber(uint32_t const MinNumber, uint32_t const MaxNumber)
  {
   return MinNumber + rand() % (MAX(MaxNumber, MinNumber) - MinNumber + 1);
  }
@@ -115,7 +115,7 @@ AngDegMinSec_s
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Checks if the given GPS Point is inside the givne zone polygon.                                                      */
-PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], size_t PolySize, GPS_Cords_s Cords)
+PointState_e PointInPoly(const GPS_Cords_s BoundingPoly[], const size_t PolySize, const GPS_Cords_s Cords)
  {
   size_t i;
   double x1, x2, y1, y2, yt, xt;
@@ -176,7 +176,7 @@ void GPSToSpace(Space_Cords_s *SpaceCords, GPS_Cords_s GPS_Data)
 /* Finds the distance from the given any two points on the Earth.                                                       */
 /* The function calculates distance by taking in account the middle radius/diameter of the Earth.                       */
 /* The function doesn't nake in account any relief.                                                                     */
-double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
+double GetDistance(const GPS_Cords_s p1, const GPS_Cords_s p2)
  {
   Space_Cords_s s1, s2;
   double LinDist, ArcDist;
@@ -192,7 +192,7 @@ double GetDistance(GPS_Cords_s p1, GPS_Cords_s p2)
 /* In addition adds to them the tags which of them is the longitude and which one is the latitude.                      */
 /* The south latitude and the west longitude will be shown with the negative sign.                                      */
 /* The north latitude and the east longitude will be shown without negative sign.                                       */
-void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
+void CordsToString(char Buf[], const int MaxSize, const GPS_Cords_s GPSCords)
  {
   AngDegMinSec_s LatConvAng, LongConvAng;
   AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
@@ -211,7 +211,7 @@ void CordsToString(char Buf[], int MaxSize, GPS_Cords_s GPSCords)
 /* The north latitude and the east longitude will be shown without negative sign.                                       */
 /* The coordinates can be colored or not depending of requirements.                                                     */
 /* In case of coloring the bufer must be at least of 200 characters length. Without coloring only 50.                   */
-void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Colored)
+void CreateCordsFormatted(char Buf[], const int MaxSize, const GPS_Cords_s GPSCords, const bool Colored)
  {
   int l;
   char const *uc = (Colored ? TermBrightYello   : ""); /* Units       Color */
@@ -241,7 +241,7 @@ void CreateCordsFormatted(char Buf[], int MaxSize, GPS_Cords_s GPSCords, bool Co
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Prints the GPS coordinates romatted byt the "CordsToString()" procedure.                                             */
-void PrintGPSCords(GPS_Cords_s CordsToPrint)
+void PrintGPSCords(const GPS_Cords_s CordsToPrint)
  {
   char buf[200];
   CordsToString(buf, sizeof(buf), CordsToPrint);
@@ -261,7 +261,7 @@ void PrintGPSCords(GPS_Cords_s CordsToPrint)
 /* For example: the number with 6 digits will be converted to xxx-xxx.                                                  */
 /*                         with 7 digits will be converted to xx-xxx-xx.                                                */
 /*                         with 8 digits will be converted to xxx-xx-xxx.                                               */
-void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
+void VehicleIDToString(char Buf[], const int MaxSize, const uint32_t VehcleID)
  {
   uint8_t NumDigits;
   NumDigits = IntLog10(VehcleID, 1); /*   "RoundDirrection=0" rounds down "RoundDirrection"=1 rounds up */
@@ -318,7 +318,7 @@ void VehicleIDToString(char Buf[], int MaxSize, uint32_t VehcleID)
 /*                         with 7 digits will be converted to xx-xxx-xx.                                                */
 /*                         with 8 digits will be converted to xxx-xx-xxx.                                               */
 /* The number finaly will be formatted and colored as israelian standarted number if the coloring is enabled.           */
-void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colored)
+void CreateVehIDFormated(char Buf[], const int MaxSize, const uint32_t VehcleID, const bool Colored)
  {
    //  ✡  🔯  🕎 🟌 🇮🇱 🇺🇸
    //  🇮🇮🇱🇱  🇮🇱  🇮 🇱  🇮 🇱  🇮🇮🇮🇱🇮🇮 🇮🇮🇱🇱    🇮🇱🇮🇱  🅘🅛  🇮✡🇱   ✡̲̅    I̅I̲L̅L̲
@@ -341,7 +341,7 @@ void CreateVehIDFormated(char Buf[], int MaxSize, uint32_t VehcleID, bool Colore
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Creates the string with formatted name of a client that can be then shown on a screen through a terminal.            */
-void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored)
+void CreateNameFormated(char Buf[], const int MaxSize, const char Name[], const bool Colored)
  {
   // 웃  👤  🕴🚶🧍🧎⛹⛷🏂🏃🏄🏋🏌🚹
   char const *nc = (Colored ? TermBGWhite TermMagenta : ""); /* Name     Color */
@@ -359,7 +359,7 @@ void CreateNameFormated(char Buf[], int MaxSize, char const Name[], bool Colored
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Converts time to string format.                                                                                     */
-void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t TimeStrSize, TimeForm_e TimeFormat)
+void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], const size_t TimeStrSize, const TimeForm_e TimeFormat)
  {
   struct tm tmp;
   localtime_r(TimeToConvert, &tmp);
@@ -391,7 +391,7 @@ void ConvertTime(time_t const *const TimeToConvert, char TimeAsStr[], size_t Tim
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*  Converts price to string format.                                                                                    */
-void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStrgSize, PriceFormat_e PriceFormat, bool Formated)
+void ConvertPrice(const uint16_t PriceToConvert, char PriceAsString[], const size_t PriceStrgSize, const PriceFormat_e PriceFormat, const bool Formated)
  {
   char const * const units[] = {" ₪ / hour", "₪/h","₪"};
   snprintf(PriceAsString, PriceStrgSize - 1, "%s%d.%02d%s%s%s", (Formated ? PRICE_COLOR : ""), PriceToConvert / 100, PriceToConvert % 100, (Formated ? PRICEUNITS_COLOR : ""), units[PriceFormat % NUM_PRICE_VARIANTS], (Formated ? TermColorsReset : ""));
@@ -414,7 +414,7 @@ void ConvertPrice(uint16_t PriceToConvert, char PriceAsString[], size_t PriceStr
  */
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*   Calculates CRC from given block of data.                                                                           */
-uint32_t FindCRC(uint8_t const *Data, uint8_t Length, uint32_t InitVal)
+uint32_t FindCRC(uint8_t const *Data, const uint8_t Length, const uint32_t InitVal)
  {
   uint32_t Result;
   uint32_t vl;
@@ -437,7 +437,7 @@ uint32_t FindCRC(uint8_t const *Data, uint8_t Length, uint32_t InitVal)
 /*----------------------------------------------------------------------------------------------------------------------*/
 /*   Appends to the end of the data array the calculated CRC from it. The length must include the place of the CRC.     */
 /* For example if the data has length 8 the length given as parameter must be 12 = 8 + 4. The CRC has 4 bytes of length.*/
-void Add_CRC(uint8_t buf[], size_t len)
+void Add_CRC(uint8_t buf[], size_t const len)
  {
   uint32_t CalcCRC;
   CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
@@ -447,7 +447,7 @@ void Add_CRC(uint8_t buf[], size_t len)
 /*  Checks if the CRC is correct.                                                                                       */
 /*  For example if the given length is 12 the CRC checking will be made from the first 8 bytes                          */
 /*  and the result will be compared to the last 4 bytes.                                                                */
-bool CRC_Correct(uint8_t const buf[], size_t len)
+bool CRC_Correct(uint8_t const buf[], size_t const len)
  {
   uint32_t CalcCRC, RecvCRC;
   CalcCRC = FindCRC(buf, len - CRC_SIZE, DEF_INIT_VAL);
@@ -467,7 +467,7 @@ bool CRC_Correct(uint8_t const buf[], size_t len)
 /* The last parameter "NetSendData" is given as pointer to pointer to dynamically allocated memory.                     */
 /* That means that at the end of the program it must be freed by the procedure "FreeData()"                             */
 /* to avoid the memory leakage.                                                                                         */
-ssize_t EncodeNetData(uint8_t const *const CustomData, uint8_t Len, uint8_t **NetSendData)
+ssize_t EncodeNetData(uint8_t const *const CustomData, uint8_t const Len, uint8_t **NetSendData)
  {
 
   size_t DataLenFull;
@@ -485,7 +485,7 @@ ssize_t EncodeNetData(uint8_t const *const CustomData, uint8_t Len, uint8_t **Ne
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* This function decodes the packet received from network.                                                              */
-bool DecodeNetData(uint8_t const NetRecData[], size_t Len, uint8_t *CustomData)
+bool DecodeNetData(uint8_t const NetRecData[], size_t const Len, uint8_t *CustomData)
  {
   if (CRC_Correct(NetRecData, Len))
    {
@@ -535,7 +535,7 @@ void AdjustPath(char const *OwnProgPathName, char *PathToAdjust, size_t const Ma
     if((PathToAdjust[0] != '/') && (PathToAdjust[0] != '~')) /* The path is local, but complicated. */
      {
       if(PathDir[strlen(PathDir) - 1] != '/')
-       strncat(PathDir, "/", sizeof(PathDir));
+       strncat(PathDir, "/", sizeof(PathDir) - 1);
       p = (!strncmp(PathToAdjust, "./", 2)) ? (PathToAdjust + 2) : PathToAdjust;
       strncat(PathDir, p, sizeof(PathDir) - 1);
       strncpy(PathToAdjust, PathDir, MaxSize);
@@ -751,56 +751,56 @@ void GetOwnNamePath(char OwnPathToRet[], size_t const MaxSize)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Set cursor to defined place in the screen.                                                                           */
-void MoveCursor(int x, int y)
+void MoveCursor(const int x, const int y)
  {
   printf("\033[%d;%dH", y, x); // Moves cursor to (x,y) place.
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Moves cursor forward.                                                                                                */
-void MoveCursFw(int x)
+void MoveCursFw(const int x)
  {
   printf("\033[%dC", x);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Moves cursor Up.                                                                                                     */
-void MoveCursUp(int y)
+void MoveCursUp(const int y)
  {
   printf("\033[%dA", y);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Moves cursor backward.                                                                                               */
-void MoveCursBw(int x)
+void MoveCursBw(const int x)
  {
   printf("\033[%dD", x);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Moves cursor down.                                                                                                   */
-void MoveCursDn(int y)
+void MoveCursDn(const int y)
  {
   printf("\033[%dB", y);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Sets cursor place in the line were it exists.                                                                        */
-void MoveCursToCol(int col)
+void MoveCursToCol(const int col)
  {
   printf("\033[%dG", col);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Clears line in console.                                                                                              */
-void ClearLine(LnPrt_e lp)
+void ClearLine(const LnPrt_e lp)
  {
   printf("\033[%dK", lp);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Prints horizontal scale bar.                                                                                         */
-void PrintHorizScale(uint32_t ScaleLength, uint32_t FilledLen, char *Colors[], char *Symbols[], uint32_t MaxValue, uint32_t Value, char Units[])
+void PrintHorizScale(const uint32_t ScaleLength, const uint32_t FilledLen, const char *Colors[], const char *Symbols[], const uint32_t MaxValue, const uint32_t Value, const char Units[])
  {
   uint32_t i;
   uint32_t PermLen;
