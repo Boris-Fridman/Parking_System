@@ -1,11 +1,14 @@
 
+/*======================================================================================================================*/
+
 #include "Israel_Shape.h"
 #include "math.h"
 
 
+/*======================================================================================================================*/
 
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The Aray contains the corners of the polynom defining the shape of the Israel Country.                               */
 const GPS_Cords_s IsraelShape[] =
  { 
 /*  	vertex_index		Longitude		Latitude	*/
@@ -3613,7 +3616,9 @@ const GPS_Cords_s IsraelShape[] =
 
  };
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The constaint defining the number of corners defined in the Israel Country Conrners Shape Aray.                      */
 
 const size_t NUM_IL_SHAPE_PNT = (sizeof(IsraelShape)/sizeof(IsraelShape[0]));
 
-
+/*======================================================================================================================*/

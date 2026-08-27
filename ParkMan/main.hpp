@@ -1,4 +1,7 @@
 #pragma once
+
+/*======================================================================================================================*/
+
 #include <cstdint>
 #include <sys/types.h>
 #include <string>
@@ -42,3 +45,6 @@ struct TskContShmData_s
   bool get_flag(ProcTypeID_e flagno){return ((exit_proc_flags >> flagno) & 0x01);};
   TskContShmData_s():exit_proc_flags(0){};
  };
+
+
+/*======================================================================================================================*/

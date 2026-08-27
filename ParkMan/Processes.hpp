@@ -1,5 +1,7 @@
 #pragma once
 
+/*======================================================================================================================*/
+
 #include "CommonData.h"
 #include "main.hpp"
 #include "Logging.h"
@@ -153,6 +155,7 @@ class ProcMan_c: public TaskControl_ShSM_c
     void CloseLogThread();
  };
  
+/*======================================================================================================================*/
 
 /**
  * @brief Opens a new process. 
@@ -174,3 +177,4 @@ class ProcMan_c: public TaskControl_ShSM_c
 pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl = nullptr);
 
 
+/*======================================================================================================================*/

@@ -1,6 +1,8 @@
 #ifndef ____Configuration_h__
 #define ____Configuration_h__
 
+/*======================================================================================================================*/
+
 #include "CommonData.h"
 
 /**
@@ -49,10 +51,7 @@ char const *GetDataBaseFilePathName();
 char const *GetProgInfoPIDFilePathName();  // Path & Name of the file with the program PID.
 
 
-
-
-
-
+/*======================================================================================================================*/
 
 #endif  //  ____Configuration_h__
 

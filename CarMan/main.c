@@ -1,3 +1,5 @@
+/*======================================================================================================================*/
+
 #include "main.h"
 #include <stdio.h>
 #include <stdbool.h>
@@ -26,13 +28,29 @@
 #include <syslog.h>
 #endif
 
+/*======================================================================================================================*/
 
 bool FullExit = false;
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Functions / Procedures for internal usage.
+ * *************************************************************************************************************
+ */
 
 void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams);
 void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid);
 void EnableSignals();
+
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Main Function from which the program starts running. 
+ * *************************************************************************************************************
+ */
 
 int main(int const argc, char const *argv[])
  {
@@ -134,9 +152,16 @@ int main(int const argc, char const *argv[])
  }
 
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Process-Analizing Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-/* Catching Zombie-Child-Processes and removing them. */ 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Catching Zombie-Child-Processes and removing them.                                                                   */ 
 void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams)
  {
   //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -159,6 +184,8 @@ void CatchChildZombie(LogSQBriefParams_s *LogSQBriefParams)
   } while (w > 0);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Waiting processes untill they finish befor exitting the main process.                                                */
 void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid)
  {
   int w;
@@ -180,9 +207,16 @@ void WaitUntilFinised(pid_t net_pid, pid_t i2c_pid)
   
  }
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Signal processing Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-/* Custom callback executed when signal arrives */
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Custom callback executed when signal arrives.                                                                        */
 void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
  {
   UNUSED(context);
@@ -214,7 +248,8 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
 
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Enables the selected signals that are processed by the signal handler.                                               */
 void EnableSignals()
  {
   struct sigaction sa;
@@ -239,4 +274,4 @@ void EnableSignals()
  }
 
 
-
+/*======================================================================================================================*/

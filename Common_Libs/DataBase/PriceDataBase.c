@@ -1,3 +1,6 @@
+
+/*======================================================================================================================*/
+
 #include "PriceDataBase.h"
 
 #ifdef __cplusplus
@@ -14,8 +17,6 @@
 
 #include <unistd.h>
 #include <string.h>
-
-
 
 
 /*======================================================================================================================*/
@@ -51,7 +52,6 @@ int CreateLoadDatabase(sqlite3 **conn)
     char *err_msg;
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_PRICES(city_id INT, city_name TEXT, price_per_hour_in_ag INT);", 0, 0, &err_msg);
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);", 0, 0, &err_msg);
-    //result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_COORDINATES(city_id INT, city_name TEXT, shape_type NUMERIC, p0 BLOB, p1 BLOB, p2 BLOB, p3 BLOB, p4 BLOB, p5 BLOB, p6 BLOB, p7 BLOB, p8 BLOB, p9 BLOB, p10 BLOB, p11 BLOB, p12 BLOB, p13 BLOB, p14 BLOB, p15 BLOB, p16 BLOB, p17 BLOB, p18 BLOB, p20 BLOB);", 0, 0, &err_msg);
    
     if(result != SQLITE_OK)
      {
@@ -124,7 +124,7 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
           valtoret = CityIDs[i] + 1;
           free(CityIDs);
          }
-        else
+        else  /* CityIDs == NULL */
          {
           do
            {
@@ -141,8 +141,6 @@ int GetCityIDNotExistingInDataBase(sqlite3 **conn)
        }
      }
    }
-  // if(CityIDs != NULL)
-  //  free(CityIDs);
   sqlite3_finalize(stmt);
   sqlite3_close(*conn);
   return valtoret;
@@ -315,8 +313,6 @@ int UpdateParkSessionInDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_ms
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
    {
-    //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"
-    //  end_time INT, duration INT, accumulated_price_in_ag INT
     result = sqlite3_prepare_v2(*conn, "UPDATE CUSTOMERS_PRICE_REPORTS SET end_time = ?, duration = ?, accumulated_price_in_ag = ? WHERE start_time = ? AND vehicle_id = ? AND customer_name = ?;", -1, &stmt, 0);
     if(result != SQLITE_OK)
      {
@@ -385,7 +381,6 @@ int WriteNewCityToDataBase(sqlite3 **conn, int city_id, char const city_name[], 
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}
      } 
     while (0);
-    //sqlite3_finalize(stmt);
     sqlite3_close(*conn);
    }
   return valtoret;
@@ -403,7 +398,6 @@ int WriteNewParkSessionToDataBase(sqlite3 **conn, ClientQueueMsg_s client_queue_
    {
     do
      {
-      //  "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, parking_cords BLOB, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);"      
       valtoret = sqlite3_prepare_v2(*conn, "INSERT INTO CUSTOMERS_PRICE_REPORTS (start_time, end_time, duration, vehicle_id, customer_name, parking_cords, longitude, latitude, city_id, city_name, region_code, price_per_hour_in_ag, accumulated_price_in_ag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", -1, &stmt, 0);
       if(valtoret != SQLITE_OK){PrintDBError(valtoret);break;}     
       valtoret = sqlite3_bind_int   (stmt,  1,  client_queue_msg.ParkingStartTime                                        );
@@ -545,7 +539,7 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
   sqlite3_stmt* stmt = NULL;
   const unsigned char *name;
   
-  *list = NULL;  // To ensure that the pointer is NULL even the allocating memory function didn't run.
+  *list = NULL;       /* To ensure that the pointer is NULL even the allocating memory function didn't run. */
   result = OpenDataBase(conn);
   if(result == SQLITE_OK)
    {
@@ -558,7 +552,7 @@ int GetCitiesList(sqlite3 **conn, PriceTab_s **list, int *list_size)
         valtoret = -2;
         *list_size = 0;
        }
-      else /*  Memory was allocated successfully. */
+      else      /*  Memory was allocated successfully. */
        {
         result = sqlite3_prepare_v2(*conn, "SELECT city_id, city_name, price_per_hour_in_ag FROM CITIES_PRICES;", -1, &stmt, 0);
         if(result != SQLITE_OK)
@@ -619,12 +613,7 @@ void FreeList(PriceTab_s **list_to_free)
 /*  Sets DataBase file name exactly as in parameter. (Was defined for multiprocess variant.)                            */
 void SetDBPathName(char const FileNameToSet[])
  {
-  // size_t FileNameLen = strlen(FileNameToSet);
-  // size_t len = MIN(FileNameLen, (PATH_LEN-1));
-  //strncpy(PathFileName, FileNameToSet, len); // strncpy(PathFileName, FileNameToSet, len);
-  
-  strncpy(PathFileName, FileNameToSet, (PATH_LEN-1)); // strncpy(PathFileName, FileNameToSet, len);
-  //PathFileName[len] = '\0';
+  strncpy(PathFileName, FileNameToSet, (PATH_LEN - 1));
   printf("%s\n\r", PathFileName);
  }
 
@@ -646,7 +635,7 @@ int OpenDataBase(sqlite3 **conn)
  {
   int result;
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
-  result = sqlite3_open(PathFileName, conn);  //result = sqlite3_open(DB_FILENAME, conn);
+  result = sqlite3_open(PathFileName, conn);
   if(result != SQLITE_OK)
    {
     if(StdErrNoPiping)fprintf(stderr, TermRed);
@@ -693,7 +682,7 @@ void PrintDBError(int ErrorCode)
    {
     Error_Results_e ErrRes;
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic" // Disables the non-standard warning for not standard "case low ... high:" cpmdotopm.
+#pragma GCC diagnostic ignored "-Wpedantic" /* Disables the non-standard warning for not standard "case low ... high:" cpmdotopm. */
     switch(ErrorCode)
      {
       case SQLITE_OK:
@@ -709,8 +698,7 @@ void PrintDBError(int ErrorCode)
         ErrRes = E_FAIL;
        break;
      }
-#pragma GCC diagnostic pop // Restores your original warning settings     
-    //fprintf(stderr, "%s", ResultColors[!ErrorCode]);
+#pragma GCC diagnostic pop /* Restores your original warning settings     */
     fprintf(stderr, "%s", ResultColors[ErrRes]);
    }
   switch(ErrorCode)
@@ -749,3 +737,6 @@ void PrintDBError(int ErrorCode)
    }
   if(StdOutNoPiping) fprintf(stderr, "%s", TermColorsReset);
  }
+
+
+/*======================================================================================================================*/

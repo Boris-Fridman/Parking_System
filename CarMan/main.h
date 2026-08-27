@@ -1,16 +1,22 @@
 #ifndef ____main_h__
 #define ____main_h__
 
+/*======================================================================================================================*/
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include "CommonData.h"
 //#include <stdlib.h>
 
+/*======================================================================================================================*/
 
 #define MAIN_PROC_NAME     (char *)"Main    "     /* Main process name*/
 
+/*======================================================================================================================*/
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The enumeration containing the enumerated types of the additional processes.                                         */
 typedef enum ProcTypeID_e
  {
   PROC_I2C_E,
@@ -19,7 +25,8 @@ typedef enum ProcTypeID_e
   PROC_NUM_PROC_TYPES_E
  }ProcTypeID_e;
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The structure defining the interprocess shared memory for interructing between processes.                            */
 typedef struct TskContShmData_s
  {
   uint8_t exit_proc_flags;
@@ -27,9 +34,9 @@ typedef struct TskContShmData_s
  }TskContShmData_s;
 
 
+/*======================================================================================================================*/
 
-
-#endif    //  ____main_h__
+#endif    /*  ____main_h__  */
 
 
 

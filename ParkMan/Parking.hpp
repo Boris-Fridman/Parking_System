@@ -1,4 +1,7 @@
 #pragma once
+
+/*======================================================================================================================*/
+
 #include "CommonData.h"
 #include "main.hpp"
 
@@ -34,3 +37,5 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, 
 bool StringsAreEqual(std::string str1, std::string str2);
 void RemoveUnneededChars(std::string &StringToClear);
 void ReplaceSubStrings(std::string &StringToCorrect);
+
+/*======================================================================================================================*/

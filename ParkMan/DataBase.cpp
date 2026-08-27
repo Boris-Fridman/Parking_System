@@ -1,3 +1,6 @@
+
+/*======================================================================================================================*/
+
 #include "DataBase.hpp"
 #include "main.hpp"
 #include "Errors.hpp"
@@ -333,21 +336,6 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
   sem_post(p_shqs);
 //  std::cout << "The semaphore was given successfully. \n\r";
  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -1,3 +1,6 @@
+
+/*======================================================================================================================*/
+
 #include "Network.h"
 
 #include <stdio.h>
@@ -22,11 +25,19 @@
 
 #include "Configuration.h"
 
+
+/*======================================================================================================================*/
+
 #define QUEUE_NAME     "/network_queue"
 #define MAX_SIZE       1024
 
+/*======================================================================================================================*/
 
-
+/*
+ * *************************************************************************************************************
+ **          Functions / Procedures for internal usage.
+ * *************************************************************************************************************
+ */
 
 bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool AllwaysTermEnabled);
 void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *NetQ);
@@ -41,6 +52,16 @@ uint32_t GenParkWaitTime();
 void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Duration, bool ParkingStartEnd);
 
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Process-Executed Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Main Process' operating procedure.                                                                                   */
 void NetworkProc(ProcParams_s *ProcParams)
  {
   NetworkParams_s NetworkParams = {0};
@@ -55,7 +76,8 @@ void NetworkProc(ProcParams_s *ProcParams)
 
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Starts the network.                                                                                                  */
 bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool AllwaysTermEnabled)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -85,25 +107,6 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
   DestinPort = GetDestinPort();
 
   UseDHCP = GetUseDHCPState();
-  //DestIP = GetDestinAddr();
-  // DHCPName = GetDestinDHCPName();
-  // host = gethostbyname(DHCPName);
-
-  // memset(&hints, 0, sizeof(hints));
-  // hints.ai_family = AF_INET; // hints.ai_family = AF_UNSPEC;    // AF_UNSPEC allows both IPv4 and IPv6  
-  // hints.ai_socktype = SOCK_STREAM; // TCP stream sockets
-
-  // getaddrinfo(DHCPName, NULL, &hints, &res);
-  // struct sockaddr_in *ipv4 = (struct sockaddr_in *)res->ai_addr;
-  // void *addr;
-  // char ip_str[INET6_ADDRSTRLEN];
-  // addr = &(ipv4->sin_addr);
-  // inet_ntop(p->ai_family, addr, ip_str, sizeof(ip_str));
-  // printf("Found IP: %s\n", ip_str);
-  // char IP_Addr[20];
-  // inet_ntop(AF_INET, host->h_addr_list, IP_Addr, host->h_length);
-
-
 
   /* Configure the server address structure */
   memset(&NetPars->server_addr, 0, sizeof(NetPars->server_addr));
@@ -179,6 +182,8 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
   return true;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Send message to the network.                                                                                         */
 bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Data, size_t Len, CustAcknowledge_s *CustAckInfo_p)    /*  Send ▬▬▬▶ Network   ⸺▶    Wait for response   ⸺▶   Network ▬▬▬▶ Receive */
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -205,7 +210,6 @@ bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Dat
     snprintf(buf, sizeof(buf), "%sSend failed.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
     perror(buf);
     fprintf(stderr, "%serrno %d%s\n\r", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), errno, (StdErrNoPiping ? TermColorsReset : ""));
-    //EPIPE;
     LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_FAIL, ProcParams->ProcName, "Send failed."));
    }
   else
@@ -266,6 +270,8 @@ bool SendToNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, void *Dat
   return Result;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Main network process. Takes the messages from the queue and sends them to the network.                               */
 void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *NetQ)   /*  Queue  ▬▬▬▶ Network */
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -367,6 +373,8 @@ void DoNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, NetQueue_s *N
 
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Disconnects from the server if connected and closes the network.                                                     */
 void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, LogLevel_e LogLevel)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -389,7 +397,16 @@ void CloseNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, LogLevel_e
   // LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, "Disconnected from server."));
  }
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Log Messaging Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates the message about strt of parking and sends it to the log queue.                                             */
 void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, GPS_Cords_s *Cords)
  {
   char buffer[BUFFER_SIZE] = {0}, timebuf1[50], cordsbuf[50], pricebuf[30];
@@ -402,6 +419,8 @@ void LogStartOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo,
 
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates the message about end of parking and sends it to the log queue.                                              */
 void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, CustAcknowledge_s *LastCustAckInfo, GPS_Cords_s *Cords)
  {
   char buffer[BUFFER_SIZE] = {0}, timebuf1[50], timebuf2[50], durtimebuf[50], cordsbuf[50], pricebuf[30], acpricebuf[30];
@@ -421,18 +440,31 @@ void LogEnfOfParking(ProcParams_s *ProcParams, CustAcknowledge_s *CustAckInfo, C
   LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buffer));
  }
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Network Managing Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates the queue name for sending messages between I2C and Network processes.                                     */
 void GenerateNetQueueName(char Name[], size_t Size)
  {
   GenShQueName(QUEUE_NAME, Name, Size);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizes Network Queue.                                                                                            */
 void InitNetQueue(mqd_t *mq, QueueDirection_e SendReceive, char const QueueName[])
  {
   InitQueue(mq, SendReceive, QueueName, MAX_SIZE);
  }
 
-void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process ▬▬▬▶ Queue
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sends Message to the network queue for forwarding it then to the network.                                            */
+void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  /*  Process ▬▬▬▶ Queue  */
  {
   if (mq_send(NetQ->mq, Data, Len, 0) == -1)
    {
@@ -448,21 +480,37 @@ void SendMessageToNetwork(NetQueue_s *NetQ, void *Data, size_t Len)  //  Process
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Closes Network Queue.                                                                                                */
 void CloseNetQueue(mqd_t *mq, char const QueueName[])
  {
   CloseQueue(mq, QueueName);
  }
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Parking Controlling Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates a random parking time periode during which the client is connected and after which the cliend disconencts. */
 uint32_t GenParkTime()
  {
   return GenRandNumber(MIN_PARK_TIME, GetMaxParkTime());
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates a random pause periode between parkings after which the client reconnects to start a new parking.          */
 uint32_t GenParkWaitTime()
  {
   return GenRandNumber(MIN_PARK_WAIT_TIME, GetMaxParkWaitTime());
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generates parking summary message containing the start, end and duration of the parking.                             */
 void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Duration, bool ParkingStartEnd)
  {
   char timebuf1[100], timebuf2[100], timebuf3[100];
@@ -476,7 +524,7 @@ void GenParkMessage(char Buffer[], size_t NumBytes, time_t StartTime, time_t Dur
    snprintf(Buffer, NumBytes, "The parking started at: %s and will be finished at %s after %s", timebuf1, timebuf2, timebuf3);
   else
    snprintf(Buffer, NumBytes, "The parking finished at: %s and will be started at %s after %s", timebuf1, timebuf2, timebuf3);
-
  }
 
 
+/*======================================================================================================================*/

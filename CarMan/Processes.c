@@ -12,20 +12,39 @@
 
 #include "Network.h"
 
+
+/*======================================================================================================================*/
+
 #define LOG_QUEUE_NAME     "/car_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Functions / Procedures for internal usage.
+ * *************************************************************************************************************
+ */
 
 void *LogThread(void *Args);
 void CheckLogMessageExistance(LogData_s *LogData);
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Process controlling flags Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sets flag's state to given value in the flags' structure according to given flag no.                                 */
 void set_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno, bool state)
  {
   TskContShmData->exit_proc_flags = ((TskContShmData->exit_proc_flags & (~(0x01 << flagno))) | (state << flagno));
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Reads flag's state value in the flags' structure according to given flag no.                                         */
 bool get_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno)
  {
   return ((TskContShmData->exit_proc_flags >> flagno) & 0x01);
@@ -35,9 +54,15 @@ bool get_flag(TskContShmData_s *TskContShmData, ProcTypeID_e flagno)
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Process controlling Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-
-pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, char sem_name[], char sh_que_name[], char qsem_name[])
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Opens a new process.                                                                                                 */
+pid_t OpenProcess(SubProcess_t ProcToOpen, char ProcName[], key_t sh_mem_key, char msem_name[], char sh_que_name[], char qsem_name[])
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -51,9 +76,6 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
        char buf[50];
        snprintf(buf, sizeof(buf),"%sfork error.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
        perror(buf);
-      //  fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      //  perror("fork error.");
-      //  fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
        exit(EXIT_FAILURE);
       }
      break;
@@ -63,7 +85,7 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
       {
        SlaveShMem_s TskContShms = { 0 };
        SlaveShQue_s TskContShqs = { 0 };
-       InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, sem_name, sh_que_name, qsem_name);
+       InitProcessing(&TskContShms, &TskContShqs, sh_mem_key, msem_name, sh_que_name, qsem_name);
        ProcParams_s ProcParams = {.ProcName = ProcName, .TskContShms = {.p_shm = TskContShms.p_shm, .p_shs = TskContShms.p_shs}, .TskContShqs = {.mq = TskContShqs.mq, .p_shs = TskContShqs.p_shs }};
        LogEvent(&ProcParams.TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcName, "Starting Process..."));
        ProcToOpen(&ProcParams);
@@ -86,7 +108,15 @@ pid_t OpenProcess(subprocess_t ProcToOpen, char ProcName[], key_t sh_mem_key, ch
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Shared memory, queue and semaphores Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared memory key not existing yet in the operating system                                       */
+/* and creates a shared memory with the generated key.                                                                  */
 void GenShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size)
  {
   do
@@ -99,6 +129,9 @@ void GenShMemKeyID(key_t *sh_mem_key, int *sh_mem_id, void **p_shm, size_t size)
   *p_shm = shmat(*sh_mem_id, NULL, 0);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared semaphore key not existing yet in the operating system                                    */
+/* and creates a shered semaphore with the generated key.                                                               */
 void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
  {
   do
@@ -110,6 +143,9 @@ void GenShSemKeyID(key_t *sh_sem_key, char sem_name[], sem_t **p_shs)
   while (*p_shs == SEM_FAILED);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared queue name not existing yet in the operating system                                       */
+/* and creates a shered queue with the generated name.                                                                  */
 void GenShQueName(char const basic_name[], char que_name[], size_t MaxSize)
  {
   char tempstrg[PATH_LEN];
@@ -128,8 +164,8 @@ void GenShQueName(char const basic_name[], char que_name[], size_t MaxSize)
   while (stat(tempstrg, &st) == 0);
  }
 
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Activate shared memory including its semaphore from the master side thats means with creation.                       */
 void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size)
  {
   GenShMemKeyID(&MasterShMem->sh_mem_key, &MasterShMem->sh_mem_id, &MasterShMem->p_shm, size);
@@ -137,21 +173,23 @@ void ActivateMasterShMem(MasterShMem_s *MasterShMem, int size)
   sem_post(MasterShMem->p_shs);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deactivates shared memory including its semaphore from the master side.                                              */
 void DeactivateMasterShMem(MasterShMem_s *MasterShMem)
  {
-  shmdt(MasterShMem->p_shm);  // Detach
+  shmdt(MasterShMem->p_shm);  /* Detach */
   shmctl(MasterShMem->sh_mem_id, IPC_RMID, NULL); /* Shared memory control */
   sem_unlink(MasterShMem->sem_name);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Activate shared memory including its semaphore from the slave side thats means with connection.                      */
 void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char sem_name[], int size)
  {
-  
   SlaveShMem->sh_mem_id = shmget(sh_mem_key, size, 0666);
   if(SlaveShMem->sh_mem_id == -1)
    {
     perror(" process: Error in shared memory.\n\r");
-    // error_in_creation = true;
     return;
    }
 
@@ -159,19 +197,21 @@ void ActivateSlaveShMem(SlaveShMem_s *SlaveShMem, key_t sh_mem_key, const char s
   if(SlaveShMem->p_shs == SEM_FAILED)
    {
     perror(" process: Error in shared memory semaphore.\n\r");
-    // error_in_creation = true;
     return;
    }
   SlaveShMem->p_shm = shmat(SlaveShMem->sh_mem_id, NULL, 0);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deactivates shared memory including its semaphore from the slave side.                                               */
 void DeactivateSlaveShMem(SlaveShMem_s *SlaveShMem)
  {
   if(SlaveShMem->p_shm != NULL)
    shmdt(SlaveShMem->p_shm);
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Activates shared queue including its semaphore from the master side thats means with creation.                       */
 void ActivateMasterShQue(MasterShQue_s *MasterShQue, QueueDirection_e const SendReceive, char const basic_name[], long int msg_size)
  {
   GenShQueName(basic_name, MasterShQue->sq_name, sizeof(MasterShQue->sq_name));
@@ -180,13 +220,16 @@ void ActivateMasterShQue(MasterShQue_s *MasterShQue, QueueDirection_e const Send
   sem_post(MasterShQue->p_shs);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deactivates shared queue including its semaphore from the master side.                                               */
 void DeactivateMasterShQue(MasterShQue_s *MasterShQue)
  {
   CloseQueue(&MasterShQue->mq, MasterShQue->sq_name);
   sem_unlink(MasterShQue->sem_name);
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Activate shared queue including its semaphore from the slave side thats means with connection.                       */
 void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, char sh_que_name[], char qsem_name[], QueueDirection_e const SendReceive, long int const msg_size)
  {
   strncpy(SlaveShQue->sq_name, sh_que_name, sizeof(SlaveShQue->sq_name) - 1);
@@ -196,11 +239,12 @@ void ActivateSlaveShQue(SlaveShQue_s *SlaveShQue, char sh_que_name[], char qsem_
   if(SlaveShQue->p_shs == SEM_FAILED)
    {
     perror(" process: Error in shared memory semaphore.\n\r");
-    // error_in_creation = true;
     return;
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deactivates shared queue including its semaphore from the slave side.                                                */
 void DeactivateSlaveShQue(SlaveShQue_s *SlaveShQue)
  {
   CloseQueue(&SlaveShQue->mq, SlaveShQue->sq_name);
@@ -208,15 +252,16 @@ void DeactivateSlaveShQue(SlaveShQue_s *SlaveShQue)
 
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizes shared queue from master or slave side to sending or receiving accroding requirements.                    */
 void InitQueue(mqd_t *mq, QueueDirection_e const SendReceive, char const que_name[], long int const msg_size)
  {
   struct mq_attr attr;
 
   /* Define queue attributes */
   attr.mq_flags = 0;
-  attr.mq_maxmsg = 10;        // Maximum messages in queue
-  attr.mq_msgsize = msg_size; // Maximum size of any message
+  attr.mq_maxmsg = 10;         /* Maximum messages in queue    */
+  attr.mq_msgsize = msg_size;  /* Maximum size of any message  */
   attr.mq_curmsgs = 0;
   /* Create and open the queue for writing */
   switch(SendReceive)
@@ -241,6 +286,8 @@ void InitQueue(mqd_t *mq, QueueDirection_e const SendReceive, char const que_nam
 
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Closes shared queue from master or slave side.                                                                       */
 void CloseQueue(mqd_t *mq, char const que_name[])
  {
   mq_close(*mq);
@@ -248,6 +295,16 @@ void CloseQueue(mqd_t *mq, char const que_name[])
  }
 
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Process managing Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizes process managing.                                                                                         */
 void InitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData)
  {
   ActivateMasterShMem(TskContShms, sizeof(TskContShmData_s));
@@ -258,18 +315,22 @@ void InitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogDat
   memset((void*)&LogData->LogParams, 0, sizeof(LogData->LogParams));
   LogData->p_sq = &TskContShqs->mq;
   LogData->Exit = false;
-  pthread_create(&LogData->LogTHread, NULL, LogThread, LogData);
+  pthread_create(&LogData->LogThread, NULL, LogThread, LogData);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deinitilizes process managing.                                                                                       */
 void DeinitManaging(MasterShMem_s *TskContShms, MasterShQue_s *TskContShqs, LogData_s *LogData)
  {
   LogData->Exit = true;
-  pthread_join(LogData->LogTHread, NULL);
+  pthread_join(LogData->LogThread, NULL);
 
   DeactivateMasterShQue(TskContShqs);
   DeactivateMasterShMem(TskContShms);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The procedure defining the logging thread that receives messages from the logging queue and writes them to the file. */
 void *LogThread(void *Args)
  {
   if(Args != NULL)
@@ -284,19 +345,41 @@ void *LogThread(void *Args)
   return NULL;
  }
 
-void InitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs, key_t sh_mem_key, const char sem_name[], char sh_que_name[], char qsem_name[])
+
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Process controlling parameters Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizes the required data from processes' side.                                                                   */
+void InitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs, key_t sh_mem_key, const char msem_name[], char sh_que_name[], char qsem_name[])
  {
-  ActivateSlaveShMem(TskContShms, sh_mem_key, sem_name, sizeof(TskContShmData_s));
+  ActivateSlaveShMem(TskContShms, sh_mem_key, msem_name, sizeof(TskContShmData_s));
   ActivateSlaveShQue(TskContShqs, sh_que_name, qsem_name, QUEUE_SEND_E, sizeof(LogMessType_s));
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deinitilizes the required data from processes' side.                                                                 */
 void DeinitProcessing(SlaveShMem_s *TskContShms, SlaveShQue_s *TskContShqs)
  {
   DeactivateSlaveShMem(TskContShms);
   DeactivateSlaveShQue(TskContShqs);
  }
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Logging Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks the logging message existance in the logging queue.                                                           */
 void CheckLogMessageExistance(LogData_s *LogData)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -325,8 +408,8 @@ void CheckLogMessageExistance(LogData_s *LogData)
    }  
  }
 
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Receives the logging information from processes and sends it to the logging queue.                                   */
 void LogEvent(LogSQBriefParams_s *LogQueueParams, LogMessType_s MessageToLog)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -343,8 +426,11 @@ void LogEvent(LogSQBriefParams_s *LogQueueParams, LogMessType_s MessageToLog)
    } 
   else 
    {
-    //std::cout << "Message sent successfully. " << Len << " bytes sent." << "\n\r";
+    //printf("Message sent successfully. %d bytes sent.\n\r", Len);
    }
   sem_post(LogQueueParams->p_shs);
 
  }
+
+
+/*======================================================================================================================*/

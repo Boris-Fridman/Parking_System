@@ -1,6 +1,6 @@
 #include "Errors.hpp"
 
-
+/*======================================================================================================================*/
 
 /*Capture errno right at creation before any stream operations change it */
 ErrorStreamWrapper_c::ErrorStreamWrapper_c() 
@@ -49,4 +49,4 @@ ErrorStreamWrapper_c perr()
   return ErrorStreamWrapper_c();
  }
 
-
+/*======================================================================================================================*/
