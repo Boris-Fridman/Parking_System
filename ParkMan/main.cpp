@@ -37,13 +37,17 @@
 
 #include "Configuration.hpp"
 
-
+/*======================================================================================================================*/
 
 #define SIGNAL_TO_TERMINATE   SIGINT
 
+/*======================================================================================================================*/
 
-
-
+/*
+ * *************************************************************************************************************
+ **          Functions / Procedures for internal usage.
+ * *************************************************************************************************************
+ */
 
 void CatchChildZombie(ProcMan_c *TaskControl = nullptr);
 void WaitUntilFinised();
@@ -158,10 +162,16 @@ int main(int const argc, char const *argv[])
 
 
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Process-Analizing Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-
-/* Catching Zombie-Child-Processes and removing them. */ 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Catching Zombie-Child-Processes and removing them.                                                                   */ 
 void CatchChildZombie(ProcMan_c *TaskControl)
  {
   //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -184,6 +194,8 @@ void CatchChildZombie(ProcMan_c *TaskControl)
   } while (w > 0);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Waiting processes untill they finish befor exitting the main process.                                                */
 void WaitUntilFinised()
  {
   int w;
@@ -211,6 +223,16 @@ void WaitUntilFinised()
 
  }
 
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Process-Analizing Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates file and writes there the PID of this running min process.                                                   */
 void CreatePIDFile(char FileName[], size_t MaxSize)
  {
   int pid;
@@ -227,13 +249,24 @@ void CreatePIDFile(char FileName[], size_t MaxSize)
 
  }
 
-void RemovePIDFile(char const FileName[])
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes the file with PID created on previously on start by "CreatePIDFile()" before exitting.                       */
+ void RemovePIDFile(char const FileName[])
  {
   remove(FileName);
  }
 
 
-/* Custom callback executed when signal arrives */
+/*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Signal processing Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Custom callback executed when signal arrives.                                                                        */
 void AdvancedSignalHandler(int sig, siginfo_t *info, void *context) 
  {
   UNUSED(context);
@@ -259,6 +292,8 @@ void AdvancedSignalHandler(int sig, siginfo_t *info, void *context)
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Enables the selected signals that are processed by the signal handler.                                               */
 void EnableSignals()
  {
   struct sigaction sa;

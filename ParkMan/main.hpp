@@ -7,12 +7,16 @@
 #include <string>
 #include "CommonData.h"
 
+/*======================================================================================================================*/
 
 #define MAIN_PROC_NAME     (char *)"Main    "     /* Main process name*/
 
 #define TSK_CONT_SH_MEM_SIZE     (sizeof(TskContShmData_s))
 
+/*======================================================================================================================*/
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The enumeration containing the enumerated types of the additional processes.                                         */
 enum ProcTypeID_e
  {
   PROC_DATABASE_E,
@@ -23,6 +27,8 @@ enum ProcTypeID_e
   PROC_NUM_PROC_TYPES_E
  };
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The structure containing the parameters for database interracting.                                                   */
 struct ControlDBPrice_s
  { 
   key_t CitiesNewShmKey = 0;
@@ -36,7 +42,8 @@ struct ControlDBPrice_s
   std::string SHPFileName = ""; /* File name including path to shapefile containing inforamtion aout border of the cities. */
  };
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The structure defining the interprocess shared memory for interructing between processes.                            */
 struct TskContShmData_s
  {
   ControlDBPrice_s ControlDBPriceShMem = {0};

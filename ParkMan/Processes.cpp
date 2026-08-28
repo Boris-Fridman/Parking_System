@@ -17,12 +17,20 @@
 #include "Configuration.hpp"
 #include "Logging.h"
 
+/*======================================================================================================================*/
 
 #define LOG_QUEUE_NAME     "/park_pr_lg_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          ShSemMem_c class Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization the shared memory from the master side.                                               */
 ShSemMem_c::ShSemMem_c(size_t size)
  :created(true), ShMnc(false), ShSnc(false)
  {
@@ -30,6 +38,8 @@ ShSemMem_c::ShSemMem_c(size_t size)
   LoadShs();
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization the shared memory from the slave side.                                                */
 ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
  :created(false), ShMnc(false), ShSnc(false)
  {
@@ -39,23 +49,30 @@ ShSemMem_c::ShSemMem_c(key_t sh_mem_key, const char sem_name[], size_t size)
   LoadShs();
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Destructor for deinitialization the shared memory.                                                                   */
 ShSemMem_c::~ShSemMem_c()
  {
   RemoveShm();
   RemoveShs();
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the shared memory key containing in the class.                                                               */
 key_t ShSemMem_c::ShMemKey()
  {
   return sh_mem_key;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the shared-memory-semaphore-name containgint in this class.                                                  */
 std::string &ShSemMem_c::SemName()
  {
   return sem_name;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads the shared memory.                                                                                             */
 void ShSemMem_c::LoadShm(size_t size)
  {
   if(size)
@@ -75,6 +92,8 @@ void ShSemMem_c::LoadShm(size_t size)
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads the shared-memory-safety-semaphore.                                                                            */
 void ShSemMem_c::LoadShs()
  {
   if(created)  /* "Master" Side */
@@ -93,6 +112,8 @@ void ShSemMem_c::LoadShs()
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes the shared memory.                                                                                           */
 void ShSemMem_c::RemoveShm()
  {
   if(p_shm != nullptr)
@@ -106,6 +127,8 @@ void ShSemMem_c::RemoveShm()
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes the shared-memory-safety-semaphore.                                                                          */
 void ShSemMem_c::RemoveShs()
  {
   if(created)
@@ -120,13 +143,16 @@ void ShSemMem_c::RemoveShs()
 
 
 
-
-
-
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          ShSemMemQue_c class Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization the shared memory-queue from the master side.                                               */
 ShSemMemQue_c::ShSemMemQue_c(size_t shmem_size, QueueDirection_e queue_direction, std::string queu_basic_name, size_t shque_size)
  :ShSemMem_c(shmem_size)
  {
@@ -134,7 +160,8 @@ ShSemMemQue_c::ShSemMemQue_c(size_t shmem_size, QueueDirection_e queue_direction
   LoadShqs();
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization the shared memory-queue from the slave side.                                          */
 ShSemMemQue_c::ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, size_t shmem_size, QueueDirection_e queue_direction, size_t shque_size)
  :ShSemMem_c(sh_mem_key, sem_name, shmem_size)
  {
@@ -144,7 +171,8 @@ ShSemMemQue_c::ShSemMemQue_c(key_t sh_mem_key, const char sem_name[], std::strin
   LoadShqs();
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Destructor for deinitialization the shared memory-queue.                                                             */
 ShSemMemQue_c::~ShSemMemQue_c()
  {
   RemoveShq();
@@ -154,7 +182,8 @@ ShSemMemQue_c::~ShSemMemQue_c()
 
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loades the shared queue.                                                                                             */
 void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basic_name, size_t size)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -198,7 +227,8 @@ void ShSemMemQue_c::LoadShq(QueueDirection_e SendReceive, std::string const basi
    }
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads the shared-queue-safety-semaphore.                                                                             */
 void ShSemMemQue_c::LoadShqs()
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -222,7 +252,8 @@ void ShSemMemQue_c::LoadShqs()
   sem_post(p_shqs);
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes the shared queue.                                                                                            */
 void ShSemMemQue_c::RemoveShq()
  {
   if(created)  /* "Master" Side */
@@ -235,7 +266,8 @@ void ShSemMemQue_c::RemoveShq()
   mq_unlink(sq_name.c_str()); /* Removes queue from system completely */
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes the shared-queue-safety-semaphore.                                                                           */
 void ShSemMemQue_c::RemoveShqs()
  {
   if(created)  /* "Master" Side */
@@ -247,12 +279,15 @@ void ShSemMemQue_c::RemoveShqs()
    }
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the shared queue name containing in the class.                                                               */
 std::string &ShSemMemQue_c::QueueName()
  {
   return sq_name;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the shared-queue-semaphore-name containing in the class.                                                     */
 std::string &ShSemMemQue_c::QSemName()
  {
   return qsem_name;
@@ -264,26 +299,32 @@ std::string &ShSemMemQue_c::QSemName()
 
 
 
-
-
-
-
-
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          TaskControl_ShSM_c class Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization of the task class from the master side.                                               */
 TaskControl_ShSM_c::TaskControl_ShSM_c()
  :ShSemMemQue_c(sizeof(TskContShmData_s), QUEUE_SEND_RECEIVE_E, LOG_QUEUE_NAME, sizeof(LogMessType_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initialization of the task class from the skave side.                                                */
 TaskControl_ShSM_c::TaskControl_ShSM_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name)
  :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, sizeof(TskContShmData_s), QUEUE_SEND_E,  sizeof(LogMessType_s))
  {
   ((TskContShmData_s*)p_shm)->exit_proc_flags = 0;
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The command for exitting the given process.                                                                        */
 void TaskControl_ShSM_c::ExitProcess(ProcTypeID_e ProcToExit)
  {
   sem_wait(p_shs);
@@ -291,6 +332,8 @@ void TaskControl_ShSM_c::ExitProcess(ProcTypeID_e ProcToExit)
   sem_post(p_shs);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Command for exitting all processes.                                                                                  */
 void TaskControl_ShSM_c::ExitAllProcesses()
  {
   int i;
@@ -300,31 +343,43 @@ void TaskControl_ShSM_c::ExitAllProcesses()
   sem_post(p_shs);
  } 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Function for checking the flag of the process according the given type if it must exit.                              */
 bool TaskControl_ShSM_c::ProcessMustExit(ProcTypeID_e ProcToExit)
  {
   return ((TskContShmData_s*)p_shm)->get_flag(ProcToExit);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sets the path and name of the database file in the class.                                                            */
 void TaskControl_ShSM_c::SetDBFileName(std::string NameToSet)
  {
   ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName = NameToSet;
  }
-       
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the path and name of the atabase file written in the class.                                                  */
 std::string &TaskControl_ShSM_c::GetDBFileName()
  {
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.DBFileName;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sets the path and name to the shape file in the class.                                                               */
 void TaskControl_ShSM_c::SetSHPFileName(std::string NameToSet)
  {
   ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName = NameToSet;
  }
-       
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the path and name of the shape file witten in the class.                                                     */
 std::string &TaskControl_ShSM_c::GetSHPFileName()
  {
   return ((TskContShmData_s*)p_shm)->ControlDBPriceShMem.SHPFileName;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives command to update the database loaded in the shared memory from the master side.                               */
 void TaskControl_ShSM_c::ReloadDatabase()
  {
   sem_wait(p_shs);
@@ -332,6 +387,8 @@ void TaskControl_ShSM_c::ReloadDatabase()
   sem_post(p_shs);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks if the database must be reloaded from the slave side.                                                         */
 bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
  {
   bool Result;
@@ -368,6 +425,8 @@ bool TaskControl_ShSM_c::DataBaseMustBeReloaded()
   return false;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Receives the logging information from processes and sends it to the logging queue.                                   */
 void TaskControl_ShSM_c::LogEvent(LogMessType_s MessageToLog)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -393,10 +452,15 @@ void TaskControl_ShSM_c::LogEvent(LogMessType_s MessageToLog)
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Process controlling Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Opens a new process.                                                                                                 */
-pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl)
+pid_t OpenProcess(SubProcess_t ProcToOpen, ProcParams_s Procparams, char ProcName[], ProcMan_c *TaskControl)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -414,49 +478,32 @@ pid_t OpenProcess(subprocess_t ProcToOpen, ProcParams_s Procparams, char ProcNam
    {
     case -1: /* Error */
       perr() << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "fork error." << (StdErrNoPiping ? TermColorsReset : "");
-      // fprintf(stderr, "%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""));
-      // perror("fork error.");
-      // fprintf(stderr, "%s", (StdErrNoPiping ? TermColorsReset : ""));
       exit(EXIT_FAILURE);
      break;
     case 0:  /* Child */
       proc_pid = getpid();
       std::cout << "Starting new process: " << (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") << "  PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-      // printf("Starting new process: %s%s%s  PID: %s%d%s\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""), proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       ProcToOpen(Procparams.sh_mem_key, Procparams.sem_name, Procparams.sq_name, Procparams.qsem_name, Procparams.ProcType);
       std::cout << "The process " <<  (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") <<" with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") << " finished running.\n\r";
-      // printf("The process %s%s%s with PID: %s%d%s finished running.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       exit(EXIT_SUCCESS);
      break;
     default: /* Parent */
       std::cout << "The new " << (StdOutNoPiping ? PROC_NAME_COLOR : "") << ProcName << (StdOutNoPiping ? TermColorsReset : "") << " process with PID: " << (StdOutNoPiping ? PROC_PID_COLOR : "") << proc_pid << (StdOutNoPiping ? TermColorsReset : "") <<" started.\n\r";
-      // printf("The new %s%s%s process with PID: %s%d%s started.\n\r", (StdOutNoPiping ? PROC_NAME_COLOR : ""),ProcName, (StdOutNoPiping ? TermColorsReset : ""), (StdOutNoPiping ? PROC_PID_COLOR : ""),proc_pid, (StdOutNoPiping ? TermColorsReset : ""));
       return proc_pid;
      break;
    }
  }
 
-
 /*======================================================================================================================*/
 
-void *Thread(void *attr)
- {
-  UNUSED(attr);
-  return nullptr;
- }
-void OpenThread()
- {
-  pthread_t ThreadID;
-  TaskControl_ShSM_c ThreadParams;
-  //pthread_attr_t Attr;
-  pthread_create(&ThreadID, nullptr, Thread, (void*)&ThreadParams);
- }
+/*
+ * *************************************************************************************************************
+ **          Process_c class Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
-
-
-
-/*======================================================================================================================*/
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initilizing the "Process" class.                                                                     */
 Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
     : TaskControl_ShSM_c(sh_mem_key, sem_name, sq_name, qsem_name), proc_type(ProcType), proc_name(ProcName), exit_required(false), error_in_creation(false)
  {
@@ -468,6 +515,8 @@ Process_c::Process_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   LogEvent(MessageToLog);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Destructor for deinitilizing the "Process" class.                                                                    */
 Process_c::~Process_c()
  {
   LogMessType_s MessageToLog;
@@ -479,6 +528,7 @@ Process_c::~Process_c()
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* Breaks the default loop existing in the RunProcess. */
 void Process_c::MakeExit()
  { 
@@ -486,7 +536,7 @@ void Process_c::MakeExit()
  }
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* This procedure contains main loop with exit condition where is running the "OnRunProcess()" procedure, but can be overwritten according to requirements. */
 void Process_c::RunProcess()
  {
@@ -499,6 +549,7 @@ void Process_c::RunProcess()
   OnFinishProcess();
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* This procedure is empty and runs before starting running the process for any initializations. */ 
 void Process_c::OnStartProcess()     
  {
@@ -506,19 +557,21 @@ void Process_c::OnStartProcess()
  }
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* This procedure contains the 1 second sleep and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */
 void Process_c::OnRunProcess()
  {
   sleep(1);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* This procedure is empty and runs after finishing running the process for any deinitializations. */ 
 void Process_c::OnFinishProcess()    
  {
 
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
 /* This procedure contains the exit checking conditions and runs in the loop of the "RunProcess()" procedure, but can be overwritten. */ 
 void Process_c::CheckExitStatus()
  {
@@ -526,7 +579,8 @@ void Process_c::CheckExitStatus()
   exit_required |= (getppid() == 1);            // Checking if the parent process is running. If not enables exit.
  }   
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the name of process stored in the class.                                                                     */
 std::string &Process_c::GetProcName()
  {
   return proc_name;
@@ -534,7 +588,15 @@ std::string &Process_c::GetProcName()
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Shared memory, queue and semaphores Functions / Procedures.
+ * *************************************************************************************************************
+ */
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared memory key not existing yet in the operating system                                       */
+/* and creates a shared memory with the generated key.                                                                  */
 void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
  {
   do
@@ -547,6 +609,9 @@ void GenShMemKeyID(key_t &sh_mem_key, int &sh_mem_id, void *&p_shm, size_t size)
   p_shm = shmat(sh_mem_id, nullptr, 0);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared semaphore key not existing yet in the operating system                                    */
+/* and creates a shered semaphore with the generated key.                                                               */
 void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)
  {
   do
@@ -562,6 +627,9 @@ void GenShSemKeyID(key_t &sh_sem_key, std::string &sem_name, sem_t *&p_shs)
   while (p_shs == SEM_FAILED);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Generatesa a unique shared queue name not existing yet in the operating system                                       */
+/* and creates a shered queue with the generated name.                                                                  */
 void GenShQueName(std::string const &basic_name, std::string &que_name)
  {
   std::string RandSoufix;
@@ -581,6 +649,14 @@ void GenShQueName(std::string const &basic_name, std::string &que_name)
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          ProcMan_c class Functions / Procedures.
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Constructor for initilizing the "ProcMan_c" class.                                                                   */
 ProcMan_c::ProcMan_c()
   :TaskControl_ShSM_c(), LogParams({false, nullptr, {0}, '\t'})
  {
@@ -588,7 +664,8 @@ ProcMan_c::ProcMan_c()
   LoadLogThread();
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Destructor for deinitilizing the "ProcMan_c" class.                                                                  */
 ProcMan_c::~ProcMan_c()
  {
   CloseLogThread();
@@ -597,25 +674,30 @@ ProcMan_c::~ProcMan_c()
 
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Creates the logging thread that creceives log messages from queue.                                                   */
 void ProcMan_c::LoadLogThread()
  {
   pthread_create(&LogTHread, nullptr, ProcMan_c::StatLogThread, this);
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sets exit flag to "true" value letting the logging thread to exit.                                                   */
 void ProcMan_c::CloseLogThread()
  {
   Exit = true;
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Starts logging thread.                                                                                               */
 void *ProcMan_c::StatLogThread(void *Args)
  {
   ProcMan_c *instance = static_cast<ProcMan_c *>(Args);
   return instance->LogThread(Args);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The procedure defining the logging thread that receives messages from the logging queue and writes them to the file. */
 void *ProcMan_c::LogThread(void *Args)
  {
   UNUSED(Args);
@@ -629,7 +711,8 @@ void *ProcMan_c::LogThread(void *Args)
   return nullptr;
  }
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks the logging message existance in the logging queue.                                                           */
 void ProcMan_c::CheckLogMessageExistance()
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
