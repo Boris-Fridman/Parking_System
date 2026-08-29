@@ -9,17 +9,20 @@
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Error printing class. Equivalent to "perror()" in C.
+ * *************************************************************************************************************
+ */
+
 class ErrorStreamWrapper_c
  {
   private:
-    std::ostringstream buffer; /* Accumulates your message components */
-    int saved_errno;     /* Captures errno immediately when created */
+    std::ostringstream buffer; /* Accumulates your message components                                       */
+    int saved_errno;           /* Captures errno immediately when created                                   */
   public:
-    /*Capture errno right at creation before any stream operations change it */
-    ErrorStreamWrapper_c();
-
-    /* Destructor executes at the end of the statement, printing everything out */
-    ~ErrorStreamWrapper_c();
+    ErrorStreamWrapper_c();    /* Capture errno right at creation before any stream operations change it.   */
+    ~ErrorStreamWrapper_c();   /* Destructor executes at the end of the statement, printing everything out. */
 
 template <typename T>
    ErrorStreamWrapper_c& operator <<(const T& msg)
@@ -34,7 +37,15 @@ template <typename T>
  };
 
 
-/* A helper to easily create the temporary stream object */
+/*======================================================================================================================*/
+
+/**
+ * @brief A helper to easily create the temporary stream object.
+ * 
+ * @code
+ * ErrorStreamWrapper_c perr();
+ * @code
+ */
 ErrorStreamWrapper_c perr();
 
 /*======================================================================================================================*/

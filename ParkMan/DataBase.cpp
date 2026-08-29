@@ -17,33 +17,41 @@
 
 #include "Logging.h"
 
+/*======================================================================================================================*/
+
 #define QUEUE_NAME     "/park_pr_db_q"   /* Attention !!!  The length mustn't exceed the strlen("NAME_LEN") - 12 definition size because in some stractures this name is stored in limited-length-char-array and to the end of this name is added a 10-digit number. */ //"/parkprice" //"/park_price"  //"/park_price_database_queue"
 
-
 /*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          The class defining object controlling the DataBase Process.
+ * *************************************************************************************************************
+ */
 
 class DataBase_c: public Process_c
  {
     DBShmemPriceData_c *DBShmemPriceData = nullptr;
     sqlite3 *conn = nullptr;
   public:
-    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
-    virtual ~DataBase_c();
+    DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);  /* Initilizing constructor of the DataBase Object.                                                                      */
+    virtual ~DataBase_c();                                                                                                                    /* Deinitilizing destructor of the DataBase Object.                                                                     */
   protected:
-    virtual void OnStartProcess();
-    virtual void OnRunProcess();
-    virtual void OnFinishProcess();
+    virtual void OnStartProcess();                                                                                                            /* Runs on starting of process.                                                                                         */
+    virtual void OnRunProcess();                                                                                                              /* Runs during process running. Checks if the DataBase in the shared memory or the cieites ' DataBase must be updated.  */
+    virtual void OnFinishProcess();                                                                                                           /* Runs just before finishing process.                                                                                  */
   public:
     DataBase_c& operator = (const DataBase_c &other) = delete;
     DataBase_c(const DataBase_c &other) = delete;
   protected:
-    void LoadDataBase();
+    void LoadDataBase();                                                                                                                      /* Loads the pricelist of the cities' parkings from the given DataBase File.                                            */
  };
 
- //ProcParams_s Procparams
-void DataBaseProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Main Process' operating procedure.                                                                                   */
+void DataBaseProc(key_t sh_mem_key, const char msem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  {
-  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, sem_name, sq_name, qsem_name, ProcType);
+  DataBase_c DB_Process(DB_PROC_NAME, sh_mem_key, msem_name, sq_name, qsem_name, ProcType);
   DB_Process.RunProcess();
  }
 
@@ -51,6 +59,8 @@ void DataBaseProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, 
 
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs on starting of process.                                                                                         */
 void DataBase_c::OnStartProcess()
  {
   LogMessType_s MessageToLog;
@@ -63,6 +73,8 @@ void DataBase_c::OnStartProcess()
   LoadDataBase();
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs during process running. Checks if the DataBase in the shared memory or the cieites ' DataBase must be updated.  */
 void DataBase_c::OnRunProcess()
  {
   Process_c::OnRunProcess();
@@ -82,18 +94,24 @@ void DataBase_c::OnRunProcess()
   
  };
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs just before finishing process.                                                                                  */
 void DataBase_c::OnFinishProcess()
  {
   delete DBShmemPriceData;
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizing constructor of the DataBase Object.                                                                      */
 DataBase_c::DataBase_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  :Process_c(ProcName, sh_mem_key, sem_name, sq_name, qsem_name, ProcType)
  {
   
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deinitilizing destructor of the DataBase Object.                                                                     */
 DataBase_c::~DataBase_c()
  {
 
@@ -101,9 +119,8 @@ DataBase_c::~DataBase_c()
 
 
 
-
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads the pricelist of the cities' parkings from the given DataBase File.                                            */
 void DataBase_c::LoadDataBase()
  {
   std::string DBFileName;
@@ -155,6 +172,12 @@ void DataBase_c::LoadDataBase()
 
  }
 
+
+/*======================================================================================================================*/
+
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks exeistance of the client-parking-update-message exists in the queue.                                          */
 void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -170,7 +193,6 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
    }
   
   ssize_t bytes_read = mq_timedreceive(p_sq, (char*)&ClientQueueMsg, sizeof(ClientQueueMsg_s), &prio, &ts);
-  //std::cout << "Num queue received bytes " << bytes_read << "\n\r";
   if(bytes_read >= 0)
    {
     ConvertPrice(ClientQueueMsg.AccumulatedPrice, buffer, sizeof(buffer), E_ACC_FORMAT, StdOutNoPiping);
@@ -180,6 +202,8 @@ void DBShmemPriceData_c::CheckMessageExistance(sqlite3 **conn)
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Updates the parking session of a specific client: The EndTime, ParkingDuration and the Price in the DataBase File.   */
 void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMsg_s &ClientQueueMsg)
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -194,7 +218,7 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
 
 
   CreateVehIDFormated(vehidbuf, sizeof(vehidbuf), ClientQueueMsg.Vechicle_ID, StdOutNoPiping);
-  CreateLoadDatabase(conn); // Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function.
+  CreateLoadDatabase(conn); /* Yes, the given pointer to database must be given as pointer to pointer to database because it's address is updated in this function. */
   result = UpdateParkSessionInDataBase(conn, ClientQueueMsg);
   if(result == 0)  /* The reqauired parking session allready exists in database. */
    {
@@ -203,7 +227,6 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
     char old_fill = std::cout.fill();
 
     
-    //ConvertPrice(ClientQueueMsg.AccumulatedPrice, pricebuf, sizeof(pricebuf), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking session of "<< ClientQueueMsg.Customer_Name << " " << vehidbuf << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " was already existing. Were updated only time and price." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
     ConvertPrice(ClientQueueMsg.AccumulatedPrice, pricebuf, sizeof(pricebuf), E_ACC_FORMAT, StdOutNoPiping);
     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "The parking price was updated to: " << pricebuf << "." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
@@ -233,13 +256,7 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
    }
   if(result == -1)
    {
-    
     std::cerr << (StdErrNoPiping ? ResultColors[E_FAIL] : "") << "Error" << (StdErrNoPiping ? TermColorsReset : "") << "\n\r";
-
-    // if(StdErrNoPiping)fprintf(stderr, "%s", ResultColors[E_FAIL]);
-    // printf("Error\n\r");
-    // if(StdErrNoPiping)fprintf(stderr, "%s", TermColorsReset);
-
    }
 
  }
@@ -250,28 +267,28 @@ void DBShmemPriceData_c::AddOrUpdateParkingSession(sqlite3 **conn, ClientQueueMs
 
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The initilizing constructor of the DBShmemPriceData_c Object From the Master Side.                                   */
 DBShmemPriceData_c::DBShmemPriceData_c(int NCities, Process_c *DbsCl_ToSet)
  :ShSemMemQue_c(NCities*sizeof(PriceTab_s), QUEUE_RECEIVE_E, QUEUE_NAME, sizeof(ClientQueueMsg_s)), DbsCl(DbsCl_ToSet)
  {
-  // LoadShq(QUEUE_RECEIVE_E);
-  // LoadShqs();
  }
   
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The initilizing constructor of the DBShmemPriceData_c Object From the Slave Side.                                    */
 DBShmemPriceData_c::DBShmemPriceData_c(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, uint16_t NCities, Process_c *DbsCl_ToSet)
  :ShSemMemQue_c(sh_mem_key, sem_name, sq_name, qsem_name, NCities * sizeof(PriceTab_s), QUEUE_SEND_E, sizeof(ClientQueueMsg_s)), DbsCl(DbsCl_ToSet)
  {
-  // this->sq_name = sq_name;
-  // this->qsem_name = qsem_name;
-  // LoadShq(QUEUE_SEND_E);
-  // LoadShqs();
  }
   
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The deinitilizing distructor of the DBShmemPriceData_c Object.                                                       */
 DBShmemPriceData_c::~DBShmemPriceData_c()
  {
-  // RemoveShq();
-  // RemoveShqs();
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Reallocates shared memory of the database cities' parking prices in case of the memory was changed.                  */
 void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem_key)
  {
   if(((sh_mem_key != 0) && (sh_mem_key != new_sh_mem_key)) || (OldNumCities != NewNumCities))
@@ -284,6 +301,8 @@ void DBShmemPriceData_c::ReallocateShmem(uint16_t NewNumCities, key_t new_sh_mem
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Loads the new list of cities to the shared memory. If the memory was changed it is reallocated.                      */
 void DBShmemPriceData_c::LoadCitiesList(PriceTab_s ListOfCities[], int NumCities)
  {
   sem_wait(p_shs);
@@ -292,6 +311,8 @@ void DBShmemPriceData_c::LoadCitiesList(PriceTab_s ListOfCities[], int NumCities
   sem_post(p_shs);
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Gives the city's info storred in the shared memory.                                                                  */
 void DBShmemPriceData_c::GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo)
  {
   sem_wait(p_shs);
@@ -301,6 +322,8 @@ void DBShmemPriceData_c::GetCity(uint16_t CityNo, PriceTab_s *CityPriceInfo)
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Sends the updated parking session client's information by the queue.                                                 */
 void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAcknowledge_s *CustAckInfo)
  {
   ClientQueueMsg_s ClientMsg;
@@ -321,9 +344,7 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
 
   Len = sizeof(ClientQueueMsg_s);
 
-//  std::cout << "Trying to take queue semaphore ... " << p_shqs << "\n\r";
   sem_wait(p_shqs);
-//  std::cout << "The semaphore was taken successrully. \n\r";
   if (mq_send(p_sq, (char*)&ClientMsg, Len, 0) == -1)
    {
     perror("mq_send failed");
@@ -332,9 +353,7 @@ void DBShmemPriceData_c::SndClientParkingInfo(Customer_s *CustomerInfo, CustAckn
    {
     printf("Message sent successfully. %ld bytes sent.\n\r", Len);
    }
-//  std::cout << "Giving the queue semaphore back ... \n\r";
   sem_post(p_shqs);
-//  std::cout << "The semaphore was given successfully. \n\r";
  }
 
 

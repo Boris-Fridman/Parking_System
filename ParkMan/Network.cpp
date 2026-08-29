@@ -24,35 +24,46 @@
 
 #include "Configuration.hpp"
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          The class defining object controlling the Network Process.
+ * *************************************************************************************************************
+ */
 
 class Network_c: public Process_c
  {
-    key_t LastPriceShmKey = -1;  // Setting to -1 instead of 0 to ensure that in the first time running when the PriceShmKey == 0.
+    key_t LastPriceShmKey = -1;  /* Setting to -1 instead of 0 to ensure that in the first time running when the PriceShmKey == 0. */
     DBShmemPriceData_c *DBShmemPriceData = nullptr;
     int serverSocket = 0, newSocket = 0;  
     sockaddr_in address = {{0},0,{0},{0}};
     int addrlen = 0;
   public:
-    Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);
-    virtual ~Network_c();
+    Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType);  /* Initilizing constructor of the Networ Object.                                                                        */
+    virtual ~Network_c();                                                                                                                    /* Deinitilizing destructor of the Network Object.                                                                      */
   protected:
-    virtual void OnRunProcess();
+    virtual void OnRunProcess();                                                                                                             /* Checks the DB Shared memory state and opens the new tasks of the parking session on the new client connection.       */
   public:
     Network_c& operator = (const Network_c &other) = delete;
     Network_c(const Network_c &other) = delete;
  };
 
 
+/*======================================================================================================================*/
 
 
-void NetworkProc(key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Main Process' operating procedure.                                                                                   */
+void NetworkProc(key_t sh_mem_key, const char msem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  {
-  Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, sem_name, sq_name, qsem_name, ProcType);
+  Network_c Netw_Process(NETW_PROC_NAME, sh_mem_key, msem_name, sq_name, qsem_name, ProcType);
   Netw_Process.RunProcess();
  }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* The session parking task procedure. Runs untill the client is connected and calculates praking price.                */
 void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceData_c **DBShmemPriceData = nullptr, std::string ShapeFileName = "", Network_c *NetCl = nullptr, std::string AddrStamp = "        ---        ") 
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -65,7 +76,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
   ssize_t AckDataSize;            /* Acknowledge Data Size. */
   bool DecodeResult;
   time_t CurrentTime;
-  //char timebuf[100];
   bool FirstInt = true;           /* First repeat interration. */
   bool CityDetected = false;
   bool DataBaseChecked = false;
@@ -114,8 +124,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
       CreateNameFormated(NameBuf, sizeof(NameBuf), CustomerInfo.Customer_Name, StdOutNoPiping);
       CreateVehIDFormated(buffer, sizeof(buffer), CustomerInfo.Vechicle_ID, StdOutNoPiping);
       std::cout << "The customer is: " << NameBuf << " on the vehicle: " << buffer << (StdOutNoPiping ? TermColorsReset : "") << " In coordinates: " << CordsBuf << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-      // PrintGPSCords(CustomerInfo.Cords);
-      // std::cout << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
 
       if(FirstInt)
        {
@@ -172,7 +180,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                  {
                   (*DBShmemPriceData)->GetCity(i, &CityPriceInfo);
                   
-                  if(StringsAreEqual(DetectedCityName, CityPriceInfo.City_Name))  //  if(strcmp(DetectedCityName.c_str(), CityPriceInfo.City_Name) == 0)
+                  if(StringsAreEqual(DetectedCityName, CityPriceInfo.City_Name))
                    {
                     std::ios old_state(nullptr);
                     old_state.copyfmt(std::cout); 
@@ -181,7 +189,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
                     CityPPH = CityPriceInfo.Price;
                     ConvertPrice(CityPriceInfo.Price, buffer, sizeof(buffer), E_PPH_FORMAT, StdOutNoPiping);
                     std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << buffer << "\n\r";
-                    //std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New parking detected in the city: " << (StdOutNoPiping ? CITYNAME_COLOR : "") << CityPriceInfo.City_Name << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << " ID: " << CityPriceInfo.City_ID << " Parking Price " << (StdOutNoPiping ? PRICE_COLOR : "") << CityPPH / 100 << "." << std::setfill('0') << std::setw(2) << CityPPH % 100 << (StdOutNoPiping ? PRICEUNITS_COLOR : "") << "₪/h" << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
                     std::cout.copyfmt(old_state);
                     std::cout.fill(old_fill);
 
@@ -228,12 +235,7 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
              }
            }
          }
-        // std::cout << "i " << i << "    NumPriceDBCities " << NumPriceDBCities << "    DBShmemPriceData " << DBShmemPriceData << "    *DBShmemPriceData " << *DBShmemPriceData << "\n\r";
-        // if((i >= NumPriceDBCities) || (DBShmemPriceData == nullptr) || (*DBShmemPriceData == nullptr)) // City in database doesn't exist. // Attention !!! The conditions cannot be swapped places due to short-circuit property.
-        //  {
-        //   strcpy(CityPriceInfo.City_Name, DetectedCityName.c_str());
-        //   std::cout << "Copied.\n\r";
-        //  }
+
         if(!FirstInt)  /* All required data was acquired and now the result can be logged. */
          {
           stream.str("");
@@ -251,8 +253,6 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
           NetCl->LogEvent(MessageToLog);
          }
        }
-
-      //std::cout << "FirstInt = " << FirstInt << "  DetectedCityName = " << DetectedCityName << "  CityPriceInfo.City_Name = " << CityPriceInfo.City_Name << "\n\r";
 
       /* Loading info for response. */
       strncpy(CustAckInfo.City_Name, CityPriceInfo.City_Name, sizeof(CustAckInfo.City_Name));
@@ -315,8 +315,11 @@ void HandleClient(int ClientSocket, uint16_t NumPriceDBCities = 0, DBShmemPriceD
  }
 
 
+/*======================================================================================================================*/
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Initilizing constructor of the Networ Object.                                                                        */
 Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], std::string sq_name, std::string qsem_name, ProcTypeID_e ProcType)
  :Process_c(ProcName, sh_mem_key, sem_name, sq_name, qsem_name, ProcType)
  {
@@ -332,7 +335,6 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
 
 
   DestinPort = GetDestinPort();
-  //DestinPort = DESTIN_PORT;  // For test only.
 
   timeout.tv_sec = 1;
   timeout.tv_usec = 0;
@@ -407,6 +409,8 @@ Network_c::Network_c(char ProcName[], key_t sh_mem_key, const char sem_name[], s
   LogEvent(MessageToLog);      
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks the DB Shared memory state and opens the new tasks of the parking session on the new client connection.       */
 void Network_c::OnRunProcess()
  {
   bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -451,8 +455,8 @@ void Network_c::OnRunProcess()
     else
      {
       std::cout << (StdOutNoPiping ? ResultColors[E_CORRECT] : "") << "New connection accepted." << (StdOutNoPiping ? TermColorsReset : "") << "\n\r";
-      /* Spawn a new thread to handle the client */
 
+      /* Spawn a new thread to handle the client */
       inet_ntop(AF_INET, &address.sin_addr, ip_string, sizeof(ip_string));
       stream << "The new client was connected: " << "Socket: " << newSocket << "  Address: " << ip_string << " port: " << address.sin_port;
       BufForMess = stream.str();
@@ -467,9 +471,10 @@ void Network_c::OnRunProcess()
       t.detach(); /* Detach the thread so it runs independently */
      }
    }
-  //std::cout << "Test Delay\n\r";
  }
  
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Deinitilizing destructor of the Network Object.                                                                      */
 Network_c::~Network_c()
  {
   std::string BufForMess;
