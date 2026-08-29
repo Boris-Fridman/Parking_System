@@ -7,6 +7,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                // "-O3",     // For Full optimization.
+                // "-Werror", // For No-Warning-Compilation.
                 "-std=c99",
                 "-pedantic",
                 "-Wall",
@@ -43,6 +45,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                // "-O3",     // For Full optimization.
+                // "-Werror", // For No-Warning-Compilation.
                 "-std=c99",
                 "-pedantic",
                 "-Wall",
@@ -76,6 +80,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                "-O3",     // For Full optimization.
+                "-Werror", // For No-Warning-Compilation.
                 "-std=c99",
                 "-pedantic",
                 "-Wall",
@@ -113,6 +119,8 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
+                // "-O3",     // For Full optimization.
+                // "-Werror", // For No-Warning-Compilation.
                 "-std=c99",
                 "-pedantic",
                 "-Wall",

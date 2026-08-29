@@ -60,13 +60,20 @@
 /* Reads the data from the I2C device file.                                                                             */
 void ReadI2C(int I2CDevFile, unsigned char buffer[], size_t size) 
  {
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   ssize_t result;
+  char buf[50];
 
   result = read(I2CDevFile, buffer, size);
-  printf("Where read %d bytes.\n\r",result);
-  if (result != (ssize_t)size) 
+  if (result != (ssize_t)size) /* Fail. */
    {
-    perror("Failed to read from the i2c bus");
+    snprintf(buf, sizeof(buf), "%sFailed to read from the I2C bus%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+    perror(buf);
+   }
+  else   /* Success. */
+   {
+    printf("%sWhere read %d bytes from I2C.%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), result, (StdOutNoPiping ? TermColorsReset : ""));
    }
  }
 #else
@@ -77,7 +84,7 @@ void ReadI2C(int I2CDevFile, unsigned char buffer[], size_t size)
 /* In case of the compilation for PC version it generates the GPS coordinates itself because the PC doesn't have I2C.   */
 void I2CProc(ProcParams_s *ProcParams)
  {
-  //bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
+  bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
   bool StdOutNoPiping = isatty(STDOUT_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
 
   Customer_s CustomerData;
@@ -85,30 +92,54 @@ void I2CProc(ProcParams_s *ProcParams)
   size_t skipno = 0;
   bool Exit = false;
   char buf1[200], buf2[100], buf3[75];
-
-
 #ifdef BEAGLE_BONE
-  /* Specify the I2C slave address  */
-  int I2CAddr = I2C_ADDR; /* Device address */
+  int const I2CAddr = I2C_ADDR;      /* Device address */
+  char const *I2CPath = I2C_PATH;    /* Device path    */
   int I2CDevFile;
   ParkingData_s Parking;
+  char buf[70];
 #else
+  UNUSED(StdErrNoPiping);
 #endif
 
   printf("Starting I2C Task.\n\r");
 
 #ifdef BEAGLE_BONE
-  /* Open the I2C bus device file (e.g., "/dev/i2c-2")  */
-  if ((I2CDevFile = open("/dev/i2c-2", O_RDWR)) < 0) 
+  /* Open the I2C bus device file   */
+
+  snprintf(buf, sizeof(buf), "Trying to open I2C device on port: %s...", I2CPath);
+  LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcParams->ProcName, buf));
+  printf("%s\n\r", buf);
+  if((I2CDevFile = open(I2CPath, O_RDWR)) < 0) /* Failed to Open. */
    {
-    perror("Failed to open the i2c bus");
+    snprintf(buf, sizeof(buf), "%sFailed to open the i2c bus. Recheck the port: %s.%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), I2CPath, (StdErrNoPiping ? TermColorsReset : ""));
+    perror(buf);
+    snprintf(buf, sizeof(buf), "Failed to open the i2c bus on the port: %s.", I2CPath);
+    LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_FAIL, ProcParams->ProcName, buf));
     Exit = true;
    }
-  if (ioctl(I2CDevFile, I2C_SLAVE, I2CAddr) < 0) 
+  else  /* The device was opened successfully. */
    {
-    perror("Failed to acquire bus access and/or talk to slave");
-    Exit = true;
+    printf("%sDevice was opened successrully on port: %s .%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), I2CPath, (StdOutNoPiping ? TermColorsReset : ""));
+    snprintf(buf, sizeof(buf), "The device on the port: %s was opened successfully.", I2CPath);
+    LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buf));
+    if (ioctl(I2CDevFile, I2C_SLAVE, I2CAddr) < 0) /* Failed to configure. */
+     {
+      snprintf(buf, sizeof(buf), "%sFailed to acquire bus access and/or talk to slave%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+      perror(buf);
+      snprintf(buf, sizeof(buf), "Failed to configure the i2c bus on the port: %s.", I2CPath);
+      LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_FAIL, ProcParams->ProcName, buf));
+      Exit = true;
+     }
+    else /* Success in configuration. */
+     {
+      printf("%sThe device was configured successfully.%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), (StdOutNoPiping ? TermColorsReset : ""));
+      snprintf(buf, sizeof(buf), "The device on the port: %s was configured successfully.", I2CPath);
+      LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buf));
+     }
+
    }
+
 #else
   srand(time(NULL));
 #endif
@@ -130,7 +161,6 @@ void I2CProc(ProcParams_s *ProcParams)
       ReadI2C(I2CDevFile, (uint8_t *)&Parking, sizeof(Parking));
       CustomerData.Cords.Latitude  = Parking.ParkingCords.Latitude;
       CustomerData.Cords.Longitude = Parking.ParkingCords.Longitude;
-
 #else
 
 #define GEN_BY_ZONES 1

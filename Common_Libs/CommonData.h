@@ -135,6 +135,7 @@ extern "C" {
 #define SHP_OSM_ID                "osm_id"
 
 #define I2C_ADDR                  0x55
+#define I2C_PATH                  "/dev/i2c-2"
 
 #define DEF_MAX_PARK_TIME         1800                          /* Maximum time for staying on a parking in seconds. The time will be selected randomly between 0 upto defined value. Giving zero value will mean infinit.                                                              */
 #define DEF_MAX_PARK_DELAY        40                            /* Maximum time for waiting between parkings in seconds. The real value will be generated between 0 upto the given value.                                                                                               */

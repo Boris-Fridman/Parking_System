@@ -88,7 +88,6 @@ bool StartNetwork(ProcParams_s *ProcParams, NetworkParams_s *NetPars, bool Allwa
   char const *DHCPName;
   char const *DestIP;
   struct hostent *host = NULL;
-  //struct addrinfo hints, *res, *p;
   
 
   /* Create the socket */
