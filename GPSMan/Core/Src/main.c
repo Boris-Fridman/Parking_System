@@ -47,7 +47,7 @@
 
 /* USER CODE BEGIN PV */
 volatile bool GenerationEmabled = true;
-volatile uint32_t LastI2CAccessTime = 0;
+volatile uint32_t LastI2CAccessTick = 0;
 volatile bool I2CAccessing = false;
 /* USER CODE END PV */
 
@@ -55,6 +55,9 @@ volatile bool I2CAccessing = false;
 void SystemClock_Config(void);
 static void MPU_Config(void);
 /* USER CODE BEGIN PFP */
+void DoCordsRegeneration();
+void DoI2CWatchDog();
+
 
 /* USER CODE END PFP */
 
@@ -115,8 +118,6 @@ int main(void)
   MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  int ParkPlace;
-  ParkingData_s Parking;
   srand(HAL_GetTick());
   printf("Starting GPS Manager...\n\r");
   HAL_I2C_EnableListen_IT(&WORKING_I2C);
@@ -127,89 +128,13 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-   if(GenerationEmabled)
-    {
-     char buf[200];
-     GenRandParkNumber();
-     GetRandParking(&ParkPlace, &Parking);
-     CreateCordsFormatted(buf, sizeof(buf), Parking.ParkingCords, true);
-     printf("%5d: %s\n\r",ParkPlace, buf);
-//     printf("%5d: ",ParkPlace);
-//     PrintGPSCords(Parking.ParkingCords);
-//     printf("\n\r");
-    }
+   DoCordsRegeneration();
+   DoI2CWatchDog();
 
-   uint32_t CurrentTime = HAL_GetTick();
-   GPIO_PinState SCL_PinsState = GPIO_PIN_SET;
-   //GPIO_PinState SDL_PinsState = GPIO_PIN_RESET;
-   SCL_PinsState = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8);
-   //SDL_PinsState = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
-
-   if(SCL_PinsState == GPIO_PIN_SET)
-    LastI2CAccessTime = CurrentTime;
-
-   if(!I2CAccessing)
-    {
-
-     if(CurrentTime - LastI2CAccessTime > 3000)
-      {
-       if((uint32_t)WORKING_I2C.Instance == (uint32_t)hi2c1.Instance)
-        {
-         //WORKING_I2C.Instance->ISR
-         //WORKING_I2C.Instance->TXDR
-         //WORKING_I2C.Instance->RXDR
-         if((SCL_PinsState == GPIO_PIN_RESET))
-          {
-//             __HAL_RCC_CLEAR_RESET_FLAGS();  // Clearing all reset flags before making reset to ensure that the bootloader will detect the correct reset reason.
-//             NVIC_SystemReset();             // Resetting Device.
-
-//             HAL_I2C_DeInit(&WORKING_I2C);
-//             __set_FAULTMASK(1);
-//             NVIC_SystemReset();             // Resetting Device.
-
-
-//           __HAL_RCC_CLEAR_RESET_FLAGS();
-//           __HAL_RCC_I2C1_FORCE_RESET();
-//           HAL_Delay(2);
-//           __HAL_RCC_I2C1_RELEASE_RESET();
-//           HAL_I2C_DeInit(&WORKING_I2C);
-//           MX_I2C1_Init();
-
-//            HAL_I2C_DeInit(&WORKING_I2C);
-//            __NOP(); __NOP();
-//           __HAL_RCC_I2C1_FORCE_RESET();
-//           __NOP(); __NOP();
-//           __HAL_RCC_CLEAR_RESET_FLAGS();
-//           HAL_Delay(2);
-//           __HAL_RCC_I2C1_RELEASE_RESET();
-//           __NOP(); __NOP();
-//           MX_I2C1_Init();
-//           __NOP(); __NOP();
-//           HAL_I2C_EnableListen_IT(&WORKING_I2C);
-
-
-            HAL_I2C_DeInit(&WORKING_I2C);
-//           __HAL_RCC_I2C1_FORCE_RESET();
-//           __HAL_RCC_CLEAR_RESET_FLAGS();
-           HAL_Delay(2);
-//           __HAL_RCC_I2C1_RELEASE_RESET();
-           MX_I2C1_Init();
-           HAL_I2C_EnableListen_IT(&WORKING_I2C);
-          }
-        }
-       LastI2CAccessTime = CurrentTime;
-      }
-    }
-   else
-    {
-     LastI2CAccessTime = CurrentTime;
-    }
-
-
-   HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+   HAL_Delay(1);
   }
   /* USER CODE END 3 */
 }
@@ -235,12 +160,11 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = 4;
   RCC_OscInitStruct.PLL.PLLN = 72;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 3;
@@ -302,7 +226,7 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 
   if( hi2c == &WORKING_I2C )
    {
-    LastI2CAccessTime = HAL_GetTick();
+    LastI2CAccessTick = HAL_GetTick();
     I2CAccessing = true;
     if(TransferDirection == I2C_DIRECTION_RECEIVE)  /* BeagleBone ▬▬▬▶ STM32 */
      {
@@ -339,15 +263,80 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
 void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
  {
   GenerationEmabled = true;
-  LastI2CAccessTime = HAL_GetTick();
+  LastI2CAccessTick = HAL_GetTick();
   I2CAccessing = false;
  }
 
 void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
  {
-  LastI2CAccessTime = HAL_GetTick();
+  LastI2CAccessTick = HAL_GetTick();
   I2CAccessing = false;
  }
+
+void DoCordsRegeneration()
+ {
+  int ParkPlace;
+  ParkingData_s Parking;
+
+  static uint32_t LastTick = 0;
+  uint32_t CurrentTick = HAL_GetTick();
+  if(CurrentTick - LastTick > 1000)
+   {
+    if(GenerationEmabled)
+     {
+      char buf[200];
+      GenRandParkNumber();
+      GetRandParking(&ParkPlace, &Parking);
+      CreateCordsFormatted(buf, sizeof(buf), Parking.ParkingCords, true);
+      printf("%5d: %s\n\r",ParkPlace, buf);
+ //     printf("%5d: ",ParkPlace);
+ //     PrintGPSCords(Parking.ParkingCords);
+ //     printf("\n\r");
+     }
+    LastTick = CurrentTick;
+   }
+ }
+
+void DoI2CWatchDog()
+ {
+  static uint32_t LastTick = 0;
+  uint32_t CurrentTick = HAL_GetTick();
+  if(CurrentTick - LastTick > 1)
+   {
+    GPIO_PinState SCL_PinsState = GPIO_PIN_SET;
+    //GPIO_PinState SDL_PinsState = GPIO_PIN_RESET;
+    SCL_PinsState = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_8);
+    //SDL_PinsState = HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_9);
+
+    if(SCL_PinsState == GPIO_PIN_SET)
+     LastI2CAccessTick = CurrentTick;
+
+    if(!I2CAccessing)
+     {
+      if(CurrentTick - LastI2CAccessTick > 50)
+       {
+        if((uint32_t)WORKING_I2C.Instance == (uint32_t)hi2c1.Instance)
+         {
+          if((SCL_PinsState == GPIO_PIN_RESET))  /* Restarting I2C Bus. */
+           {
+            HAL_I2C_DeInit(&WORKING_I2C);
+            HAL_Delay(2);
+            MX_I2C1_Init();
+            HAL_I2C_EnableListen_IT(&WORKING_I2C);
+           }
+         }
+        LastI2CAccessTick = CurrentTick;
+       }
+     }
+    else
+     {
+    	LastI2CAccessTick = CurrentTick;
+     }
+    LastTick = CurrentTick;
+   }
+
+ }
+
 
 /* USER CODE END 4 */
 

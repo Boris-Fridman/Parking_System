@@ -200,9 +200,9 @@ void CordsToString(char Buf[], const int MaxSize, const GPS_Cords_s GPSCords)
   AngToDegMinSecDec(GPSCords.Latitude, &LatConvAng);
   AngToDegMinSecDec(GPSCords.Longitude, &LongConvAng);
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
-  snprintf(Buf, MaxSize - 1, "%d˚%d'%d\".%03d LONG %d˚%d'%d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
+  snprintf(Buf, MaxSize - 1, "%3d˚%02d'%02d\".%03d LONG %3d˚%02d'%02d\".%03d LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #else  // For ARM
-  snprintf(Buf, MaxSize - 1, "%d˚%d'%d\".%03ld LONG %d˚%d'%d\".%03ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
+  snprintf(Buf, MaxSize - 1, "%3d˚%02d'%02d\".%03ld LONG %3d˚%02d'%02d\".%03ld LAT", LongConvAng.Deg, LongConvAng.Min, LongConvAng.Sec, (int32_t)round(LongConvAng.Dec * 1000), LatConvAng.Deg, LatConvAng.Min, LatConvAng.Sec, (int32_t)round(LatConvAng.Dec * 1000));
 #endif
  }
 
@@ -231,9 +231,9 @@ void CreateCordsFormatted(char Buf[], const int MaxSize, const GPS_Cords_s GPSCo
   l = strlen(Buf);
 
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)  // For Linux
-  snprintf(&Buf[l], MaxSize - l, "%s%d%s˚%s%d%s'%s%d%s\"%s.%s%03d %sLONG %s%d%s˚%s%d%s'%s%d%s\"%s.%s%03d%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
+  snprintf(&Buf[l], MaxSize - l, "%s%3d%s˚%s%02d%s'%s%02d%s\"%s.%s%03d %sLONG %s%3d%s˚%s%02d%s'%s%02d%s\"%s.%s%03d%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
 #else  // For ARM
-  snprintf(&Buf[l], MaxSize - l, "%s%d%s˚%s%d%s'%s%d%s\"%s.%s%03ld %sLONG %s%d%s˚%s%d%s'%s%d%s\"%s.%s%03ld%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
+  snprintf(&Buf[l], MaxSize - l, "%s%3d%s˚%s%02d%s'%s%02d%s\"%s.%s%03ld %sLONG %s%3d%s˚%s%02d%s'%s%02d%s\"%s.%s%03ld%s LAT", nc, LongConvAng.Deg, uc, nc, LongConvAng.Min, uc, nc, LongConvAng.Sec, uc, pc, nc, (int32_t)round(LongConvAng.Dec * 1000), dc, nc, LatConvAng.Deg, uc, nc, LatConvAng.Min, uc, nc, LatConvAng.Sec, uc, pc, nc, (int32_t)round(LatConvAng.Dec * 1000), dc);
 #endif
 
   //CordsToString(&Buf[l], MaxSize - l, GPSCords);
