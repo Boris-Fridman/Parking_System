@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <math.h>
+#include <errno.h>
 
 #include "CommonData.h"
 #include "Processes.h"
@@ -123,9 +124,9 @@ void I2CProc(ProcParams_s *ProcParams)
     printf("%sDevice was opened successrully on port: %s .%s\n\r", (StdOutNoPiping ? ResultColors[E_SUCCESS] : ""), I2CPath, (StdOutNoPiping ? TermColorsReset : ""));
     snprintf(buf, sizeof(buf), "The device on the port: %s was opened successfully.", I2CPath);
     LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_EVENT, ProcParams->ProcName, buf));
-    if (ioctl(I2CDevFile, I2C_SLAVE, I2CAddr) < 0) /* Failed to configure. */
+    if ((ioctl(I2CDevFile, I2C_SLAVE, I2CAddr) < 0) && (ioctl(I2CDevFile, I2C_SLAVE_FORCE, I2CAddr) < 0)) /* Failed to configure. */ /* The conditions mustn't be canged places due to shortcircuit if method. */
      {
-      snprintf(buf, sizeof(buf), "%sFailed to acquire bus access and/or talk to slave%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), (StdErrNoPiping ? TermColorsReset : ""));
+      snprintf(buf, sizeof(buf), "%sFailed to acquire bus access and/or talk to slave. %d%s", (StdErrNoPiping ? ResultColors[E_FAIL] : ""), errno, (StdErrNoPiping ? TermColorsReset : ""));
       perror(buf);
       snprintf(buf, sizeof(buf), "Failed to configure the i2c bus on the port: %s.", I2CPath);
       LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_FAIL, ProcParams->ProcName, buf));
