@@ -23,8 +23,7 @@
 #define MAXWAITPARKDELAY     "MAXWAITPARKDELAY"                             /* The maximal time of pause between the parkings (in seconds) that can be generated randomly for parking emulation.                                               */
 
 
-#define NUM_CONF_IT           10                                            /* The number of items existing in the confituration ini file.                                                                                                     */
-char ConfData[NUM_CONF_IT][2][PATH_LEN] =                                   /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
+ConfData_s ConfData[] =                                                     /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
  {
   { CONFIGPATH            , "../" CONF_DIR_NAME                         },  /* Path to folder with configuration data.                                                                                                                         */
   { LOGFILEPATH           , LOG_CAR_FILENAME                            },  /* Path to log file.                                                                                                                                               */
@@ -37,6 +36,8 @@ char ConfData[NUM_CONF_IT][2][PATH_LEN] =                                   /* T
   { MAXPARKTIME           , TO_STRING(DEF_MAX_PARK_TIME)                },  /* The maximal time of parking (in seconds) that can be generated randomly for parking emulation. If set to "0" the parking will be infinit without interruptings. */
   { MAXWAITPARKDELAY      , TO_STRING(DEF_MAX_PARK_DELAY)               },  /* The maximal time of pause between the parkings (in seconds) that can be generated randomly for parking emulation.                                               */
  };
+
+#define NUM_CONF_IT       (sizeof(ConfData) / sizeof(ConfData_s))           /* The number of items existing in the confituration ini file.                                                                                                     */
 
 
 /*======================================================================================================================*/

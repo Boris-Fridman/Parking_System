@@ -23,28 +23,28 @@
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Scans all the data items and in each key finishing with "PATH" converts existing pathes in data from local to full   */
 /* by running the "AdjustPath()" function.                                                                              */
-static void CheckAdjustPaths(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
+static void CheckAdjustPaths(ConfData_s ConfData[], size_t const NumConfIt, char const *OwnProgName)
  {
   size_t i;
   for(i = 0; i < NumConfIt; i++)
    {
-    char *p = strstr(ConfData[i][0], "PATH");
+    char *p = strstr(ConfData[i].Key, "PATH");
     if(p != NULL)
-     AdjustPath(OwnProgName, ConfData[i][1], PATH_LEN);
+     AdjustPath(OwnProgName, ConfData[i].Value, sizeof(ConfData[i].Value));
    }
  }
 
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Loads configuration from file.                                                                                       */
-static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
+static bool LoadConfFromFile(ConfData_s ConfData[], size_t const NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
   size_t i;
-  char line[(PATH_LEN) * 2 + 1];
+  char line[KEY_LEN + VAL_LEN + 10];
   FILE *ConfIniFile;
   char *StartConfInf;
-  char StrToFind[PATH_LEN];
+  char StrToFind[KEY_LEN + 2];
   char *lastc;
   size_t NumFoundOptions;
 
@@ -64,12 +64,12 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfI
       printf("%s\n\r", line);
       for(i = 0; i < NumConfIt; i++)
        {
-        volatile ssize_t ItSize = PATH_LEN;  // For preventing warning.
-        snprintf(StrToFind, ItSize - 2, "%s%c", ConfData[i][0], CONF_IT_DIVIDER);
+        volatile ssize_t ItSize = sizeof(StrToFind);  // For preventing warning.
+        snprintf(StrToFind, ItSize - 2, "%s%c", ConfData[i].Key, CONF_IT_DIVIDER);
         StartConfInf = strstr(line, StrToFind);
         if((StartConfInf != NULL) && (strlen(StartConfInf) > 0))  /* Attention !!! Due to the shortcircuit characteristics the conditions MUSTN'T be changed places. */
          {
-          strncpy(ConfData[i][1], &StartConfInf[strlen(StrToFind)], (PATH_LEN - 1));
+          strncpy(ConfData[i].Value, &StartConfInf[strlen(StrToFind)], (sizeof(ConfData[i].Value) - 1));
           NumFoundOptions++;
          }
        }
@@ -84,7 +84,7 @@ static bool LoadConfFromFile(char ConfData[][2][PATH_LEN], size_t const NumConfI
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Creates a default configuration.                                                                                     */
-static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
+static bool CreateDefConf(ConfData_s ConfData[], size_t const NumConfIt, char const *OwnProgName)
  {
   char FileName[PATH_LEN];
   size_t i;
@@ -98,7 +98,7 @@ static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, 
    {
     for(i = 0; i < NumConfIt; i++)
      {
-      fprintf(ConfIniFile, "%s%c%s\n", ConfData[i][0], CONF_IT_DIVIDER, ConfData[i][1]);
+      fprintf(ConfIniFile, "%s%c%s\n", ConfData[i].Key, CONF_IT_DIVIDER, ConfData[i].Value);
      }
     fclose(ConfIniFile);
     return true;
@@ -117,7 +117,7 @@ static bool CreateDefConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, 
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Initilizes configuration.                                                                                            */
-void InitConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *OwnProgName)
+void InitConf(ConfData_s ConfData[], size_t const NumConfIt, char const *OwnProgName)
  {
   bool Result;
   
@@ -133,14 +133,14 @@ void InitConf(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const *
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Gives data by a given name.                                                                                          */
-char const *GetDataByName(char ConfData[][2][PATH_LEN], size_t const NumConfIt, char const DataName[])
+char const *GetDataByName(ConfData_s ConfData[], size_t const NumConfIt, char const DataName[])
  {
   size_t i;
   for(i = 0; i < NumConfIt; i++)
    {
-    if(!strcmp(ConfData[i][0], DataName))
+    if(!strcmp(ConfData[i].Key, DataName))
      {
-      return ConfData[i][1];
+      return ConfData[i].Value;
      }
    }
   return NULL;

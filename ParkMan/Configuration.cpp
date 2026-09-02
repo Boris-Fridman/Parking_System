@@ -23,8 +23,7 @@
 #define SHAPEOSMID     "SHAPEOSMID"                                   /* The name of the field in the shape file of cities where is written the region code according to the Open Street Map.                                            */
 
 
-#define NUM_CONF_IT     8                                             /* The number of items existing in the confituration ini file.                                                                                                     */
-char ConfData[NUM_CONF_IT][2][PATH_LEN] =                             /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
+ConfData_s ConfData[] =                                               /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },  /* Path to folder with configuration data.                                                                                                                         */
   { DATABASEPATH    , "../" CONF_DIR_NAME "/" DB_FILENAME         },  /* Path to database file.                                                                                                                                          */
@@ -35,6 +34,7 @@ char ConfData[NUM_CONF_IT][2][PATH_LEN] =                             /* The Arr
   { SHAPECITYNAME   , SHP_FIELD_NAME                              },  /* The name of the field in the shape file of cities where is wirtten the the city name.                                                                           */
   { SHAPEOSMID      , SHP_OSM_ID                                  },  /* The name of the field in the shape file of cities where is written the region code according to the Open Street Map.                                            */
  };
+#define NUM_CONF_IT     (sizeof(ConfData) / sizeof(ConfData_s))       /* The number of items existing in the confituration ini file.                                                                                                     */
 
 
 /*======================================================================================================================*/

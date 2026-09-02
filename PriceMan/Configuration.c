@@ -17,13 +17,14 @@
 #define PROGINFOPATH   "PROGINFOPATH"                                 /* Path to file containint the PID of the main process of this running program. Is used for priceman for sending the database update signals.                      */
 
 
-#define NUM_CONF_IT   3                                               /* The number of items existing in the confituration ini file.                                                                                                     */
-char ConfData[NUM_CONF_IT][2][PATH_LEN] =                             /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
+ConfData_s ConfData[] =                                               /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
  {
   { CONFIGPATH      , "../" CONF_DIR_NAME                         },  /* Path to folder with configuration data.                                                                                                                         */
   { DATABASEPATH    , "../" CONF_DIR_NAME "/" DB_FILENAME         },  /* Path to database file.                                                                                                                                          */
   { PROGINFOPATH    , "../" CONF_DIR_NAME "/" DB_MAN_PID_FILENAME },  /* Path to file containint the PID of the main process of this running program. Is used for priceman for sending the database update signals.                      */
  };
+
+#define NUM_CONF_IT (sizeof(ConfData) / sizeof(ConfData_s))           /* The number of items existing in the confituration ini file.                                                                                                     */
 
 
 /*======================================================================================================================*/
