@@ -19,11 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "i2c.h"
+#include "rtc.h"
 #include "usart.h"
 #include "gpio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <math.h>
 #include "CommonData.h"
 #include "ParkingsData.h"
 /* USER CODE END Includes */
@@ -116,9 +118,33 @@ int main(void)
   MX_GPIO_Init();
   MX_I2C1_Init();
   MX_USART3_UART_Init();
+  MX_RTC_Init();
   /* USER CODE BEGIN 2 */
+  RTC_TimeTypeDef sTime;
+  RTC_DateTypeDef sDate;
+  HAL_RTC_GetTime(&hrtc, &sTime, RTC_FORMAT_BIN);
+  HAL_RTC_GetDate(&hrtc, &sDate, RTC_FORMAT_BIN);
 
-  srand(HAL_GetTick());
+//  sDate.Year;
+//  sDate.Month;
+//  sDate.Date;
+//  sDate.WeekDay;
+//
+//  sTime.Hours;
+//  sTime.Minutes;
+//  sTime.Seconds;
+//  sTime.SubSeconds;
+//  sTime.SecondFraction;
+//  sTime.DayLightSaving;
+//  sTime.StoreOperation;
+//  sTime.TimeFormat;
+
+  volatile double StartRandVal_d = 0;
+  volatile uint32_t StartRandVal = 0;
+  StartRandVal_d = (((sDate.Year * 365.25 + sDate.Month * 30.498 + sDate.Date) * 24 + (sTime.Hours * 3600 + sTime.Minutes * 60 + sTime.Seconds)) * (sDate.WeekDay + sTime.SubSeconds + sTime.SecondFraction + sTime.DayLightSaving + sTime.StoreOperation + sTime.TimeFormat));
+  StartRandVal = (uint32_t)fmod(StartRandVal_d, 0xFFFFFFFF);  /* fmod() is required to prevent overrange custing that gives to the interger the 0xFFFFFFFF value. */
+//  srand(HAL_GetTick());
+  srand(StartRandVal);
   printf("Starting GPS Manager...\n\r");
   HAL_I2C_EnableListen_IT(&WORKING_I2C);
 
@@ -151,6 +177,7 @@ void SystemClock_Config(void)
   /** Configure LSE Drive Capability
   */
   HAL_PWR_EnableBkUpAccess();
+  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
 
   /** Configure the main internal regulator output voltage
   */
@@ -160,8 +187,9 @@ void SystemClock_Config(void)
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE|RCC_OSCILLATORTYPE_LSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -189,38 +217,28 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void HAL_I2C_RxCpltCallback(I2C_HandleTypeDef *hi2c)
-// {
-//  if( hi2c == &WORKING_I2C )
-//   {
-//    static int ParkPlace;
-//    static ParkingData_s Parking;
-//    GetRandParking(&ParkPlace, &Parking);
-//    HAL_I2C_DisableListen_IT(hi2c);
-//    HAL_I2C_Slave_Transmit_IT(&WORKING_I2C, (uint8_t *)&Parking, sizeof(Parking));
-//    HAL_I2C_EnableListen_IT(hi2c);
-//   }
-// }
 
-
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs at the finishing of access from master.                                                                         */
 void HAL_I2C_ListenCpltCallback(I2C_HandleTypeDef *hi2c)
  {
   uint8_t TransferDirection;
   HAL_I2C_EnableListen_IT(hi2c);
   TransferDirection = I2C_GET_DIR(hi2c);
-  if(TransferDirection == I2C_DIRECTION_RECEIVE)
+  if(TransferDirection == I2C_DIRECTION_RECEIVE)  /* BeagleBone ◀▬▬▬ STM32 */
    {
     /* After transmitting data. */
     HAL_I2C_SlaveTxCpltCallback(hi2c);
    }
-  else
+  else          /* Transmit  */                   /* BeagleBone ▬▬▬▶ STM32 */
    {
     /* After receiving data. */
     HAL_I2C_SlaveRxCpltCallback(hi2c);
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs on request access from master.                                                                                  */
 void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, uint16_t AddrMatchCode)
  {
 
@@ -228,7 +246,7 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
    {
     LastI2CAccessTick = HAL_GetTick();
     I2CAccessing = true;
-    if(TransferDirection == I2C_DIRECTION_RECEIVE)  /* BeagleBone ▬▬▬▶ STM32 */
+    if(TransferDirection == I2C_DIRECTION_RECEIVE)  /* BeagleBone ◀▬▬▬ STM32 */
      {
       static int ParkPlace;
       static ParkingData_s Parking;
@@ -237,42 +255,41 @@ void HAL_I2C_AddrCallback(I2C_HandleTypeDef *hi2c, uint8_t TransferDirection, ui
         GenerationEmabled = false;
         GetRandParking(&ParkPlace, &Parking);
        }
-      //HAL_I2C_DisableListen_IT(hi2c);
       __disable_irq();
       HAL_I2C_Slave_Seq_Transmit_IT(&WORKING_I2C, (uint8_t *)&Parking, sizeof(Parking), I2C_NEXT_FRAME);
       __enable_irq();
-      //HAL_I2C_EnableListen_IT(hi2c);
-
-      //HAL_I2C_Slave_Seq_Transmit_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
      }
-    else  /* Transmit  */  /* BeagleBone ◀▬▬▬ STM32 */
+    else        /* Transmit  */                     /* BeagleBone ▬▬▬▶ STM32 */
      {
       uint8_t buf[100];
       __disable_irq();
       HAL_I2C_Slave_Seq_Receive_IT(hi2c, buf, sizeof(buf), I2C_NEXT_FRAME);
       __enable_irq();
       UNUSED(buf);
-
-      //HAL_I2C_Slave_Seq_Receive_IT(hi2c, buf, BUF_SIZE, I2C_NEXT_FRAME);
      }
 
    }
-  //I2CAccessing = false;
  }
 
-void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs from HAL_I2C_ListenCpltCallback() on reading by the master device. Master ◀▬▬▬ Slave */
+void HAL_I2C_SlaveTxCpltCallback(I2C_HandleTypeDef *hi2c)  /* BeagleBone ◀▬▬▬ STM32 */
  {
   GenerationEmabled = true;
   LastI2CAccessTick = HAL_GetTick();
   I2CAccessing = false;
  }
 
-void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Runs from HAL_I2C_ListenCpltCallback() on writing by master device. Master ▬▬▬▶ Slave */
+void HAL_I2C_SlaveRxCpltCallback(I2C_HandleTypeDef *hi2c)  /* BeagleBone ▬▬▬▶ STM32 */
  {
   LastI2CAccessTick = HAL_GetTick();
   I2CAccessing = false;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Regenerates the random coordinates.                                                                                  */
 void DoCordsRegeneration()
  {
   int ParkPlace;
@@ -297,6 +314,8 @@ void DoCordsRegeneration()
    }
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks if the I2C wasn't freezed for a too long time periode and if the SCL state is freezed - restarts the I2C.     */
 void DoI2CWatchDog()
  {
   static uint32_t LastTick = 0;
