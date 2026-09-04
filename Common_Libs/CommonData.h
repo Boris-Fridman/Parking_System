@@ -25,6 +25,7 @@ extern "C" {
 #if defined(__x86_64__) || defined(_M_X64) || defined(__i386__) || defined(__linux__)
 //#if !(defined(__GNUC__) || defined(__ICCARM__) || defined(__CC_ARM) )
 #include <netdb.h>
+#include <limits.h>
 #else
 #include <time.h>
 #endif
@@ -120,7 +121,7 @@ extern "C" {
 
 
 #define NAME_LEN                  30
-#define PATH_LEN                  300
+#define PATH_LEN                  300                        /* Could be put parameter "PATH_MAX" existing in the <limits.h> library, but for reduce the memory usage spending there is implemented the limited number. */
 #define LOGMSG_LEN                350
 
 #define DB_FILENAME               "ParkingInfo.sqlite3"
@@ -802,7 +803,7 @@ void AdjustPath(char const *OwnProgPathName, char *PathToAdjust, size_t const Ma
  * 
  * @param OwnProgPathName The name with path this running program itself.
  * 
- * @param ConfFileName    The returned name of the configuration file.
+ * @param ConfFileName    The returned name with path of the configuration file.
  * 
  * @param MaxSize         The maximum lingth of the the returned string. 
  *                        If the length is smaller than required the part of the data will be lost.

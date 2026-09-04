@@ -81,7 +81,8 @@ static bool LoadConfFromFile(ConfData_s ConfData[], size_t const NumConfIt, char
    return false;
  }
 
-
+// #include <unistd.h>
+// #include <limits.h>
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Creates a default configuration.                                                                                     */
 static bool CreateDefConf(ConfData_s ConfData[], size_t const NumConfIt, char const *OwnProgName)
@@ -101,10 +102,14 @@ static bool CreateDefConf(ConfData_s ConfData[], size_t const NumConfIt, char co
       fprintf(ConfIniFile, "%s%c%s\n", ConfData[i].Key, CONF_IT_DIVIDER, ConfData[i].Value);
      }
     fclose(ConfIniFile);
+    printf("The configuration file was created successfylly.\n\r");
     return true;
    }
   else
-   return false;
+   {
+    printf("Couldn't create the configuration file.\n\r");
+    return false;
+   }
  }
 
 

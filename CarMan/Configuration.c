@@ -22,6 +22,13 @@
 #define MAXPARKTIME          "MAXPARKTIME"                                  /* The maximal time of parking (in seconds) that can be generated randomly for parking emulation. If set to "0" the parking will be infinit without interruptings. */
 #define MAXWAITPARKDELAY     "MAXWAITPARKDELAY"                             /* The maximal time of pause between the parkings (in seconds) that can be generated randomly for parking emulation.                                               */
 
+#ifdef BEAGLE_BONE
+#define I2CDEVNAME           "I2CDEVNAME"                                   /* The name of the I2C device.                                                                                                                                     */
+#define I2CDEVADDRESS        "I2CDEVADDRESS"                                /* The slave address connected to the I2C.                                                                                                                         */
+#else
+#define GPSCRDGENMETHOD      "GPSCRDGENMETHOD"                              /* The random generation method of hte GPS coordinates. "0" any coordinate in Israel. "1" from internally sored table of places in the program.                     */
+#endif
+
 
 ConfData_s ConfData[] =                                                     /* The Array of string-pairs containing the configuration items when the first string of pair is a key na dthe second one is the data.                             */
  {
@@ -35,6 +42,12 @@ ConfData_s ConfData[] =                                                     /* T
   { VECHICLEID            , TO_STRING(DEF_VEHICLE_ID)                   },  /* Vehicle ID that is sent via the network wiht the other client information.                                                                                      */
   { MAXPARKTIME           , TO_STRING(DEF_MAX_PARK_TIME)                },  /* The maximal time of parking (in seconds) that can be generated randomly for parking emulation. If set to "0" the parking will be infinit without interruptings. */
   { MAXWAITPARKDELAY      , TO_STRING(DEF_MAX_PARK_DELAY)               },  /* The maximal time of pause between the parkings (in seconds) that can be generated randomly for parking emulation.                                               */
+#ifdef BEAGLE_BONE
+  { I2CDEVNAME            , I2C_PATH                                    },  /* The name of the I2C device.                                                                                                                                     */
+  { I2CDEVADDRESS         , TO_STRING(I2C_ADDR)                         },  /* The slave address connected to the I2C.                                                                                                                         */
+#else
+  { GPSCRDGENMETHOD       , TO_STRING(1)                                },  /* The random generation method of hte GPS coordinates. "0" any coordinate in Israel. "1" from internally sored table of places in the program.                     */
+#endif
  };
 
 #define NUM_CONF_IT       (sizeof(ConfData) / sizeof(ConfData_s))           /* The number of items existing in the confituration ini file.                                                                                                     */
@@ -156,6 +169,65 @@ uint32_t GetMaxParkWaitTime()
  }
 
 
+#ifdef BEAGLE_BONE
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the I2C Device Name including Path.                                                                          */
+char const *GetI2CDevName()
+ {
+  return GetDataByName(ConfData, NUM_CONF_IT, I2CDEVNAME);
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the I2C Slave Address of the GPSCords Generating STM32 Board.                                                */
+uint8_t GetI2CSlaveAddr()
+ {
+  uint32_t Result;
+  char *endptr;
+  char const *Value = GetDataByName(ConfData, NUM_CONF_IT, I2CDEVADDRESS);
+  if(Value[0] == '0')
+   {
+    switch(Value[1])
+     {
+      case 'x':
+      case 'X':
+        Result = strtoll(Value, &endptr, 16);
+       break;
+      case 'o':
+      case 'O':
+        Result = strtoll(Value, &endptr, 8);
+       break;
+      case 'b':
+      case 'B':
+        Result = strtoll(Value, &endptr, 2);
+       break;
+      default:
+        Result = I2C_ADDR;
+       break;
+     }
+   }
+  else
+   Result = strtoll(Value, &endptr, 10);
+  if(endptr == Value)
+   return I2C_ADDR;
+  else
+   return Result;
+ }
+#else
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the GPS Random Generation method.                                                                            */
+uint8_t GetGPSRandGenMethod()
+ {
+  uint32_t Result;
+  char *endptr;
+  char const *Value = GetDataByName(ConfData, NUM_CONF_IT, GPSCRDGENMETHOD);
+  Result = strtoll(Value, &endptr, 10);
+  if(endptr == Value)
+   return 1;
+  else
+   return Result;
+ }
+#endif
 
 
 

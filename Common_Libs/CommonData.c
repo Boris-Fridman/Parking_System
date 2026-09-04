@@ -555,6 +555,12 @@ void GetConfFileName(char const *OwnProgPathName, char *ConfFileName, size_t con
   char *p, *ptnp;
   char TempNamePath[PATH_LEN];
   ptnp = TempNamePath;
+
+  /* In some lunux versions the "dirname" modifies the parameter and in some version returns the pointer to internal storage. */
+  strncpy(ConfFileName, OwnProgPathName, MaxSize - 1);
+  ptnp = dirname(ptnp = ConfFileName);
+  strncpy(ConfFileName, ptnp, MaxSize - 1);  
+
   strncpy(TempNamePath, OwnProgPathName, sizeof(TempNamePath) - 1);
   ptnp = basename(ptnp = TempNamePath);
   p = strrchr(ptnp, '.');
@@ -563,7 +569,9 @@ void GetConfFileName(char const *OwnProgPathName, char *ConfFileName, size_t con
     *p = '\0';
    }
   strncat(ptnp,".ini", sizeof(TempNamePath) - (ptnp - TempNamePath));
-  strncpy(ConfFileName, ptnp, MaxSize);
+  
+  strncat(ConfFileName, "/", MaxSize);
+  strncat(ConfFileName, ptnp, MaxSize);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/

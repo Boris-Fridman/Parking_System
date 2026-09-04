@@ -127,12 +127,44 @@ uint32_t GetMaxParkTime();
  */
 uint32_t GetMaxParkWaitTime();
 
+#ifdef BEAGLE_BONE
 
+/**
+ * @brief Returns the I2C Device Name including Path.
+ * 
+ * @code
+ * char const *GetI2CDevName();
+ * @code
+ * 
+ * @return The name of I2C Device including path.
+ */
+char const *GetI2CDevName();
 
+/**
+ * @brief Returns the I2C Slave Address of the GPSCords Generating STM32 Board.
+ * 
+ * @code
+ * uint8_t GetI2CSlaveAddr();
+ * @code
+ * 
+ * @return I2C Slave Address.
+ */
+uint8_t GetI2CSlaveAddr();
 
+#else
 
+/**
+ * @brief Returns the GPS Random Generation method.
+ * 
+ * @code
+ * uint8_t GetGPSRandGenMethod();
+ * @code
+ * 
+ * @return "0" any coordinate in Israel. "1" from internally sored table of places in the program.
+ */
+uint8_t GetGPSRandGenMethod();
 
-
+#endif
 
 
 

@@ -94,8 +94,8 @@ void I2CProc(ProcParams_s *ProcParams)
   bool Exit = false;
   char buf1[200], buf2[100], buf3[75];
 #ifdef BEAGLE_BONE
-  int const I2CAddr = I2C_ADDR;      /* Device address */
-  char const *I2CPath = I2C_PATH;    /* Device path    */
+  int const I2CAddr = GetI2CSlaveAddr();    /* Device address */
+  char const *I2CPath = GetI2CDevName();    /* Device path    */
   int I2CDevFile;
   ParkingData_s Parking;
   char buf[70];
@@ -108,7 +108,7 @@ void I2CProc(ProcParams_s *ProcParams)
 #ifdef BEAGLE_BONE
   /* Open the I2C bus device file   */
 
-  snprintf(buf, sizeof(buf), "Trying to open I2C device on port: %s...", I2CPath);
+  snprintf(buf, sizeof(buf), "Trying to open I2C device on port: %s with slave address 0x%X...", I2CPath, I2CAddr);
   LogEvent(&ProcParams->TskContShqs, MakeLogMessage(E_LOG_MESSAGE, ProcParams->ProcName, buf));
   printf("%s\n\r", buf);
   if((I2CDevFile = open(I2CPath, O_RDWR)) < 0) /* Failed to Open. */
@@ -164,46 +164,48 @@ void I2CProc(ProcParams_s *ProcParams)
       CustomerData.Cords.Longitude = Parking.ParkingCords.Longitude;
 #else
 
-#define GEN_BY_ZONES 1
-
-#if !defined(GEN_BY_ZONES) || (GEN_BY_ZONES == 0)
-
-      /* Generating random GPS coordingates. */
-      PointState_e Result;
-      do
+      bool GenMethod;
+      GenMethod = GetGPSRandGenMethod();
+      if(GenMethod == 0)
        {
-         /* code */
-         CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
-         CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
-         Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
-       } 
-      while (Result != INSIDE_E);
+        /* Generating random GPS coordingates. */
+        PointState_e Result;
+        do
+         {
+           /* code */
+           CustomerData.Cords.Longitude = ( fmod( RandGenLongLong() , ((MAX_LONGIGUDE - MIN_LONGIGUDE) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LONGIGUDE;
+           CustomerData.Cords.Latitude  = ( fmod( RandGenLongLong() , ((MAX_LATITUDE  - MIN_LATITUDE ) * RESOLUTIONS) ) ) * 1.0 / RESOLUTIONS + MIN_LATITUDE ;
+           Result = PointInPoly(IsraelShape, NUM_IL_SHAPE_PNT, CustomerData.Cords);
+         } 
+        while (Result != INSIDE_E);
+       }
+      else
+       {
+        const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
+        const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
+        const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402  , .Latitude = 32.0903  };     
+        const GPS_Cords_s TelAviv     = {.Longitude = 34.77555 , .Latitude = 32.07841 };     
+        const GPS_Cords_s Eilat       = {.Longitude = 34.9355  , .Latitude = 29.5434  };     
+        const GPS_Cords_s RamatGan    = {.Longitude = 34.8227  , .Latitude = 32.0655  };     
+        const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798  , .Latitude = 32.0904  };     
+        const GPS_Cords_s Herzlya     = {.Longitude = 34.82398 , .Latitude = 32.16867 };     
+        const GPS_Cords_s Nahariyya   = {.Longitude = 35.10039 , .Latitude = 33.01059 };     
+        const GPS_Cords_s Netanya     = {.Longitude = 34.86301 , .Latitude = 32.30890 };     
+  
+        const GPS_Cords_s Cities[] = { GivatHaviva, GivatHen, BneyBraq, TelAviv, Eilat, RamatGan, PetachTiqua, Herzlya, Nahariyya, Netanya };
+        const size_t NumCitiesConsts = sizeof(Cities) / sizeof(Cities[0]);
+        int r;
+        r = rand();
+        size_t CityToSelect = r % NumCitiesConsts;
+        CustomerData.Cords = Cities[CityToSelect];
+        // printf("The number of cities is: %ld\n\r", NumCitiesConsts);
+        // printf("Generated number is: %ld\n\r", CityToSelect);
+        // printf("%d mod %ld = %ld\n\r", r, NumCitiesConsts, CityToSelect);
+  
+        // CustomerData.Cords = TelAviv;
+       }
 
-#else      
-      const GPS_Cords_s GivatHaviva = {.Longitude = 35.021712, .Latitude = 32.457740};     
-      const GPS_Cords_s GivatHen    = {.Longitude = 34.87660 , .Latitude = 32.16771 };     
-      const GPS_Cords_s BneyBraq    = {.Longitude = 34.8402  , .Latitude = 32.0903  };     
-      const GPS_Cords_s TelAviv     = {.Longitude = 34.77555 , .Latitude = 32.07841 };     
-      const GPS_Cords_s Eilat       = {.Longitude = 34.9355  , .Latitude = 29.5434  };     
-      const GPS_Cords_s RamatGan    = {.Longitude = 34.8227  , .Latitude = 32.0655  };     
-      const GPS_Cords_s PetachTiqua = {.Longitude = 34.8798  , .Latitude = 32.0904  };     
-      const GPS_Cords_s Herzlya     = {.Longitude = 34.82398 , .Latitude = 32.16867 };     
-      const GPS_Cords_s Nahariyya   = {.Longitude = 35.10039 , .Latitude = 33.01059 };     
-      const GPS_Cords_s Netanya     = {.Longitude = 34.86301 , .Latitude = 32.30890 };     
 
-      const GPS_Cords_s Cities[] = { GivatHaviva, GivatHen, BneyBraq, TelAviv, Eilat, RamatGan, PetachTiqua, Herzlya, Nahariyya, Netanya };
-      const size_t NumCitiesConsts = sizeof(Cities) / sizeof(Cities[0]);
-      int r;
-      r = rand();
-      size_t CityToSelect = r % NumCitiesConsts;
-      CustomerData.Cords = Cities[CityToSelect];
-      // printf("The number of cities is: %ld\n\r", NumCitiesConsts);
-      // printf("Generated number is: %ld\n\r", CityToSelect);
-      // printf("%d mod %ld = %ld\n\r", r, NumCitiesConsts, CityToSelect);
-
-      // CustomerData.Cords = TelAviv;
-
-#endif
 
 #endif
 
