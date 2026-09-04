@@ -128,25 +128,26 @@ Folders:
   2. https://gvulot-shiput-statutory-moinil.opendata.arcgis.com/search?tags=%25D7%2592%25D7%2591%25D7%2595%25D7%259C%25D7%2595%25D7%25AA%2520%25D7%25A9%25D7%2599%25D7%25A4%25D7%2595%25D7%2598
   and than were readited and adjusted to the project.
 
-    ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  
-    ┃                                           ┃  
-    ┃   To install GDAL library:                ┃  
-    ┃                                           ┃  
-    ┃   sudo apt update                         ┃  
-    ┃   sudo apt install gdal-bin libgdal-dev   ┃  
-    ┃   (conda install -c conda-forge gdal)     ┃  
-    ┃                                           ┃  
-    ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  
+  ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  
+  ┃                                           ┃  
+  ┃   To install GDAL library:                ┃  
+  ┃                                           ┃  
+  ┃   sudo apt update                         ┃  
+  ┃   sudo apt install gdal-bin libgdal-dev   ┃  
+  ┃   (conda install -c conda-forge gdal)     ┃  
+  ┃                                           ┃  
+  ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  
   
 * The I2C connection between the BeagleBone and STMre boards is given in the table below:
-    ┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
-    ┃  Beagle Bone I2C_2  ┃ Direction  ┃     STM32 I2C_1     ┃
-    ┃       Master        ┃            ┃       Slave         ┃
-    ┣━━━━━━━━━━┳━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┳━━━━━━━━━━┫
-    ┃   SCL    ┃  P9-19   ┃    ▬▬▬▶    ┃   PB8    ┃   SCL    ┃
-    ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫
-    ┃   SDA    ┃  P9-20   ┃    ◀▬▬▬    ┃   PB9    ┃   SDA    ┃
-    ┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┛
+
+  ┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓
+  ┃  Beagle Bone I2C_2  ┃ Direction  ┃     STM32 I2C_1     ┃
+  ┃       Master        ┃            ┃       Slave         ┃
+  ┣━━━━━━━━━━┳━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━┳━━━━━━━━━━┫
+  ┃   SCL    ┃  P9-19   ┃    ▬▬▬▶    ┃   PB8    ┃   SCL    ┃
+  ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫
+  ┃   SDA    ┃  P9-20   ┃    ◀▬▬▬    ┃   PB9    ┃   SDA    ┃
+  ┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┛
 
 
 
