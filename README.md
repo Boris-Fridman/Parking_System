@@ -127,7 +127,7 @@ Folders:
   1. https://download.geofabrik.de/asia/israel-and-palestine.html
   2. https://gvulot-shiput-statutory-moinil.opendata.arcgis.com/search?tags=%25D7%2592%25D7%2591%25D7%2595%25D7%259C%25D7%2595%25D7%25AA%2520%25D7%25A9%25D7%2599%25D7%25A4%25D7%2595%25D7%2598
   and than were readited and adjusted to the project.
-
+```
   ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓  
   ┃                                           ┃  
   ┃   To install GDAL library:                ┃  
@@ -137,9 +137,9 @@ Folders:
   ┃   (conda install -c conda-forge gdal)     ┃  
   ┃                                           ┃  
   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  
-  
+```  
 * The I2C connection between the BeagleBone and STMre boards is given in the table below:
-
+```
   ┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓  
   ┃  Beagle Bone I2C_2  ┃ Direction  ┃     STM32 I2C_1     ┃  
   ┃       Master        ┃            ┃       Slave         ┃  
@@ -148,6 +148,7 @@ Folders:
   ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫  
   ┃   SDA    ┃  P9-20   ┃    ◀▬▬▬    ┃   PB9    ┃   SDA    ┃  
   ┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┛  
+```
 
 
 
@@ -156,8 +157,7 @@ Folders:
 
 
 
-
-
+```
     ┏━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━┓  
     ┃           ┃                     ┃                      ┃  
     ┃           ┃                     ┃                      ┃  
@@ -172,7 +172,7 @@ Folders:
     ┣━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━╋━━━━━━━━━━━━━━━━━━━━━━┫  
     ┃           ┃                     ┃                      ┃  
     ┗━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━┻━━━━━━━━━━━━━━━━━━━━━━┛  
-
+```
 
 
  
