@@ -82,7 +82,7 @@ int main(int const argc, char const *argv[])
 #ifdef CONVERT_TO_DAEMON  
   printf("Starting CarMan Daemon...\n\r");
   openlog("carman_daemon_test", LOG_PID, LOG_DAEMON);
-  if(daemon(0, 1) == -1)
+  if(daemon(0, 0) == -1)
    {
     syslog(LOG_ERR, "Failed to daemonize process.");
     closelog();
