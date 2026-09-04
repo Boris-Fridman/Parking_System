@@ -52,6 +52,9 @@ Folders:
    of case of need to park infinitely the parking limit in the .ini file must be set to zero value - "0".
    All the events as connection to a server, disconnection from it, starting/finishing parking... and  errors are stored
    in a .log file.
+   The Computer version the program run in multiple copies however one copy per path with separated configurations to emitize 
+   the different clients.
+   The BeagleBone versions the program can run only in one copy to prevent sharing the single I2C port.
 
 3. ParkMan (Parking Manager)
    The program simulates the parking server. It is written in C++ and is compiled to a regular computer computer program
@@ -85,6 +88,7 @@ Folders:
    for region name recognition in case the name of region in the shape file and in the parking table is written differently.
    For example: If the the name in the regions' shape file is written as "Petah Tiqua" and in the price list as "Petach-Tikwa" it 
    is will be rechecked in the vocobulary and recognized anyway by ignoring the "-" existance and rechecking the names' versions.
+   The program can run only in one copy because only one server is permitted.
 
 4. PriceMan (Price Manager)
    The program is written on C language for Linux Operation System.
@@ -103,6 +107,9 @@ Folders:
    In case of pricetable update the program will search for the file with ParkMan's PID and in case of its existance it will send to the
    process with this PID the signal after the list update to notify the ParkMan to reload the regions' prices.
 
+5. The Common Libs folder
+   Contains the libraries shared with all or part of programs described previously. They contain the common printing formatting and 
+   the calculating functions. In additional the database-accessing functions, .ini and .log accessing functions.
 
 * The .ini and .log files:
   Both files are created by linux program of the project if they don't exist. They have the same name as a program, but with the added 
@@ -138,6 +145,18 @@ Folders:
   ┃                                           ┃  
   ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛  
 ```  
+* Make files:
+  Each one of the program conains its specific individual make recipe except the GPSMan Program because it is STM32 Embedded project.
+  Each one of the recipies can compile the project to the Debug and he Release versions.
+  The ParkMan and the PriceMan make recipes by default compile the projec to the release computer version.
+  The CarMan recipe by default compiles the Computer, BeagleBone regular program and the BeagleBone Daemon in the Release versions.
+  In case of Debugging option the programs are compiled without an optimization and with warnings' acception while with the Release option the 
+  programs are compiled with the maximal optimization and with giving the warnings as and errors so by default the project will not be finished compiled
+  in case of the warnings' existances.
+  In addition the project has the common make recipe running all these individual recipes together in the default compilation. In this case the compiled
+  executables will be put not to the prject specific folder, but to the folder containing all those projects' folders. 
+  In any case the programs compiled by the make recipes will have the .elf extention.
+
 * The I2C connection between the BeagleBone and STMre boards is given in the table below:
 ```
   ┏━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━┓  
