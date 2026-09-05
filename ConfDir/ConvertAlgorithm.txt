@@ -39,9 +39,7 @@ FROM
     SELECT 
         *, 
         ((longitude - longdeg)*60 - longmin)*60 - longsec AS longdec,
-		((latitude - latdeg)*60 - latmin)*60 - latsec AS latdec,
-        substr(hex(parking_cords), 1, 16) AS h1,
-        substr(hex(parking_cords), 17, 16) AS h2
+		((latitude - latdeg)*60 - latmin)*60 - latsec AS latdec
     FROM 
 	(
 		SELECT
