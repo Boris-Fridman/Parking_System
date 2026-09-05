@@ -7,23 +7,23 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
   1 .text         0000b4b4  080001d0  080001d0  000011d0  2**4
                   CONTENTS, ALLOC, LOAD, READONLY, CODE
-  2 .rodata       000e82a0  0800b688  0800b688  0000c688  2**3
+  2 .rodata       000e8020  0800b688  0800b688  0000c688  2**3
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  3 .ARM.extab    00000000  080f3928  080f3928  000f51d8  2**0
+  3 .ARM.extab    00000000  080f36a8  080f36a8  000f51d8  2**0
                   CONTENTS, READONLY
-  4 .ARM          00000008  080f3928  080f3928  000f4928  2**2
+  4 .ARM          00000008  080f36a8  080f36a8  000f46a8  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  5 .preinit_array 00000000  080f3930  080f3930  000f51d8  2**0
+  5 .preinit_array 00000000  080f36b0  080f36b0  000f51d8  2**0
                   CONTENTS, ALLOC, LOAD, DATA
-  6 .init_array   00000004  080f3930  080f3930  000f4930  2**2
+  6 .init_array   00000004  080f36b0  080f36b0  000f46b0  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  7 .fini_array   00000004  080f3934  080f3934  000f4934  2**2
+  7 .fini_array   00000004  080f36b4  080f36b4  000f46b4  2**2
                   CONTENTS, ALLOC, LOAD, READONLY, DATA
-  8 .data         000001d8  20000000  080f3938  000f5000  2**2
+  8 .data         000001d8  20000000  080f36b8  000f5000  2**2
                   CONTENTS, ALLOC, LOAD, DATA
-  9 .bss          000002d8  200001d8  080f3b10  000f51d8  2**3
+  9 .bss          000002d8  200001d8  080f3890  000f51d8  2**3
                   ALLOC
- 10 ._user_heap_stack 00000600  200004b0  080f3b10  000f54b0  2**0
+ 10 ._user_heap_stack 00000600  200004b0  080f3890  000f54b0  2**0
                   ALLOC
  11 .ARM.attributes 00000030  00000000  00000000  000f51d8  2**0
                   CONTENTS, READONLY
@@ -4286,7 +4286,7 @@ LoopFillZerobss:
   ldr r1, =_edata
  8002214:	200001d8 	.word	0x200001d8
   ldr r2, =_sidata
- 8002218:	080f3938 	.word	0x080f3938
+ 8002218:	080f36b8 	.word	0x080f36b8
   ldr r2, =_sbss
  800221c:	200001d8 	.word	0x200001d8
   ldr r4, =_ebss
@@ -16573,7 +16573,7 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8006812:	60fb      	str	r3, [r7, #12]
   n %= PARKDATA_SIZE;
  8006814:	68fb      	ldr	r3, [r7, #12]
- 8006816:	f642 6256 	movw	r2, #11862	@ 0x2e56
+ 8006816:	f642 624e 	movw	r2, #11854	@ 0x2e4e
  800681a:	fbb3 f1f2 	udiv	r1, r3, r2
  800681e:	fb01 f202 	mul.w	r2, r1, r2
  8006822:	1a9b      	subs	r3, r3, r2
@@ -16815,8 +16815,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8006a2c:	bd38      	pop	{r3, r4, r5, pc}
  8006a2e:	bf00      	nop
  8006a30:	2000001c 	.word	0x2000001c
- 8006a34:	080f3490 	.word	0x080f3490
- 8006a38:	080f34a7 	.word	0x080f34a7
+ 8006a34:	080f3210 	.word	0x080f3210
+ 8006a38:	080f3227 	.word	0x080f3227
  8006a3c:	abcd330e 	.word	0xabcd330e
  8006a40:	e66d1234 	.word	0xe66d1234
  8006a44:	0005deec 	.word	0x0005deec
@@ -16860,8 +16860,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8006aa0:	bd10      	pop	{r4, pc}
  8006aa2:	bf00      	nop
  8006aa4:	2000001c 	.word	0x2000001c
- 8006aa8:	080f3490 	.word	0x080f3490
- 8006aac:	080f34a7 	.word	0x080f34a7
+ 8006aa8:	080f3210 	.word	0x080f3210
+ 8006aac:	080f3227 	.word	0x080f3227
  8006ab0:	abcd330e 	.word	0xabcd330e
  8006ab4:	e66d1234 	.word	0xe66d1234
  8006ab8:	0005deec 	.word	0x0005deec
@@ -17285,11 +17285,11 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8006ec4:	e7ee      	b.n	8006ea4 <_printf_float+0x2a0>
  8006ec6:	bf00      	nop
  8006ec8:	7fefffff 	.word	0x7fefffff
- 8006ecc:	080f3503 	.word	0x080f3503
- 8006ed0:	080f34ff 	.word	0x080f34ff
- 8006ed4:	080f350b 	.word	0x080f350b
- 8006ed8:	080f3507 	.word	0x080f3507
- 8006edc:	080f350f 	.word	0x080f350f
+ 8006ecc:	080f3283 	.word	0x080f3283
+ 8006ed0:	080f327f 	.word	0x080f327f
+ 8006ed4:	080f328b 	.word	0x080f328b
+ 8006ed8:	080f3287 	.word	0x080f3287
+ 8006edc:	080f328f 	.word	0x080f328f
  8006ee0:	6da3      	ldr	r3, [r4, #88]	@ 0x58
  8006ee2:	f8dd a028 	ldr.w	sl, [sp, #40]	@ 0x28
  8006ee6:	4553      	cmp	r3, sl
@@ -17772,8 +17772,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800736c:	f104 0619 	add.w	r6, r4, #25
  8007370:	e7f5      	b.n	800735e <_printf_i+0x22e>
  8007372:	bf00      	nop
- 8007374:	080f3511 	.word	0x080f3511
- 8007378:	080f3522 	.word	0x080f3522
+ 8007374:	080f3291 	.word	0x080f3291
+ 8007378:	080f32a2 	.word	0x080f32a2
 
 0800737c <_scanf_float>:
  800737c:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -18167,8 +18167,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8007786:	e7d5      	b.n	8007734 <_scanf_float+0x3b8>
  8007788:	2700      	movs	r7, #0
  800778a:	e62f      	b.n	80073ec <_scanf_float+0x70>
- 800778c:	080f3533 	.word	0x080f3533
- 8007790:	080f3573 	.word	0x080f3573
+ 800778c:	080f32b3 	.word	0x080f32b3
+ 8007790:	080f32f3 	.word	0x080f32f3
 
 08007794 <__sflush_r>:
  8007794:	f9b1 200c 	ldrsh.w	r2, [r1, #12]
@@ -18792,10 +18792,10 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8007cf2:	4798      	blx	r3
  8007cf4:	3601      	adds	r6, #1
  8007cf6:	e7f2      	b.n	8007cde <__libc_init_array+0x1e>
- 8007cf8:	080f3930 	.word	0x080f3930
- 8007cfc:	080f3930 	.word	0x080f3930
- 8007d00:	080f3930 	.word	0x080f3930
- 8007d04:	080f3934 	.word	0x080f3934
+ 8007cf8:	080f36b0 	.word	0x080f36b0
+ 8007cfc:	080f36b0 	.word	0x080f36b0
+ 8007d00:	080f36b0 	.word	0x080f36b0
+ 8007d04:	080f36b4 	.word	0x080f36b4
 
 08007d08 <__retarget_lock_init_recursive>:
  8007d08:	4770      	bx	lr
@@ -18847,9 +18847,9 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8007d60:	e7f3      	b.n	8007d4a <__assert_func+0x12>
  8007d62:	bf00      	nop
  8007d64:	2000001c 	.word	0x2000001c
- 8007d68:	080f3538 	.word	0x080f3538
- 8007d6c:	080f3545 	.word	0x080f3545
- 8007d70:	080f3573 	.word	0x080f3573
+ 8007d68:	080f32b8 	.word	0x080f32b8
+ 8007d6c:	080f32c5 	.word	0x080f32c5
+ 8007d70:	080f32f3 	.word	0x080f32f3
 
 08007d74 <quorem>:
  8007d74:	e92d 4ff7 	stmdb	sp!, {r0, r1, r2, r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -19239,16 +19239,16 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008154:	3fc68a28 	.word	0x3fc68a28
  8008158:	509f79fb 	.word	0x509f79fb
  800815c:	3fd34413 	.word	0x3fd34413
- 8008160:	080f3490 	.word	0x080f3490
- 8008164:	080f3581 	.word	0x080f3581
+ 8008160:	080f3210 	.word	0x080f3210
+ 8008164:	080f3301 	.word	0x080f3301
  8008168:	7ff00000 	.word	0x7ff00000
- 800816c:	080f357d 	.word	0x080f357d
- 8008170:	080f3574 	.word	0x080f3574
- 8008174:	080f3510 	.word	0x080f3510
- 8008178:	080f350f 	.word	0x080f350f
+ 800816c:	080f32fd 	.word	0x080f32fd
+ 8008170:	080f32f4 	.word	0x080f32f4
+ 8008174:	080f3290 	.word	0x080f3290
+ 8008178:	080f328f 	.word	0x080f328f
  800817c:	3ff80000 	.word	0x3ff80000
- 8008180:	080f36f8 	.word	0x080f36f8
- 8008184:	080f35d9 	.word	0x080f35d9
+ 8008180:	080f3478 	.word	0x080f3478
+ 8008184:	080f3359 	.word	0x080f3359
  8008188:	f8d9 301c 	ldr.w	r3, [r9, #28]
  800818c:	9a00      	ldr	r2, [sp, #0]
  800818e:	601a      	str	r2, [r3, #0]
@@ -19497,8 +19497,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800841a:	4682      	mov	sl, r0
  800841c:	468b      	mov	fp, r1
  800841e:	e7c6      	b.n	80083ae <_dtoa_r+0x526>
- 8008420:	080f36f8 	.word	0x080f36f8
- 8008424:	080f36d0 	.word	0x080f36d0
+ 8008420:	080f3478 	.word	0x080f3478
+ 8008424:	080f3450 	.word	0x080f3450
  8008428:	3ff00000 	.word	0x3ff00000
  800842c:	40240000 	.word	0x40240000
  8008430:	401c0000 	.word	0x401c0000
@@ -20126,8 +20126,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008a30:	f000 f8b0 	bl	8008b94 <__multadd>
  8008a34:	9001      	str	r0, [sp, #4]
  8008a36:	e7ea      	b.n	8008a0e <_dtoa_r+0xb86>
- 8008a38:	080f35d9 	.word	0x080f35d9
- 8008a3c:	080f3574 	.word	0x080f3574
+ 8008a38:	080f3359 	.word	0x080f3359
+ 8008a3c:	080f32f4 	.word	0x080f32f4
 
 08008a40 <_free_r>:
  8008a40:	b538      	push	{r3, r4, r5, lr}
@@ -20249,8 +20249,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008b40:	d0e9      	beq.n	8008b16 <_Balloc+0x42>
  8008b42:	e9c0 6401 	strd	r6, r4, [r0, #4]
  8008b46:	e7ee      	b.n	8008b26 <_Balloc+0x52>
- 8008b48:	080f3490 	.word	0x080f3490
- 8008b4c:	080f35ea 	.word	0x080f35ea
+ 8008b48:	080f3210 	.word	0x080f3210
+ 8008b4c:	080f336a 	.word	0x080f336a
 
 08008b50 <_Bfree>:
  8008b50:	b570      	push	{r4, r5, r6, lr}
@@ -20278,8 +20278,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008b84:	6021      	str	r1, [r4, #0]
  8008b86:	f843 4022 	str.w	r4, [r3, r2, lsl #2]
  8008b8a:	bd70      	pop	{r4, r5, r6, pc}
- 8008b8c:	080f3490 	.word	0x080f3490
- 8008b90:	080f35ea 	.word	0x080f35ea
+ 8008b8c:	080f3210 	.word	0x080f3210
+ 8008b90:	080f336a 	.word	0x080f336a
 
 08008b94 <__multadd>:
  8008b94:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -20333,8 +20333,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008c10:	6125      	str	r5, [r4, #16]
  8008c12:	4620      	mov	r0, r4
  8008c14:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
- 8008c18:	080f35d9 	.word	0x080f35d9
- 8008c1c:	080f35ea 	.word	0x080f35ea
+ 8008c18:	080f3359 	.word	0x080f3359
+ 8008c1c:	080f336a 	.word	0x080f336a
 
 08008c20 <__s2b>:
  8008c20:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -20395,8 +20395,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008ca4:	f7ff ff76 	bl	8008b94 <__multadd>
  8008ca8:	e7ee      	b.n	8008c88 <__s2b+0x68>
  8008caa:	bf00      	nop
- 8008cac:	080f35d9 	.word	0x080f35d9
- 8008cb0:	080f35ea 	.word	0x080f35ea
+ 8008cac:	080f3359 	.word	0x080f3359
+ 8008cb0:	080f336a 	.word	0x080f336a
 
 08008cb4 <__hi0bits>:
  8008cb4:	f5b0 3f80 	cmp.w	r0, #65536	@ 0x10000
@@ -20486,8 +20486,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008d6a:	6103      	str	r3, [r0, #16]
  8008d6c:	bd10      	pop	{r4, pc}
  8008d6e:	bf00      	nop
- 8008d70:	080f35d9 	.word	0x080f35d9
- 8008d74:	080f35ea 	.word	0x080f35ea
+ 8008d70:	080f3359 	.word	0x080f3359
+ 8008d74:	080f336a 	.word	0x080f336a
 
 08008d78 <__multiply>:
  8008d78:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -20608,8 +20608,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008ebe:	3e01      	subs	r6, #1
  8008ec0:	e799      	b.n	8008df6 <__multiply+0x7e>
  8008ec2:	bf00      	nop
- 8008ec4:	080f35d9 	.word	0x080f35d9
- 8008ec8:	080f35ea 	.word	0x080f35ea
+ 8008ec4:	080f3359 	.word	0x080f3359
+ 8008ec8:	080f336a 	.word	0x080f336a
 
 08008ecc <__pow5mult>:
  8008ecc:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -20679,9 +20679,9 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8008f70:	4628      	mov	r0, r5
  8008f72:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  8008f76:	bf00      	nop
- 8008f78:	080f36c0 	.word	0x080f36c0
- 8008f7c:	080f3490 	.word	0x080f3490
- 8008f80:	080f35ea 	.word	0x080f35ea
+ 8008f78:	080f3440 	.word	0x080f3440
+ 8008f7c:	080f3210 	.word	0x080f3210
+ 8008f80:	080f336a 	.word	0x080f336a
 
 08008f84 <__lshift>:
  8008f84:	e92d 4ff8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -20761,8 +20761,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8009052:	d8f8      	bhi.n	8009046 <__lshift+0xc2>
  8009054:	e7e9      	b.n	800902a <__lshift+0xa6>
  8009056:	bf00      	nop
- 8009058:	080f35d9 	.word	0x080f35d9
- 800905c:	080f35ea 	.word	0x080f35ea
+ 8009058:	080f3359 	.word	0x080f3359
+ 800905c:	080f336a 	.word	0x080f336a
 
 08009060 <__mcmp>:
  8009060:	690a      	ldr	r2, [r1, #16]
@@ -20899,8 +20899,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  80091ba:	e7da      	b.n	8009172 <__mdiff+0xda>
  80091bc:	3f01      	subs	r7, #1
  80091be:	e7e6      	b.n	800918e <__mdiff+0xf6>
- 80091c0:	080f35d9 	.word	0x080f35d9
- 80091c4:	080f35ea 	.word	0x080f35ea
+ 80091c0:	080f3359 	.word	0x080f3359
+ 80091c4:	080f336a 	.word	0x080f336a
 
 080091c8 <__ulp>:
  80091c8:	b082      	sub	sp, #8
@@ -21051,8 +21051,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8009346:	f7ff fcb5 	bl	8008cb4 <__hi0bits>
  800934a:	ebc0 1042 	rsb	r0, r0, r2, lsl #5
  800934e:	e7e5      	b.n	800931c <__d2b+0x74>
- 8009350:	080f35d9 	.word	0x080f35d9
- 8009354:	080f35ea 	.word	0x080f35ea
+ 8009350:	080f3359 	.word	0x080f3359
+ 8009354:	080f336a 	.word	0x080f336a
 
 08009358 <__ratio>:
  8009358:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -21446,8 +21446,8 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8009704:	f04f 0c01 	mov.w	ip, #1
  8009708:	e7f8      	b.n	80096fc <_strtod_l+0x27c>
  800970a:	bf00      	nop
- 800970c:	080f37d4 	.word	0x080f37d4
- 8009710:	080f3643 	.word	0x080f3643
+ 800970c:	080f3554 	.word	0x080f3554
+ 8009710:	080f33c3 	.word	0x080f33c3
  8009714:	7ff00000 	.word	0x7ff00000
  8009718:	9b17      	ldr	r3, [sp, #92]	@ 0x5c
  800971a:	1c5a      	adds	r2, r3, #1
@@ -21742,13 +21742,13 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8009a0a:	d0a9      	beq.n	8009960 <_strtod_l+0x4e0>
  8009a0c:	e7e3      	b.n	80099d6 <_strtod_l+0x556>
  8009a0e:	bf00      	nop
- 8009a10:	080f350c 	.word	0x080f350c
- 8009a14:	080f37c0 	.word	0x080f37c0
- 8009a18:	080f3504 	.word	0x080f3504
- 8009a1c:	080f3577 	.word	0x080f3577
- 8009a20:	080f3573 	.word	0x080f3573
- 8009a24:	080f36f8 	.word	0x080f36f8
- 8009a28:	080f36d0 	.word	0x080f36d0
+ 8009a10:	080f328c 	.word	0x080f328c
+ 8009a14:	080f3540 	.word	0x080f3540
+ 8009a18:	080f3284 	.word	0x080f3284
+ 8009a1c:	080f32f7 	.word	0x080f32f7
+ 8009a20:	080f32f3 	.word	0x080f32f3
+ 8009a24:	080f3478 	.word	0x080f3478
+ 8009a28:	080f3450 	.word	0x080f3450
  8009a2c:	7ff00000 	.word	0x7ff00000
  8009a30:	7ca00000 	.word	0x7ca00000
  8009a34:	7fefffff 	.word	0x7fefffff
@@ -21948,7 +21948,7 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  8009c16:	d1db      	bne.n	8009bd0 <_strtod_l+0x750>
  8009c18:	e6a9      	b.n	800996e <_strtod_l+0x4ee>
  8009c1a:	bf00      	nop
- 8009c1c:	080f37e8 	.word	0x080f37e8
+ 8009c1c:	080f3568 	.word	0x080f3568
  8009c20:	fffffc02 	.word	0xfffffc02
  8009c24:	2e00      	cmp	r6, #0
  8009c26:	dd07      	ble.n	8009c38 <_strtod_l+0x7b8>
@@ -22442,7 +22442,7 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800a12c:	d1f6      	bne.n	800a11c <_strtol_l.isra.0+0xd8>
  800a12e:	f8c8 1000 	str.w	r1, [r8]
  800a132:	e794      	b.n	800a05e <_strtol_l.isra.0+0x1a>
- 800a134:	080f3811 	.word	0x080f3811
+ 800a134:	080f3591 	.word	0x080f3591
 
 0800a138 <_strtol_r>:
  800a138:	f7ff bf84 	b.w	800a044 <_strtol_l.isra.0>
@@ -22725,11 +22725,11 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800a3d0:	f7fc feae 	bl	8007130 <_printf_i>
  800a3d4:	e7ee      	b.n	800a3b4 <_svfiprintf_r+0x1b8>
  800a3d6:	bf00      	nop
- 800a3d8:	080f3645 	.word	0x080f3645
- 800a3dc:	080f364f 	.word	0x080f364f
+ 800a3d8:	080f33c5 	.word	0x080f33c5
+ 800a3dc:	080f33cf 	.word	0x080f33cf
  800a3e0:	08006c05 	.word	0x08006c05
  800a3e4:	0800a13d 	.word	0x0800a13d
- 800a3e8:	080f364b 	.word	0x080f364b
+ 800a3e8:	080f33cb 	.word	0x080f33cb
 
 0800a3ec <__sfputc_r>:
  800a3ec:	6893      	ldr	r3, [r2, #8]
@@ -22994,11 +22994,11 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800a64c:	f7fc fd70 	bl	8007130 <_printf_i>
  800a650:	e7e5      	b.n	800a61e <_vfiprintf_r+0x1de>
  800a652:	bf00      	nop
- 800a654:	080f3645 	.word	0x080f3645
- 800a658:	080f364f 	.word	0x080f364f
+ 800a654:	080f33c5 	.word	0x080f33c5
+ 800a658:	080f33cf 	.word	0x080f33cf
  800a65c:	08006c05 	.word	0x08006c05
  800a660:	0800a41b 	.word	0x0800a41b
- 800a664:	080f364b 	.word	0x080f364b
+ 800a664:	080f33cb 	.word	0x080f33cb
 
 0800a668 <fiprintf>:
  800a668:	b40e      	push	{r1, r2, r3}
@@ -23552,9 +23552,9 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800ab7e:	2b00      	cmp	r3, #0
  800ab80:	d1dd      	bne.n	800ab3e <__gethex+0x26a>
  800ab82:	e7ee      	b.n	800ab62 <__gethex+0x28e>
- 800ab84:	080f3643 	.word	0x080f3643
- 800ab88:	080f35d9 	.word	0x080f35d9
- 800ab8c:	080f365e 	.word	0x080f365e
+ 800ab84:	080f33c3 	.word	0x080f33c3
+ 800ab88:	080f3359 	.word	0x080f3359
+ 800ab8c:	080f33de 	.word	0x080f33de
  800ab90:	1e6f      	subs	r7, r5, #1
  800ab92:	f1b9 0f00 	cmp.w	r9, #0
  800ab96:	d130      	bne.n	800abfa <__gethex+0x326>
@@ -23689,7 +23689,7 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800acea:	42b0      	cmp	r0, r6
  800acec:	dbe7      	blt.n	800acbe <__gethex+0x3ea>
  800acee:	e7f0      	b.n	800acd2 <__gethex+0x3fe>
- 800acf0:	080f35d9 	.word	0x080f35d9
+ 800acf0:	080f3359 	.word	0x080f3359
 
 0800acf4 <L_shift>:
  800acf4:	f1c2 0208 	rsb	r2, r2, #8
@@ -24602,7 +24602,7 @@ void GetRandParking(int *ParkingInd, ParkingData_s *Parking)
  800b5e0:	7ff00000 	.word	0x7ff00000
  800b5e4:	fffffbed 	.word	0xfffffbed
  800b5e8:	fffffc02 	.word	0xfffffc02
- 800b5ec:	080f3918 	.word	0x080f3918
+ 800b5ec:	080f3698 	.word	0x080f3698
  800b5f0:	fffffbe2 	.word	0xfffffbe2
  800b5f4:	f3cc 0313 	ubfx	r3, ip, #0, #20
  800b5f8:	ea4f 2ed5 	mov.w	lr, r5, lsr #11
