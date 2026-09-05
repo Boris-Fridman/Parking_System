@@ -11,8 +11,8 @@ SELECT
 	customer_name AS custtomer_name,
 	longitude AS longitude,
 	latitude AS latitude,
-	(lonsigchar || longdeg || '˚' || longmin || '''' || longsec || '"' || substr(CAST(longdec AS STRING),2,3)) AS longdmsd,
-	(latsigchar || latdeg  || '˚' || latmin  || '''' || latsec  || '"' || substr(CAST(latdec  AS STRING),2,3)) AS latdmsd,
+	(longdeg || '˚' || longmin || '''' || longsec || '"' || substr(CAST(longdec AS STRING),2,3)) AS longdmsd,
+	(latdeg  || '˚' || latmin  || '''' || latsec  || '"' || substr(CAST(latdec  AS STRING),2,3)) AS latdmsd,
 	
 	city_id AS city_id,
 	city_name AS city_name,
@@ -38,46 +38,27 @@ FROM
     -- This inner layer runs first and creates h1 and h2
     SELECT 
         *, 
-        ((abslon - longdeg)*60 - longmin)*60 - longsec AS longdec,
-		((abslat - latdeg)*60 - latmin)*60 - latsec AS latdec
+        ((longitude - longdeg)*60 - longmin)*60 - longsec AS longdec,
+		((latitude - latdeg)*60 - latmin)*60 - latsec AS latdec
     FROM 
 	(
 		SELECT
 			*,
-			CAST(((abslon - longdeg)*60 - longmin)*60 AS INTEGER) AS longsec,
-			CAST(((abslat - latdeg)*60 - latmin)*60 AS INTEGER) AS latsec
+			CAST(((longitude - longdeg)*60 - longmin)*60 AS INTEGER) AS longsec,
+			CAST(((latitude - latdeg)*60 - latmin)*60 AS INTEGER) AS latsec
 		FROM
 		(
 			SELECT
 				*,
-				CAST((abslon - longdeg)*60 AS INTEGER) AS longmin,
-				CAST((abslat - latdeg)*60 AS INTEGER) AS latmin
+				CAST((longitude - longdeg)*60 AS INTEGER) AS longmin,
+				CAST((latitude - latdeg)*60 AS INTEGER) AS latmin
 			FROM 
 			(
 				SELECT
 					*,
-					CAST(abslon AS INTEGER) AS longdeg,
-					CAST(abslat AS INTEGER) AS latdeg,
-					CASE siglon 
-						WHEN 0 THEN ' '
-						WHEN 1 THEN '-'
-						ELSE ' '
-					END AS lonsigchar,
-					CASE siglat 
-						WHEN 0 THEN ' '
-						WHEN 1 THEN '-'
-						ELSE ' '
-					END AS latsigchar
-				FROM
-				(	SELECT
-					*,
-					CAST(ABS(longitude) AS REAL) AS abslon,
-					CAST(ABS(latitude)  AS REAL) AS abslat,
-					CAST((longitude < 0) AS INTEGER) AS siglon,
-					CAST((latitude < 0)  AS INTEGER) AS siglat
-					FROM CUSTOMERS_PRICE_REPORTS
-				)
-				
+					CAST(longitude AS INTEGER) AS longdeg,
+					CAST(latitude AS INTEGER) AS latdeg
+				FROM CUSTOMERS_PRICE_REPORTS
 			)
 			
 		)
