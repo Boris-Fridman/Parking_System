@@ -10,40 +10,26 @@
             "args": [
                 "-fdiagnostics-color=always",
                 "-g",
-                //"-O3",
-
-                //treat warnings as errors:
-                //"-Werror",
-
+                
                 //recommended warning flags for compilation:
                 "-Wall",
                 "-Wextra",
                 "-Weffc++",
-                 //enforce standard (no compiler specific features allowed):
                 "-pedantic",
-
-                //standard:
-                "-std=c++20",//"-std=c++17",
-                
-                //defines
-                "-D_GNU_SOURCE",
-                "-D_POSIX_C_SOURCE = 1",
-                "-DNET_PRINT_ERRORS",
-                "-DNET_PRINT_SUCCESS",
+                "-std=c++14",
 
                 //source file - use all top level .c files:
                 "${workspaceFolder}/../Common_Libs/CommonData.c",
                 "${workspaceFolder}/../Common_Libs/DataBase/PriceDataBase.c",
                 "${workspaceFolder}/../Common_Libs/Configuration/ConfMan.c",
                 "${workspaceFolder}/../Common_Libs/Logging/Logging.c",
-
+                
                 //source file - use all top level .cpp files:
                 "*.cpp",
                 
-                //outputfile - always "parkman" at workspace directory:
+                //outputfile - always "corectdatabase" at workspace directory:
                 "-o",
-                "parkman",
-
+                "corectdatabase",
                 // Include Directories
                 "-I${workspaceFolder}",
                 "-I${workspaceFolder}/../Common_Libs",
@@ -54,13 +40,8 @@
 
                 //implementing database:
                 "-lsqlite3",  // Required for sqlite database library.
-                //implementing mapfiles:
-                "-lgdal",     // Required for step files library.
-                "-licuuc",
-                "-licui18n",
-                "-lrt"
-                
 
+                ""
             ],
             "options": {
                 //working directory for compilation:
