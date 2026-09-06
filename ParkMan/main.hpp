@@ -21,7 +21,6 @@ enum ProcTypeID_e
  {
   PROC_DATABASE_E,
   PROC_NETWORK_E,
-  PROC_PARKING_E,
   PROC_ERRORS_E,
   /* ... */
   PROC_NUM_PROC_TYPES_E

@@ -64,7 +64,6 @@ void EnableSignals();
  * *************************************************************************************************************
  */
 pid_t database_pid;
-pid_t parking_pid;
 pid_t network_pid;
 pid_t own_pid;
 
@@ -118,9 +117,6 @@ int main(int const argc, char const *argv[])
   ProcParams.ProcType = PROC_DATABASE_E;
   database_pid = OpenProcess(DataBaseProc, ProcParams, (char*)DB_PROC_NAME, &TaskContSh);
    
-  ProcParams.ProcType = PROC_PARKING_E;
-  parking_pid = OpenProcess(ParkingProc, ProcParams, (char*)PARK_PROC_NAME, &TaskContSh);
-  
   ProcParams.ProcType = PROC_NETWORK_E;
   network_pid = OpenProcess(NetworkProc, ProcParams, (char*)NETW_PROC_NAME, &TaskContSh);
 
@@ -130,8 +126,6 @@ int main(int const argc, char const *argv[])
 //  TaskContSh.ExitProcess(PROC_DATABASE_E);
 //  sleep(10);
 //  TaskContSh.ExitProcess(PROC_NETWORK_E);
-//  sleep(10);
-//  TaskContSh.ExitProcess(PROC_PARKING_E);
 //  sleep(10);
 
   std::cout << "The loop is infinite. So press Ctrl+C to quit.\n\r";
@@ -209,12 +203,6 @@ void WaitUntilFinised()
     perr() << "Was problem in wainting for the DataBase process.";
    }
    
-  w = waitpid(parking_pid, &wstatus, WUNTRACED );  // WUNTRACED | WCONTINUED
-  if(w < 0)
-   {
-    perr() << "Was problem in wainting for the Parking process.";
-   }
-
   w = waitpid(network_pid, &wstatus, WUNTRACED );  // WUNTRACED | WCONTINUED
   if(w < 0)
    {
