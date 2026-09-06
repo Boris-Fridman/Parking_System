@@ -38,16 +38,33 @@
 
 /*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Functions / Procedures for internal usage.
+ * *************************************************************************************************************
+ */
 
- ///////////////////////////////////////////////////////////////////////////////////
+/* The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()". */
+bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, uint32_t &EdRegCode,  std::string &ShapeFileName);
 
-/*======================================================================================================================*/
+bool StringsAreEqual(std::string str1, std::string str2);
+void RemoveUnneededChars(std::string &StringToClear);
+void ReplaceSubStrings(std::string &StringToCorrect);
+
 bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName);
 bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t &EdRegCode);
 
+
 /*======================================================================================================================*/
 
-// The "ShapeFileName" should be got by the function "TaskControl_ShSM_c::GetSHPFileName()".
+/*
+ * *************************************************************************************************************
+ **          Region detections Functions / Procedures 
+ * *************************************************************************************************************
+ */
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Detects the City according the given Map Shape File and the given GPS Coordinates. Returns name and regions codes    */
 bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, uint32_t &EdRegCode, std::string &ShapeFileName)
  {
   // bool StdErrNoPiping = isatty(STDERR_FILENO); /* Checking if the output is not redirected to any other program or file to decide if to use colors or not. */
@@ -150,7 +167,7 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, 
         int numPolygons = poMultiPoly->getNumGeometries();
         OGRGeometry* subPoGeometry;
         OGRPolygon *SubPoPolygon;
-        for(int i=0; i < numPolygons; i++)
+        for(int i = 0; i < numPolygons; i++)
          {
           subPoGeometry = poMultiPoly->getGeometryRef(i);
           SubPoPolygon = subPoGeometry->toPolygon();
@@ -186,7 +203,8 @@ bool DetectCity(GPS_Cords_s Cords, std::string &CityName, uint32_t &RegionCode, 
  }
 
 
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the Name in latin letters of the Region given in the feature containing region's bounding polygon.           */
 bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
  {
   int Index;
@@ -225,6 +243,8 @@ bool GetFeatureLatinName(OGRFeature *poFeature, std::string &CityName)
   return Result;
  }
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Returns the Main and the Edditional Region Codes from the given geometry feature conatins the retion's polygon.      */
 bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t &EdRegCode) // At this moment the function returns only the region code. The Editional Region code will be implemented later.
  {
   int Index;
@@ -268,26 +288,18 @@ bool GetFeatureRegionCodes(OGRFeature *poFeature, uint32_t &RegionCode, uint32_t
   return Result;
  }
 
+/*======================================================================================================================*/
 
+/*
+ * *************************************************************************************************************
+ **          Regions' names spelling checking Functions / Procedures 
+ * *************************************************************************************************************
+ */
 
-
-
-
-bool CondToRemove(char c) // Condition to remove.
- {
-  return c == ' ' || c == '_' || c == '-' || c == '\'' || c == '\"' || c == '`' || c == ';' || c == ':' || c == '.' || c == ',';
- }
-
-void RemoveUnneededChars(std::string &StringToClear)
- {
-  StringToClear.erase(std::remove_if(StringToClear.begin(), StringToClear.end(), [](char c){return CondToRemove(c);}), StringToClear.end());
- }
-
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Compares the names of the cities given as strings if they are equal by taking in account the possible alternatives.  */
 bool StringsAreEqual(std::string str1, std::string str2)
  {
-  // str1.erase(std::remove_if(str1.begin(), str1.end(), [](char c){return CondToRemove(c);}), str1.end());
-  // str2.erase(std::remove_if(str2.begin(), str2.end(), [](char c){return CondToRemove(c);}), str2.end());
-
   RemoveUnneededChars(str1);
   RemoveUnneededChars(str2);
   ReplaceSubStrings(str1);
@@ -296,10 +308,23 @@ bool StringsAreEqual(std::string str1, std::string str2)
   return str1 == str2;
  }
   
-// ALT_NAME_BLOCK_SIZE
-// NUM_ALT_NAME_BLOCKS
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checks if the given char must be removed or not. If yes it returns "true" and if no - returns "false".               */
+bool CondToRemove(char c) /* Condition to remove. */
+ {
+  return c == ' ' || c == '_' || c == '-' || c == '\'' || c == '\"' || c == '`' || c == ';' || c == ':' || c == '.' || c == ',';
+ }
+
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Removes unnecessary characters from the string. that means from the name of a city before comparing.                 */
+void RemoveUnneededChars(std::string &StringToClear)
+ {
+  StringToClear.erase(std::remove_if(StringToClear.begin(), StringToClear.end(), [](char c){return CondToRemove(c);}), StringToClear.end());
+ }
 
 
+/*----------------------------------------------------------------------------------------------------------------------*/
+/* Checking the possible Name alternatives and adjusts the name to the defined standard before comparing.               */
 void ReplaceSubStrings(std::string &StringToCorrect)
  {
   size_t i, j;
@@ -324,6 +349,12 @@ void ReplaceSubStrings(std::string &StringToCorrect)
 
 
 /*======================================================================================================================*/
+
+/*
+ * *************************************************************************************************************
+ **          Parking session Functions / Procedures 
+ * *************************************************************************************************************
+ */
 
 
 /*----------------------------------------------------------------------------------------------------------------------*/
