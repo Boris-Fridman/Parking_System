@@ -13,6 +13,10 @@ extern "C" {
 #include "CommonData.h"
 
 /*======================================================================================================================*/
+
+#define MIN_PROC_NAME_LEN 8
+
+/*======================================================================================================================*/
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Log Level enumeration. Defines a type of message that is sent to the .log file.                                      */
 #ifndef __cplusplus
@@ -40,6 +44,7 @@ typedef
 struct LogParams_s
  {
   bool FileIsOpen;                 /* "true" if the .log file is open or "false" if close.          */
+  size_t MinNameLen;               /* Contains the minimal name length of the process name.         */
   FILE *fp;                        /* The reference to .log file                                    */
   char LogFilePathName[PATH_LEN];  /* The .log file name including path.                            */
   char DatDiv; /* Data divider */  /* The data divider that is added between logging-message parts. */

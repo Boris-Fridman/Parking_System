@@ -9,7 +9,7 @@
 
 /*======================================================================================================================*/
 
-#define MAIN_PROC_NAME     (char *)"Main    "     /* Main process name*/
+#define MAIN_PROC_NAME     (char *)"Main"     /* Main process name*/
 
 #define TSK_CONT_SH_MEM_SIZE     (sizeof(TskContShmData_s))
 

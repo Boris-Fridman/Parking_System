@@ -9,7 +9,7 @@
 #include <sys/types.h>
 
 
-#define PARK_PROC_NAME     (char *)"Parking "     /* Parking process name*/
+#define PARK_PROC_NAME     (char *)"Parking"     /* Parking process name*/
 
 
 

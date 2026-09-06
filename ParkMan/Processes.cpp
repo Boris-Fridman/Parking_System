@@ -658,7 +658,7 @@ void GenShQueName(std::string const &basic_name, std::string &que_name)
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Constructor for initilizing the "ProcMan_c" class.                                                                   */
 ProcMan_c::ProcMan_c()
-  :TaskControl_ShSM_c(), LogParams({false, nullptr, {0}, '\t'})
+  :TaskControl_ShSM_c(), LogParams({false, MIN_PROC_NAME_LEN, nullptr, {0}, '\t'})
  {
   memset((void*)&LogParams, 0, sizeof(LogParams));
   LoadLogThread();

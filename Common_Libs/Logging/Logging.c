@@ -43,18 +43,29 @@ static char const *LogLevelName(LogLevel_e LogLevel)
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Creates the strig line to log.                                                                                       */
-static void CreateStringLineToLog(char LogString[], size_t MaxSize, LogMessType_s LogMessage, char Divider)
+static void CreateStringLineToLog(LogParams_s const * const LogParams, char LogString[], size_t MaxSize, LogMessType_s LogMessage)
  {
   char TimeBuf[40];
+  size_t NumMissingChars, Len;
   ConvertTime(&LogMessage.TimeOfHappening, TimeBuf, sizeof(TimeBuf), E_DBS_FORMAT);
-  snprintf(LogString, MaxSize - 2, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, Divider, LogMessage.ProcessID, Divider, LogMessage.ThreadID, Divider, LogMessage.ProcName, Divider, LogLevelName(LogMessage.LogLevel), Divider, LogMessage.LogMessage);
+  Len = strlen(LogMessage.ProcName);
+  if(Len < LogParams->MinNameLen)
+   {
+    NumMissingChars = LogParams->MinNameLen - Len;
+    for(size_t i = 0; i < NumMissingChars; i++)
+     {
+      strncat(LogMessage.ProcName, " ", sizeof(LogMessage.ProcName) - 1);
+     }
+   }
+
+  snprintf(LogString, MaxSize - 2, "%s%c%d%c%d%c%s%c%s%c%s", TimeBuf, LogParams->DatDiv, LogMessage.ProcessID, LogParams->DatDiv, LogMessage.ThreadID, LogParams->DatDiv, LogMessage.ProcName, LogParams->DatDiv, LogLevelName(LogMessage.LogLevel), LogParams->DatDiv, LogMessage.LogMessage);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
 /* Prings the logging header to a .log file.                                                                            */
 static void PrintHeader(LogParams_s *LogParams)
  {
-  fprintf(LogParams->fp, "     Date          Time  %c PID  %c TID  %cProc Name%cLog Level%c     Message\n", LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv);
+  fprintf(LogParams->fp, "\n     Date          Time  %c PID  %c TID  %cProc Name%cLog Level%c     Message\n", LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv, LogParams->DatDiv);
  }
 
 /*----------------------------------------------------------------------------------------------------------------------*/
@@ -63,6 +74,7 @@ static void LoadDefParams(LogParams_s *DefParams)
  {
   memset(DefParams, 0, sizeof(LogParams_s));
   DefParams->DatDiv = '\t';
+  DefParams->MinNameLen = MIN_PROC_NAME_LEN;
  }
 
 /*======================================================================================================================*/
@@ -123,7 +135,7 @@ void CloseLog(LogParams_s *LogParams)
 void AddToLog(LogParams_s *LogParams, LogMessType_s LogMessage)
  {
   char Buf[LOGMSG_LEN + 100];
-  CreateStringLineToLog(Buf, sizeof(Buf), LogMessage, LogParams->DatDiv);
+  CreateStringLineToLog(LogParams, Buf, sizeof(Buf), LogMessage);
   fprintf(LogParams->fp, "%s\n", Buf);
   fflush(LogParams->fp);
  }
