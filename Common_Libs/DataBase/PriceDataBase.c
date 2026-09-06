@@ -22,7 +22,7 @@
 /*======================================================================================================================*/
 
 char PathFileName[PATH_LEN];
-
+extern char const UserDBTable[];
 /*======================================================================================================================*/
 
 /*
@@ -58,6 +58,7 @@ int CreateLoadDatabase(sqlite3 **conn)
     char *err_msg;
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CITIES_PRICES(city_id INT, city_name TEXT, price_per_hour_in_ag INT);", 0, 0, &err_msg);
     result = sqlite3_exec(*conn, "CREATE TABLE IF NOT EXISTS CUSTOMERS_PRICE_REPORTS(start_time INT, end_time INT, duration INT, vehicle_id INT, customer_name INT, longitude REAL, latitude REAL, city_id INT, city_name TEXT, region_code INT, price_per_hour_in_ag INT, accumulated_price_in_ag INT);", 0, 0, &err_msg);
+    result = sqlite3_exec(*conn,   UserDBTable, 0, 0, &err_msg);
    
     if(result != SQLITE_OK)
      {
@@ -741,6 +742,88 @@ void PrintDBError(int ErrorCode)
    }
   if(StdOutNoPiping) fprintf(stderr, "%s", TermColorsReset);
  }
+
+
+/*======================================================================================================================*/
+
+
+
+char const UserDBTable[] = 
+{
+ "DROP VIEW IF EXISTS VIEW_CUSTOMERS_PRICE_REPORTS;\n"
+ "CREATE VIEW VIEW_CUSTOMERS_PRICE_REPORTS AS \n"
+ "SELECT \n"
+ "    datetime(start_time, 'unixepoch', 'localtime') AS start_time,\n"
+ "    datetime(end_time, 'unixepoch', 'localtime') AS end_time,\n"
+ "    (duration / 86400) || ' - ' || \n"
+ "    ((duration % 86400) / 3600) || ':' || \n"
+ "    ((duration % 3600) / 60) || ':' || \n"
+ "    (duration % 60) AS duration,\n"
+ "	vehicle_id  AS vehicle_id,\n"
+ "	customer_name AS custtomer_name,\n"
+ "	(lonsigchar || longdeg || '˚' || longmin || '''' || longsec || '\"' || substr(CAST(longdec AS STRING),2,3)) AS longitude,\n"
+ "	(latsigchar || latdeg  || '˚' || latmin  || '''' || latsec  || '\"' || substr(CAST(latdec  AS STRING),2,3)) AS latitude,\n"
+ "	\n"
+ "	city_id AS city_id,\n"
+ "	city_name AS city_name,\n"
+ "	region_code AS region_code,\n"
+ "	price_per_hour_in_ag*0.01 AS price_per_hour,\n"
+ "	accumulated_price_in_ag*0.01 AS accumulated_price\n"
+ "	\n"
+ "	\n"
+ "FROM \n"
+ "(\n"
+ "    SELECT \n"
+ "        *, \n"
+ "        ((abslon - longdeg)*60 - longmin)*60 - longsec AS longdec,\n"
+ "		((abslat - latdeg)*60 - latmin)*60 - latsec AS latdec\n"
+ "    FROM \n"
+ "	(\n"
+ "		SELECT\n"
+ "			*,\n"
+ "			CAST(((abslon - longdeg)*60 - longmin)*60 AS INTEGER) AS longsec,\n"
+ "			CAST(((abslat - latdeg)*60 - latmin)*60 AS INTEGER) AS latsec\n"
+ "		FROM\n"
+ "		(\n"
+ "			SELECT\n"
+ "				*,\n"
+ "				CAST((abslon - longdeg)*60 AS INTEGER) AS longmin,\n"
+ "				CAST((abslat - latdeg)*60 AS INTEGER) AS latmin\n"
+ "			FROM \n"
+ "			(\n"
+ "				SELECT\n"
+ "					*,\n"
+ "					CAST(abslon AS INTEGER) AS longdeg,\n"
+ "					CAST(abslat AS INTEGER) AS latdeg,\n"
+ "					CASE siglon \n"
+ "						WHEN 0 THEN ' '\n"
+ "						WHEN 1 THEN '-'\n"
+ "						ELSE ' '\n"
+ "					END AS lonsigchar,\n"
+ "					CASE siglat \n"
+ "						WHEN 0 THEN ' '\n"
+ "						WHEN 1 THEN '-'\n"
+ "						ELSE ' '\n"
+ "					END AS latsigchar\n"
+ "				FROM\n"
+ "				(	\n"
+ "					-- This inner layer runs first\n"
+ "					SELECT\n"
+ "					*,\n"
+ "					CAST(ABS(longitude) AS REAL) AS abslon,\n"
+ "					CAST(ABS(latitude)  AS REAL) AS abslat,\n"
+ "					CAST((longitude < 0) AS INTEGER) AS siglon,\n"
+ "					CAST((latitude < 0)  AS INTEGER) AS siglat\n"
+ "					FROM CUSTOMERS_PRICE_REPORTS\n"
+ "				)\n"
+ "				\n"
+ "			)\n"
+ "			\n"
+ "		)\n"
+ "	 \n"
+ "	)\n"
+ ");\n"
+};
 
 
 /*======================================================================================================================*/
